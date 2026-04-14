@@ -908,31 +908,30 @@ function joinRoom(){
       if(!G){
         G=newG; go('gs'); listenPause();
         render();
-        if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
-        return;
+        return; // host runs bots, not non-host
       }
 
       // Rematch
       if(d._rematch&&wasOver){
         G=newG; _roundResolving=false;
         document.getElementById('eov').classList.remove('show');
-        go('gs'); render(); return;
+        go('gs'); render();
+        return; // host runs bots
       }
 
-      // Play sound for meaningful events
+      // Play sound only — no animations on non-host
       try{
         const evtType=d._evt?JSON.parse(d._evt).t:null;
         if(evtType==='CARD') sfxCard();
-        else if(evtType==='DONK'){ sfxDonk(); animDonk(); }
+        else if(evtType==='DONK') sfxDonk();
         else if(evtType==='JJ') sfxJJ();
         else if(evtType==='HH') sfxHH();
         else if(evtType==='SS'||evtType==='BB') sfxSpecial();
       }catch(e){}
 
-      // Just render the new state — host handles all timing/holds
+      // Just render — host runs all bots, non-host never schedules bots
       G=newG;
       render();
-      if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
     });
     fbListeners.push(sRef);
 
