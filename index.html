@@ -651,7 +651,7 @@ function fbDelete(path){
 }
 function fbOn(path,cb){
   // Determine poll interval — gameState is large, poll less often
-  const interval=path.includes('gameState')?800:600;
+  const interval=path.includes('gameState')?300:300;
 
   if(_polls[path]){
     _polls[path].cbs.push(cb);
@@ -890,8 +890,9 @@ function joinRoom(){
 
     // Listen for game start + state updates
     const sRef=fbRoom.child('gameState');
-    let _lastSeq=-1;
-    let _holdingRound=false; // true during 3s round-end hold
+    let _nhSeq=-1;
+    let _nhHolding=false;
+    let _nhHoldG=null;
 
     sRef.on('value',snap4=>{
       const d=snap4.val();
@@ -899,16 +900,15 @@ function joinRoom(){
       if(d.slots&&d.slots[myName]!==undefined) myI=d.slots[myName];
 
       const seq=d._seq||0;
-      if(seq===_lastSeq) return; // no change
-      const prevSeq=_lastSeq;
-      _lastSeq=seq;
+      if(seq===_nhSeq) return;
+      _nhSeq=seq;
 
-      const prevG=G;
       const newG=deserialiseG(d.state);
-      const wasOver=prevG&&prevG.over;
+      const wasOver=G&&G.over;
+      const isFirst=!G;
 
       // First load
-      if(!prevG){
+      if(isFirst){
         G=newG; go('gs'); listenPause();
         render();
         if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
@@ -917,114 +917,51 @@ function joinRoom(){
 
       // Rematch
       if(d._rematch&&wasOver){
-        G=newG; _holdingRound=false; _roundResolving=false;
+        G=newG; _nhHolding=false; _roundResolving=false;
         document.getElementById('eov').classList.remove('show');
         go('gs'); render(); return;
       }
 
-      // During hold — queue state, don't render yet
-      if(_holdingRound){
-        G=newG; // update G but don't render — hold display stays
-        return;
-      }
+      // Detect round end: new G has empty played array but old G had cards
+      const wasRoundActive=G.played&&G.played.length>0;
+      const roundJustEnded=!newG.played||newG.played.length===0;
+      const roundChanged=newG.round!==G.round;
 
-      // Detect what changed by comparing prev and new G
-      const evt=d._evt?JSON.parse(d._evt):null;
-      const evtType=evt?evt.t:null;
-
-      if(evtType==='ROUND_END'){
-        // Keep current DOM for 3s, then discard and apply new state
-        _holdingRound=true;
+      if((roundJustEnded||roundChanged)&&wasRoundActive&&!_nhHolding){
+        // Show current cards for 3s then transition to new state
+        _nhHolding=true;
         _roundResolving=true;
-        render(); // hides turnBar immediately
-        // Play drama if someone finished
-        const exitNames=(newG.exitOrder||[]).filter(pi=>!(prevG.exitOrder||[]).includes(pi));
-        if(exitNames.length>0){
-          setTimeout(()=>showDrama('🎉',pname2(exitNames[0],newG)+' is OUT!','Well played!','#70F090',1600),200);
-        }
+        _nhHoldG=newG;
+        render(); // hides turnBar
         setTimeout(()=>{
           discardCards(500).then(()=>{
-            _holdingRound=false;
+            _nhHolding=false;
             _roundResolving=false;
-            G=newG;
+            G=_nhHoldG||newG;
+            _nhHoldG=null;
             render();
             if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
           });
-        }, 3000);
+        },3000);
         return;
       }
 
-      if(evtType==='CARD'&&evt){
-        sfxCard();
-        // Fly card animation, hide slot until landed
-        const destSlot=document.getElementById('pslot-'+evt.slot);
-        if(destSlot) destSlot.style.visibility='hidden';
-        flyCardToCentre(evt.pi, evt.card, evt.slot);
-        setTimeout(()=>{
-          if(destSlot) destSlot.style.visibility='';
-          G=newG; render();
-          if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
-        }, 450);
+      // During hold — update stored G but don't render
+      if(_nhHolding){
+        _nhHoldG=newG;
         return;
       }
 
-      if(evtType==='DONK'&&evt){
-        sfxDonk(); animDonk();
-        showDrama('💥','DONK!',`${pname2(evt.pi,newG)} → ${pname2(evt.tpi,newG)}`,'#FFB3B3',1400);
-        G=newG; render();
-        if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
-        return;
-      }
+      // Normal update — just render, no animations
+      // Play sound only for meaningful changes
+      const evtType=d._evt?JSON.parse(d._evt).t:null;
+      if(evtType==='CARD') sfxCard();
+      else if(evtType==='DONK'){ sfxDonk(); animDonk(); }
+      else if(evtType==='PICKUP') sfxCard();
+      else if(evtType==='JJ') sfxJJ();
+      else if(evtType==='HH') sfxHH();
+      else if(evtType==='SS'||evtType==='BB') sfxSpecial();
 
-      if(evtType==='PICKUP'&&evt){
-        showDrama('📥',`${pname2(evt.tpi,newG)} picks up!`,evt.count+' cards!','#FFB3B3',1600);
-        // Fly cards to player
-        const toEl=getPlayerEl(evt.tpi);
-        const to=getElCenter(toEl);
-        for(let s=0;s<4;s++){
-          const slot=document.getElementById('pslot-'+s);
-          const card=slot?slot.querySelector('.card'):null;
-          if(!card) continue;
-          const r=card.getBoundingClientRect();
-          const clone=card.cloneNode(true);
-          clone.style.cssText=`position:fixed;z-index:800;pointer-events:none;width:${r.width}px;height:${r.height}px;left:${r.left}px;top:${r.top}px;border-radius:8px;transition:none;`;
-          document.body.appendChild(clone);
-          setTimeout(()=>{
-            clone.style.transition='left 450ms ease,top 450ms ease,transform 450ms,opacity 450ms';
-            clone.style.left=(to.x-r.width/2)+'px';
-            clone.style.top=(to.y-r.height/2)+'px';
-            clone.style.transform='scale(.3)';
-            clone.style.opacity='0';
-            setTimeout(()=>clone.remove(),520);
-          },s*60);
-        }
-        G=newG; render();
-        if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
-        return;
-      }
-
-      if(evtType==='JJ'&&evt){
-        sfxJJ();
-        showDrama('🔮','JACKASS JINX!',`${pname2(evt.pi,newG)} reverses the DONK!`,'#B07FE8',1600);
-        G=newG; render(); return;
-      }
-      if(evtType==='HH'&&evt){
-        sfxHH();
-        showDrama('🛑','HOOF HALT!',`${pname2(evt.pi,newG)} cancels the DONK!`,'#FFB3B3',1600);
-        G=newG; render(); return;
-      }
-      if(evtType==='SS'&&evt){
-        sfxSpecial();
-        showDrama('🔄','SADDLE SWITCH!',`${pname2(evt.pi,newG)} makes ${pname2(evt.targetPi,newG)} start!`,'#F0C060',1400);
-        G=newG; render(); return;
-      }
-      if(evtType==='BB'&&evt){
-        sfxSpecial();
-        showDrama('⏭️','BRAY BREAK!',`${pname2(evt.pi,newG)} skips!`,'#70F090',1200);
-        G=newG; render(); return;
-      }
-
-      // Default: just update state and render
       G=newG;
       render();
       if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
