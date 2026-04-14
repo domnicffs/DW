@@ -1,0 +1,2919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Donkey Who">
+<meta name="theme-color" content="#130C04">
+<meta name="description" content="The card game where the last one holding cards is the Donkey!">
+
+
+<title>Donkey Who</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400&display=swap');
+:root{--gold:#C9953A;--gl:#F0C060;--dark:#130C04;--cbg:#F8F3E8;--blue:#1B5EA0;--red:#8B1A1A;--green:#1A6B35;--purple:#5B2D8E;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--dark);background-image:radial-gradient(ellipse at 50% 0%,#3D1F08 0%,#130C04 70%);min-height:100vh;font-family:'Crimson Text',serif;color:var(--gl);overflow-x:hidden;max-width:100vw;}
+.screen{display:none;min-height:100vh;padding:24px 20px;flex-direction:column;align-items:center;justify-content:center;}
+.screen.active{display:flex;}
+.logo{font-family:'Cinzel Decorative',cursive;font-size:clamp(3rem,10vw,5.5rem);color:var(--gold);text-shadow:0 0 40px rgba(201,149,58,.5),2px 2px 0 #000;letter-spacing:4px;text-align:center;}
+.logo-sub{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:8px;color:var(--gl);opacity:.6;text-align:center;margin-bottom:48px;margin-top:6px;}
+.suits-row{display:flex;gap:10px;margin-bottom:40px;}
+.suit-pip{width:40px;height:56px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:'Cinzel',serif;font-weight:700;font-size:11px;animation:flt 3s ease-in-out infinite;}
+.suit-pip:nth-child(2){animation-delay:.4s;}.suit-pip:nth-child(3){animation-delay:.8s;}.suit-pip:nth-child(4){animation-delay:1.2s;}
+@keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.btn-group{display:flex;flex-direction:column;gap:13px;width:100%;max-width:300px;}
+.btn{padding:14px 28px;font-family:'Cinzel',serif;font-size:.9rem;font-weight:700;letter-spacing:2px;border:none;border-radius:5px;cursor:pointer;transition:all .2s;}
+.btn-p{background:linear-gradient(135deg,#C9953A,#7A4E12);color:#130C04;box-shadow:0 4px 20px rgba(201,149,58,.3);}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(201,149,58,.5);}
+.btn-s{background:transparent;color:var(--gl);border:1.5px solid var(--gold);}
+.btn-s:hover{background:rgba(201,149,58,.1);}
+.btn:active{transform:scale(.97)!important;}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important;}
+.divd{width:100%;max-width:300px;text-align:center;position:relative;margin:6px 0;}
+.divd::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(201,149,58,.2);}
+.divd span{background:var(--dark);padding:0 12px;font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:3px;color:var(--gold);opacity:.5;position:relative;}
+.ilbl{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:3px;color:var(--gold);opacity:.8;margin-bottom:5px;align-self:flex-start;}
+input{width:100%;background:rgba(255,255,255,.04);border:1.5px solid rgba(201,149,58,.35);border-radius:5px;padding:12px 16px;font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;letter-spacing:4px;color:var(--gl);text-align:center;text-transform:uppercase;outline:none;transition:border-color .2s;}
+input:focus{border-color:var(--gold);background:rgba(201,149,58,.07);}
+input.ni{letter-spacing:2px;font-size:.95rem;}
+.rcode{font-family:'Cinzel Decorative',cursive;font-size:clamp(3rem,13vw,5.5rem);color:var(--gold);letter-spacing:12px;text-shadow:0 0 30px rgba(201,149,58,.4);margin:16px 0;text-align:center;}
+.rtitle{font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:4px;opacity:.55;text-align:center;}
+.smsg{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:2px;opacity:.6;text-align:center;margin-bottom:16px;}
+.plist{display:flex;flex-direction:column;gap:9px;width:100%;max-width:300px;margin:18px 0;}
+.pslot{display:flex;align-items:center;gap:12px;padding:11px 16px;border:1px solid rgba(201,149,58,.18);border-radius:6px;background:rgba(255,255,255,.02);transition:all .3s;}
+.pslot.f{border-color:rgba(201,149,58,.5);background:rgba(201,149,58,.06);}
+.pdot{width:9px;height:9px;border-radius:50%;background:rgba(201,149,58,.2);flex-shrink:0;}
+.pslot.f .pdot{background:var(--gold);box-shadow:0 0 8px var(--gold);}
+.pnt{font-family:'Cinzel',serif;font-size:.82rem;letter-spacing:1px;}
+
+/* ── GAME ── */
+#gs{display:none;flex-direction:column;min-height:100vh;padding:0;max-width:100vw;overflow-x:hidden;}
+#gs.active{display:flex;}
+.gh{display:flex;justify-content:center;align-items:center;padding:8px 12px;background:rgba(0,0,0,.4);border-bottom:1px solid rgba(201,149,58,.18);flex-shrink:0;}
+.gt{font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center;}
+.grnd{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:2px;opacity:.65;text-align:center;}
+.gtable{flex:1;display:flex;flex-direction:column;padding:8px;gap:5px;overflow:hidden;min-height:0;width:100%;box-sizing:border-box;}
+
+/* Opponents — 3 equal columns that always fit screen width */
+.oprow{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;width:100%;}
+.op{background:rgba(0,0,0,.32);border:1px solid rgba(201,149,58,.15);border-radius:7px;padding:6px 4px;text-align:center;transition:all .3s;position:relative;overflow:hidden;min-width:0;}
+.op.at{border-color:var(--gold);background:rgba(201,149,58,.1);box-shadow:0 0 10px rgba(201,149,58,.2);}
+.op.out{opacity:.3;border-style:dashed;}
+.op.th::after{content:'🤔';position:absolute;top:-9px;right:-2px;font-size:13px;animation:bob .65s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.opn{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.3px;color:var(--gl);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.opc{font-size:.5rem;opacity:.5;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.optd{width:5px;height:5px;border-radius:50%;background:var(--gold);margin:2px auto 0;display:none;}
+.op.at .optd{display:block;animation:pulse 1s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+
+.ctr{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:0;}
+.cbadge{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:3px;padding:5px 16px;border-radius:20px;border:1px solid rgba(201,149,58,.3);background:rgba(0,0,0,.4);transition:all .3s;}
+.cbadge.cb{border-color:var(--blue);color:#6BB0F0;background:rgba(27,94,160,.18);}
+.cbadge.cr{border-color:var(--red);color:#F07070;background:rgba(139,26,26,.18);}
+.cbadge.cg{border-color:var(--green);color:#70F090;background:rgba(26,107,53,.18);}
+.cbadge.cp{border-color:var(--purple);color:#B07FE8;background:rgba(91,45,142,.18);}
+.prow{display:flex;gap:10px;justify-content:center;align-items:flex-end;height:130px;position:relative;}
+.pslot{width:80px;height:114px;border-radius:8px;border:1.5px dashed rgba(201,149,58,.18);background:rgba(0,0,0,.15);flex-shrink:0;transition:all .35s cubic-bezier(.4,0,.2,1);position:relative;display:flex;align-items:flex-end;justify-content:center;}
+.pslot.filled{border-color:transparent;background:transparent;}
+.pslot .pw{position:absolute;bottom:0;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.pw{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.plbl{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:1px;opacity:.55;}
+.high-marker{font-size:.48rem;color:#FFB3B3;font-family:'Cinzel',serif;letter-spacing:.5px;}
+.dk-flash{animation:dkf .45s ease-in-out 3;}
+@keyframes dkf{0%,100%{box-shadow:none}50%{box-shadow:0 0 22px #E05B5B,0 0 8px #E05B5B}}
+
+/* ── SPECIAL CARD IN HAND ── */
+
+/* ── PENDING DONK RESPONSE BANNER ── */
+.donk-response{
+  background:linear-gradient(135deg,rgba(80,10,10,.95),rgba(50,5,5,.95));
+  border:1px solid #E05B5B;border-radius:8px;
+  padding:8px 12px;margin:4px 0;flex-shrink:0;
+  display:none;
+}
+.donk-response.show{display:block;}
+.dr-title{font-family:'Cinzel',serif;font-size:.68rem;font-weight:700;color:#FFB3B3;letter-spacing:1px;margin-bottom:6px;}
+.dr-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.dr-btn{padding:8px 14px;font-family:'Cinzel',serif;font-size:.65rem;font-weight:700;letter-spacing:1px;border:none;border-radius:4px;cursor:pointer;transition:all .2s;}
+.dr-btn.jj{background:linear-gradient(135deg,#5B2D8E,#3A1A5E);color:#B07FE8;border:1px solid #8B6FD4;}
+.dr-btn.hh{background:linear-gradient(135deg,#8B1A1A,#5A0A0A);color:#FFB3B3;border:1px solid #E05B5B;}
+.dr-btn.accept{background:rgba(255,255,255,.08);color:var(--gl);border:1px solid rgba(255,255,255,.2);}
+
+/* ── SPECIAL MODAL ── */
+.sp-modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.82);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:400;padding:20px;}
+.sp-modal-ov.show{display:flex;}
+.sp-modal{background:#0E0804;border:1px solid var(--gold);border-radius:10px;padding:22px;max-width:320px;width:100%;text-align:center;}
+.sp-modal-title{font-family:'Cinzel',serif;font-size:.95rem;letter-spacing:2px;color:var(--gold);margin-bottom:6px;}
+.sp-modal-desc{font-size:.8rem;opacity:.65;margin-bottom:16px;line-height:1.5;}
+.sp-target-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.sp-target-btn{padding:10px;font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:1px;background:rgba(201,149,58,.08);border:1px solid rgba(201,149,58,.28);border-radius:4px;color:var(--gl);cursor:pointer;transition:all .2s;}
+.sp-target-btn:hover,.sp-target-btn.chosen{background:rgba(201,149,58,.18);border-color:var(--gold);}
+.sp-modal-btns{display:flex;gap:10px;justify-content:center;}
+.last-round{
+  background:rgba(0,0,0,.35);
+  border:1px solid rgba(201,149,58,.18);
+  border-radius:8px;
+  padding:7px 10px;
+  flex-shrink:0;
+  transition:opacity .4s;
+  align-self:center;        /* centre the box horizontally */
+  max-width:100%;
+}
+.last-round.hidden{opacity:0;pointer-events:none;}
+.lr-title{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:3px;color:var(--gold);opacity:.6;margin-bottom:5px;text-align:center;}
+.lr-cards{
+  display:flex;gap:5px;
+  overflow-x:auto;
+  scrollbar-width:none;
+  padding-bottom:2px;
+  justify-content:center;
+  flex-wrap:nowrap;
+  align-items:flex-start;  /* cards top-aligned so smsz cards all sit level */
+}
+.lr-cards::-webkit-scrollbar{display:none;}
+.lr-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;}
+.lr-name{font-family:'Cinzel',serif;font-size:.44rem;letter-spacing:.5px;opacity:.5;white-space:nowrap;}
+.lr-donk-badge{font-size:.44rem;font-family:'Cinzel',serif;letter-spacing:.5px;color:#FFB3B3;}
+.lr-outcome{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.5px;margin-top:5px;opacity:.7;text-align:center;}
+.lr-outcome.donk{color:#FFB3B3;}
+.lr-outcome.clean{color:#70F090;}
+.lr-divider{width:1px;background:rgba(201,149,58,.25);margin:0 3px;align-self:stretch;flex-shrink:0;}
+
+/* ── SPECIAL PILE + DISCARD (centre) ── */
+.sp-piles-row{display:flex;gap:12px;justify-content:center;align-items:flex-start;margin-top:4px;}
+.sp-pile-block{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.active-sp-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.sp-pile-lbl{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:3px;opacity:.5;color:var(--gold);}
+.sp-pile-count{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:1px;color:var(--gold);opacity:.75;margin-top:4px;}
+/* ── SPECIAL PILE COIN ── */
+.sp-card-back{
+  width:72px;height:72px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#2A1A4A,#0E0818);
+  border:3px solid #8B6FD4;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  box-shadow:0 0 0 5px rgba(107,79,200,.18), 0 4px 14px rgba(107,79,200,.35);
+  position:relative;
+}
+/* Dashed inner ring like a poker chip */
+.sp-card-back::before{
+  content:'';position:absolute;inset:6px;border-radius:50%;
+  border:1.5px dashed rgba(139,111,212,.45);
+}
+.sp-back-dw{font-family:'Cinzel Decorative',cursive;font-size:13px;color:#C8A8F8;letter-spacing:1px;position:relative;z-index:1;}
+.sp-back-sub{display:none;} /* hide "SPECIALS" subtitle on coin */
+.sp-card-back.empty{opacity:.2;}
+
+/* Active special cards in pile area glow */
+#activeSpCards .card.s-sp,#activeSpCards .sp-coin{animation:spGlow .8s ease-in-out infinite alternate;}
+.active-sp-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.active-sp-plbl{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:1px;color:var(--gold);opacity:.75;margin-top:4px;white-space:nowrap;}
+@keyframes spGlow{from{box-shadow:0 0 0 5px rgba(107,79,200,.18),0 0 8px rgba(176,127,232,.3)}to{box-shadow:0 0 0 5px rgba(176,127,232,.4),0 0 18px rgba(176,127,232,.7)}}
+
+/* ── DONK BADGE (under player name) ── */
+.donk-badge{
+  font-family:'Cinzel',serif;font-size:.5rem;font-weight:700;letter-spacing:1px;
+  color:#FFB3B3;background:rgba(139,26,26,.7);border:1px solid #E05B5B;
+  border-radius:3px;padding:1px 5px;margin-top:2px;display:none;
+  animation:donkPulse .6s ease-in-out infinite;
+}
+.donk-badge.show{display:inline-block;}
+@keyframes donkPulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+.glog{background:rgba(0,0,0,.32);border-top:1px solid rgba(201,149,58,.1);padding:5px 10px;font-size:.65rem;font-family:'Cinzel',serif;letter-spacing:.3px;min-height:22px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
+.my-turn-bar{background:rgba(201,149,58,.12);border-top:1px solid rgba(201,149,58,.3);padding:4px;text-align:center;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:2px;color:var(--gold);flex-shrink:0;transition:opacity .3s;}
+.my-turn-bar.hidden{opacity:0;pointer-events:none;}
+.ha{background:rgba(0,0,0,.42);border-top:1px solid rgba(201,149,58,.22);padding:6px 8px 12px;flex-shrink:0;width:100%;box-sizing:border-box;overflow:visible;}
+.htop{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.hlbl{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:2px;opacity:.5;}
+.hcnt{font-family:'Cinzel',serif;font-size:.62rem;color:var(--gold);}
+.htabs{display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap;}
+.ht{padding:3px 8px;border-radius:3px;font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.5px;cursor:pointer;border:1px solid rgba(201,149,58,.2);background:transparent;color:var(--gl);transition:all .2s;}
+.ht.on{background:rgba(201,149,58,.15);border-color:var(--gold);}
+.hand-row{display:flex;align-items:flex-end;width:100%;overflow:visible;}
+.crow{flex:1;display:flex;gap:5px;overflow-x:auto;overflow-y:visible;padding-bottom:4px;padding-top:16px;-webkit-overflow-scrolling:touch;scrollbar-width:none;min-width:0;}
+.crow::-webkit-scrollbar{display:none;}
+.sp-slot{display:flex;flex-direction:column;align-items:center;gap:3px;padding:0 0 4px 8px;flex-shrink:0;border-left:1px solid rgba(201,149,58,.2);margin-left:4px;}
+.sp-slot-lbl{font-family:'Cinzel',serif;font-size:.42rem;letter-spacing:1px;opacity:.5;}
+.bplay{background:linear-gradient(135deg,#C9953A,#7A4E12);color:#130C04;font-family:'Cinzel',serif;font-weight:700;font-size:.75rem;letter-spacing:1px;border:none;border-radius:5px;padding:10px 20px;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(201,149,58,.3);}
+.bplay:disabled{opacity:.3;cursor:not-allowed;}
+.bplay:not(:disabled):active{transform:scale(.97);}
+.bdonk{background:linear-gradient(135deg,#8B1A1A,#4A0808);color:#FFB3B3;font-family:'Cinzel',serif;font-weight:700;font-size:.75rem;letter-spacing:1px;border:1px solid rgba(255,100,100,.3);border-radius:5px;padding:10px 20px;cursor:pointer;transition:all .2s;}
+.bdonk:disabled{opacity:.3;cursor:not-allowed;}
+.abar{display:flex;gap:8px;padding:5px 8px 0;justify-content:center;flex-shrink:0;}
+
+/* ── CARDS ── */
+.card{flex-shrink:0;width:62px;height:89px;border-radius:7px;background:var(--cbg);border:2px solid;position:relative;cursor:pointer;transition:transform .12s,box-shadow .12s;display:flex;flex-direction:column;overflow:hidden;user-select:none;}
+.card.sel{transform:translateY(-14px)!important;box-shadow:0 0 20px rgba(201,149,58,.8)!important;border-color:var(--gold)!important;}
+.card.dim{opacity:.35;cursor:default;}
+.sp-coin.dim{opacity:.35;cursor:default;}
+.sp-coin.sel{box-shadow:0 0 0 5px rgba(201,149,58,.4),0 0 20px rgba(201,149,58,.7)!important;border-color:var(--gold)!important;}
+.card.dg{box-shadow:0 0 12px rgba(224,91,91,.7);}
+.card.sb{border-color:var(--blue);}.card.sr{border-color:var(--red);}.card.sg{border-color:var(--green);}.card.spu{border-color:var(--purple);}
+.card.psz{width:80px;height:114px;cursor:default;pointer-events:none;}
+.card.smsz{width:40px;height:57px;cursor:default;pointer-events:none;}
+.card.is-high{border-color:#E05B5B!important;box-shadow:0 0 8px rgba(224,91,91,.35);}
+.card.s-sp{border-color:#8B6FD4;background:#0E0A1A;}
+.card.s-sp .cn{color:#B07FE8;font-size:7px;}
+.card.s-sp .cmid{font-size:16px;}
+.card.s-sp .sn{font-family:'Cinzel',serif;font-size:3.5px;font-weight:700;color:#B07FE8;text-align:center;padding:0 2px 2px;line-height:1.3;}
+.cc{position:absolute;display:flex;flex-direction:column;align-items:center;line-height:1;gap:1px;}
+.cc.tl{top:3px;left:4px;}.cc.br{bottom:3px;right:4px;transform:rotate(180deg);}
+.cn{font-family:'Cinzel',serif;font-weight:700;font-size:12px;}
+.cs{font-family:'Cinzel',serif;font-size:5px;font-weight:600;letter-spacing:.3px;}
+.sb .cn,.sb .cs{color:var(--blue);}.sr .cn,.sr .cs{color:var(--red);}.sg .cn,.sg .cs{color:var(--green);}.spu .cn,.spu .cs{color:var(--purple);}
+.cmid{flex:1;display:flex;align-items:center;justify-content:center;font-size:22px;}
+.card.smsz .cmid{font-size:14px;}.card.smsz .cn{font-size:9px;}.card.smsz .cs{font-size:4px;}
+.card.psz .cmid{font-size:32px;}.card.psz .cn{font-size:15px;}.card.psz .cs{font-size:6px;}
+
+/* Special card slot */
+.sp-slot{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0 4px 8px;flex-shrink:0;border-left:1px solid rgba(201,149,58,.2);margin-left:4px;}
+.sp-slot-lbl{font-family:'Cinzel',serif;font-size:.42rem;letter-spacing:1px;opacity:.5;}
+
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-90px);background:rgba(5,3,1,.92);border:1px solid var(--gold);border-radius:6px;padding:11px 24px;font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:1px;color:var(--gl);z-index:1000;transition:transform .3s cubic-bezier(.34,1.56,.64,1);text-align:center;max-width:88vw;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.td{border-color:#E05B5B;color:#FFB3B3;}
+.toast.tg{border-color:#70F090;color:#70F090;}
+
+/* ── HOW TO PLAY ── */
+.htp{width:100%;max-width:340px;}
+.htp-title{font-family:'Cinzel Decorative',cursive;font-size:1.3rem;color:var(--gold);text-align:center;margin-bottom:4px;}
+.htp-sub{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:3px;opacity:.5;text-align:center;margin-bottom:20px;}
+.htp-section{margin-bottom:18px;}
+.htp-h{font-family:'Cinzel',serif;font-size:.72rem;font-weight:700;letter-spacing:2px;color:var(--gold);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.htp-h::after{content:'';flex:1;height:1px;background:rgba(201,149,58,.2);}
+.htp-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;}
+.htp-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
+.htp-text{font-size:.82rem;line-height:1.55;opacity:.85;}
+.htp-text strong{color:var(--gl);font-style:normal;}
+.htp-card-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+.htp-card{background:rgba(0,0,0,.4);border:1px solid;border-radius:6px;padding:7px 10px;flex:1;min-width:120px;}
+.htp-card-name{font-family:'Cinzel',serif;font-size:.58rem;font-weight:700;letter-spacing:1px;margin-bottom:3px;}
+.htp-card-desc{font-size:.7rem;opacity:.75;line-height:1.4;}
+.htp-tip{background:rgba(201,149,58,.07);border:1px solid rgba(201,149,58,.2);border-radius:6px;padding:10px 12px;font-size:.78rem;line-height:1.5;opacity:.85;}
+
+/* ── ANIMATIONS ── */
+@keyframes donkFlash{0%,100%{background:transparent}20%,60%{background:rgba(224,91,91,.3)}40%,80%{background:rgba(224,91,91,.1)}}
+@keyframes donkShake{0%,100%{transform:translateX(0)}15%{transform:translateX(-10px)}30%{transform:translateX(10px)}45%{transform:translateX(-7px)}60%{transform:translateX(7px)}75%{transform:translateX(-4px)}90%{transform:translateX(4px)}}
+@keyframes floatUp{0%{transform:translateY(0) translateX(-50%);opacity:1}100%{transform:translateY(-80px) translateX(-50%);opacity:0}}
+@keyframes dramaticIn{0%{opacity:0;transform:scale(.5)}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes dramaticOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.15)}}
+@keyframes cardFly{0%{opacity:1}100%{opacity:0;transform:var(--fly-to);}}
+@keyframes cardArrive{0%{opacity:0;transform:var(--fly-from) scale(.7)}100%{opacity:1;transform:none}}
+@keyframes scatterOut{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-40px) scale(.8)}}
+@keyframes pickupPulse{0%,100%{box-shadow:0 0 0 0 rgba(224,91,91,.4)}50%{box-shadow:0 0 0 16px rgba(224,91,91,0)}}
+.donk-screen-flash{animation:donkFlash .6s ease-out;}
+.donk-shake{animation:donkShake .5s ease-out!important;}
+.float-label{position:fixed;pointer-events:none;font-family:'Cinzel',serif;font-weight:700;letter-spacing:2px;z-index:1200;animation:floatUp 1s ease-out forwards;left:50%;}
+
+/* ── DRAMATIC EVENT OVERLAY ── */
+.drama-ov{position:fixed;top:28%;left:50%;transform:translate(-50%,-50%);display:none;z-index:900;pointer-events:none;text-align:center;}
+.drama-ov.show{display:block;}
+.drama-bg{display:none;} /* no black background */
+.drama-card{background:rgba(10,6,2,.88);border:2px solid var(--gold);border-radius:16px;padding:20px 36px;box-shadow:0 0 60px rgba(201,149,58,.4),0 8px 32px rgba(0,0,0,.8);backdrop-filter:blur(2px);}
+.drama-emoji{font-size:3.2rem;line-height:1;animation:dramaticIn .3s cubic-bezier(.34,1.56,.64,1) both;}
+.drama-title{font-family:'Cinzel Decorative',cursive;font-size:clamp(1.4rem,6vw,2.2rem);font-weight:900;margin-top:6px;letter-spacing:2px;animation:dramaticIn .3s .04s cubic-bezier(.34,1.56,.64,1) both;}
+.drama-sub{font-family:'Cinzel',serif;font-size:clamp(.65rem,2.5vw,.85rem);letter-spacing:3px;opacity:.75;margin-top:5px;animation:dramaticIn .3s .08s cubic-bezier(.34,1.56,.64,1) both;}
+.drama-exit{animation:dramaticOut .25s ease-in forwards;}
+
+@keyframes cardArrive{0%{opacity:0;transform:translateY(-20px) scale(.75)}100%{opacity:1;transform:none}}
+/* ── FLYING CARD ── */
+.flying-card{position:fixed;z-index:800;pointer-events:none;transition:none;}
+
+/* ── PAUSE OVERLAY ── */
+.pause-ov{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:600;gap:20px;}
+.pause-ov.show{display:flex;}
+.pause-title{font-family:'Cinzel Decorative',cursive;font-size:2rem;color:var(--gold);text-shadow:0 0 30px rgba(201,149,58,.5);}
+
+/* ── LEAVE CONFIRM OVERLAY ── */
+.leave-ov{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:700;gap:16px;padding:24px;}
+.leave-ov.show{display:flex;}
+.leave-title{font-family:'Cinzel',serif;font-size:1rem;letter-spacing:3px;color:var(--gl);text-align:center;}
+.eov{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:500;padding:24px;}
+.eov.show{display:flex;}
+.donkey-title{font-family:'Cinzel Decorative',cursive;font-size:clamp(1.4rem,6vw,2.2rem);color:#E05B5B;text-shadow:0 0 30px rgba(224,91,91,.5);text-align:center;margin-bottom:6px;}
+.donkey-name{font-family:'Cinzel',serif;font-size:clamp(1.8rem,8vw,3rem);color:#FFB3B3;text-align:center;margin-bottom:24px;}
+.winners-title{font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:4px;color:var(--gold);opacity:.7;text-align:center;margin-bottom:12px;}
+.winners-list{display:flex;flex-direction:column;gap:8px;width:100%;max-width:280px;margin-bottom:32px;}
+.winner-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border:1px solid rgba(201,149,58,.35);border-radius:6px;background:rgba(201,149,58,.07);}
+.winner-trophy{font-size:1.1rem;}
+.winner-rname{font-family:'Cinzel',serif;font-size:.85rem;letter-spacing:1px;color:var(--gl);}
+.winner-pos{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:2px;color:var(--gold);opacity:.7;margin-left:auto;}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<!-- SPECIAL MODAL (for SS target selection) -->
+<div class="sp-modal-ov" id="spModalOv">
+  <div class="sp-modal">
+    <div class="sp-modal-title" id="spModalTitle"></div>
+    <div class="sp-modal-desc" id="spModalDesc"></div>
+    <div class="sp-target-list" id="spTargetList"></div>
+    <div class="sp-modal-btns">
+      <button class="btn btn-p" id="spConfirmBtn" onclick="confirmSpModal()" style="padding:10px 18px;font-size:.78rem">USE IT</button>
+      <button class="btn btn-s" onclick="closeSpModal()" style="padding:10px 18px;font-size:.78rem">CANCEL</button>
+    </div>
+  </div>
+</div>
+<div class="screen active" id="sLobby">
+  <div class="logo">Donkey Who</div>
+  <div class="btn-group" style="margin-top:48px">
+    <button class="btn btn-p" onclick="go('sMode')">PLAY GAME</button>
+    <button class="btn btn-s" onclick="go('sJoin')">JOIN GAME</button>
+    <div class="divd"><span></span></div>
+    <button class="btn btn-s" onclick="go('sHowTo')" style="opacity:.7;font-size:.75rem;letter-spacing:3px">📖 HOW TO PLAY</button>
+  </div>
+</div>
+
+<!-- MODE SELECT -->
+<div class="screen" id="sMode">
+  <div class="logo" style="font-size:2.2rem">Donkey Who</div>
+  <div class="logo-sub" style="margin-bottom:28px">HOW MANY PLAYERS?</div>
+  <div class="btn-group">
+    <button class="btn btn-p" onclick="pickMode(1)">1 PLAYER <span style="opacity:.5;font-size:.7rem;letter-spacing:1px">— vs 3 bots</span></button>
+    <button class="btn btn-p" onclick="pickMode(2)">2 PLAYERS <span style="opacity:.5;font-size:.7rem;letter-spacing:1px">— + 2 bots</span></button>
+    <button class="btn btn-p" onclick="pickMode(3)">3 PLAYERS <span style="opacity:.5;font-size:.7rem;letter-spacing:1px">— + 1 bot</span></button>
+    <button class="btn btn-p" onclick="pickMode(4)">4 PLAYERS <span style="opacity:.5;font-size:.7rem;letter-spacing:1px">— no bots</span></button>
+    <button class="btn btn-s" onclick="go('sLobby')">BACK</button>
+  </div>
+</div>
+
+<!-- NAME ENTRY -->
+<div class="screen" id="sName">
+  <div class="logo" style="font-size:2.2rem">Donkey Who</div>
+  <div class="logo-sub" id="sNameSub" style="margin-bottom:28px"></div>
+  <div style="width:100%;max-width:300px;margin-bottom:24px">
+    <div class="ilbl">YOUR NAME</div>
+    <input class="ni" id="pname" maxlength="12" placeholder="PLAYER" oninput="this.value=this.value.toUpperCase()">
+  </div>
+  <div class="btn-group">
+    <button class="btn btn-p" id="sNameBtn" onclick="confirmName()">CONTINUE</button>
+    <button class="btn btn-s" onclick="go('sMode')">BACK</button>
+  </div>
+</div>
+
+<!-- JOIN -->
+<div class="screen" id="sJoin">
+  <div class="logo" style="font-size:2.2rem">Donkey Who</div>
+  <div class="logo-sub" style="margin-bottom:36px">JOIN GAME</div>
+  <div style="width:100%;max-width:300px;margin-bottom:12px">
+    <div class="ilbl">YOUR NAME</div>
+    <input class="ni" id="jname" maxlength="12" placeholder="PLAYER" oninput="this.value=this.value.toUpperCase()">
+  </div>
+  <div style="width:100%;max-width:300px;margin-bottom:24px">
+    <div class="ilbl">ROOM CODE</div>
+    <input class="ni" id="jcode" maxlength="4" placeholder="XXXX" oninput="this.value=this.value.toUpperCase()">
+  </div>
+  <div class="btn-group">
+    <button class="btn btn-p" onclick="joinRoom()">JOIN</button>
+    <button class="btn btn-s" onclick="go('sLobby')">BACK</button>
+  </div>
+</div>
+
+<!-- WAIT -->
+<div class="screen" id="sWait">
+  <div class="rtitle">ROOM CODE</div>
+  <div class="rcode" id="rcd">----</div>
+  <div class="smsg" id="wmsg">Share this code with your friends</div>
+  <div class="plist" id="wlist"></div>
+  <div class="btn-group" style="max-width:300px">
+    <button class="btn btn-p" id="sbtn" onclick="hostStart()" style="display:none">START GAME</button>
+    <button class="btn btn-s" onclick="location.reload()">LEAVE</button>
+  </div>
+</div>
+
+<!-- HOW TO PLAY -->
+<div class="screen" id="sHowTo" style="justify-content:flex-start;padding:24px 20px 48px;overflow-y:auto;">
+  <div class="htp">
+    <div class="htp-title">How to Play</div>
+    <div class="htp-sub">DONKEY WHO — FULL RULES</div>
+
+    <!-- GOAL -->
+    <div class="htp-section">
+      <div class="htp-h">🫏 THE GOAL</div>
+      <div class="htp-tip" style="margin-bottom:0">
+        Be one of the first to empty your hand. The <strong>last player</strong> still holding cards when everyone else has finished is <strong>THE DONKEY</strong> and loses. Everyone else wins — 1st out wins the most!
+      </div>
+    </div>
+
+    <!-- SETUP -->
+    <div class="htp-section">
+      <div class="htp-h">🎴 SETUP</div>
+      <div class="htp-item"><div class="htp-icon">👥</div><div class="htp-text">4 players. Each player gets <strong>13 playing cards</strong> and <strong>1 special card</strong>. The remaining 12 special cards go in a pile in the middle.</div></div>
+      <div class="htp-item"><div class="htp-icon">🃏</div><div class="htp-text">Playing cards come in <strong>4 colours</strong> — Blue, Red, Green, Purple — numbered <strong>1 to 13</strong>.</div></div>
+      <div class="htp-item"><div class="htp-icon">💙</div><div class="htp-text">The player holding <strong>Blue 13</strong> always goes first.</div></div>
+    </div>
+
+    <!-- ROUND -->
+    <div class="htp-section">
+      <div class="htp-h">🔄 HOW A ROUND WORKS</div>
+      <div class="htp-item"><div class="htp-icon">1️⃣</div><div class="htp-text">The starting player plays <strong>any card</strong> face up. That card's colour becomes the <strong>round colour</strong> — for example Blue.</div></div>
+      <div class="htp-item"><div class="htp-icon">2️⃣</div><div class="htp-text">Going clockwise, every other player <strong>must</strong> play a card of the <strong>same colour</strong>. You can play any number — high or low, your choice.</div></div>
+      <div class="htp-item"><div class="htp-icon">3️⃣</div><div class="htp-text">Once every player has put a card down, <strong>all cards are discarded</strong> — nobody picks them up. The player who played the <strong>highest number</strong> that round must start the next round.</div></div>
+      <div class="htp-tip">
+        ⚠️ <strong>Starting a round is a disadvantage!</strong> You go first blind — you don't know what anyone else will play. Try to avoid ending up with the highest card.
+      </div>
+    </div>
+
+    <!-- DONK -->
+    <div class="htp-section">
+      <div class="htp-h">💥 THE DONK</div>
+      <div class="htp-item"><div class="htp-icon">😱</div><div class="htp-text"><strong>If you have NO cards in the round colour</strong>, you cannot play normally. Instead you must <strong>DONK</strong> — play any card from your hand on top of the pile.</div></div>
+      <div class="htp-item"><div class="htp-icon">🎯</div><div class="htp-text">When a DONK happens, whoever played the <strong>highest card in that round picks up ALL cards</strong> on the table — including the DONK card. Their hand gets much bigger!</div></div>
+      <div class="htp-item"><div class="htp-icon">🛑</div><div class="htp-text"><strong>Only ONE DONK per round.</strong> The round ends the moment someone DONKs. The player who got DONKed starts the next round.</div></div>
+      <div class="htp-item"><div class="htp-icon">🧠</div><div class="htp-text"><strong>Remember who DONKs!</strong> If someone DONKs on Blue, it means they have zero Blue cards. Every time you play Blue in future, they'll have to DONK again. Use this to plan your attacks!</div></div>
+      <div class="htp-tip">
+        💡 <strong>Smart play:</strong> Try to get rid of colours you have only 1 or 2 of early. Once those are gone, you can freely DONK when that colour comes up — sending the problem to someone else!
+      </div>
+    </div>
+
+    <!-- LEAVING -->
+    <div class="htp-section">
+      <div class="htp-h">🚪 FINISHING & LEAVING</div>
+      <div class="htp-item"><div class="htp-icon">🎉</div><div class="htp-text">If you play your <strong>last card</strong> in a round and the round ends without you getting DONKed — you leave the game! You're a winner 🏆. The game continues without you.</div></div>
+      <div class="htp-item"><div class="htp-icon">😬</div><div class="htp-text"><strong>BUT</strong> — if you play your last card and someone DONKs you in that same round, you must pick up all those cards and <strong>keep playing</strong>. You can't escape a DONK!</div></div>
+      <div class="htp-item"><div class="htp-icon">🏁</div><div class="htp-text">When a player finishes, the remaining players carry on clockwise. The last person left is <strong>The Donkey</strong> 🫏.</div></div>
+    </div>
+
+    <!-- SPECIAL CARDS OVERVIEW -->
+    <div class="htp-section">
+      <div class="htp-h">✨ SPECIAL CARDS — OVERVIEW</div>
+      <div class="htp-item"><div class="htp-icon">✨</div><div class="htp-text">Every player holds <strong>1 special card</strong> at a time, separate from their playing cards. After you use yours, you draw a replacement from the pile at the end of the round — in the order players used them that round. <strong>Once the pile runs out, no more replacements.</strong> There are only 16 special cards total so use them wisely!</div></div>
+      <div class="htp-item"><div class="htp-icon">👁️</div><div class="htp-text">You can see whether your opponents <strong>have or don't have</strong> a special card, but you <strong>cannot</strong> see which one they're holding — that's secret until played!</div></div>
+    </div>
+
+    <!-- JJ -->
+    <div class="htp-section">
+      <div class="htp-h" style="color:#B07FE8">🔮 JACKASS JINX (JJ)</div>
+      <div class="htp-item"><div class="htp-icon">⏰</div><div class="htp-text"><strong>When:</strong> Only when you have just been DONKed.</div></div>
+      <div class="htp-item"><div class="htp-icon">⚡</div><div class="htp-text"><strong>What it does:</strong> Reverses the DONK back to the person who DONKed you. Now <strong>they</strong> have to pick up all the cards instead of you!</div></div>
+      <div class="htp-item"><div class="htp-icon">🔄</div><div class="htp-text"><strong>Can they counter?</strong> Yes — if the DONKer also has a Jackass Jinx, they can play it straight back at you. But that's it — the chain stops there. If it comes back to you a second time, <strong>you pick up the cards</strong>.</div></div>
+      <div class="htp-item"><div class="htp-icon">🛑</div><div class="htp-text"><strong>Rule:</strong> The JJ chain can only go back and forth <strong>once each</strong>. No more than two JJs in a row.</div></div>
+    </div>
+
+    <!-- HH -->
+    <div class="htp-section">
+      <div class="htp-h" style="color:#FFB3B3">🛑 HOOF HALT (HH)</div>
+      <div class="htp-item"><div class="htp-icon">⏰</div><div class="htp-text"><strong>When:</strong> Only when you have just been DONKed — including after a Jackass Jinx has bounced the DONK to you.</div></div>
+      <div class="htp-item"><div class="htp-icon">⚡</div><div class="htp-text"><strong>What it does:</strong> Completely cancels the DONK. All cards on the table go to the discard pile — <strong>nobody picks them up.</strong></div></div>
+      <div class="htp-item"><div class="htp-icon">⚠️</div><div class="htp-text"><strong>The trade-off:</strong> The player who used Hoof Halt <strong>must start</strong> the next round. That's the price for cancelling the DONK.</div></div>
+      <div class="htp-item"><div class="htp-icon">💡</div><div class="htp-text"><strong>Special case:</strong> If the Hoof Halt player has no cards left after cancelling, they're finished and the next active player clockwise from them starts the round instead.</div></div>
+    </div>
+
+    <!-- SS -->
+    <div class="htp-section">
+      <div class="htp-h" style="color:var(--gold)">🔄 SADDLE SWITCH (SS)</div>
+      <div class="htp-item"><div class="htp-icon">⏰</div><div class="htp-text"><strong>When:</strong> Only at the <strong>very start of a round</strong>, before any playing cards have been put down.</div></div>
+      <div class="htp-item"><div class="htp-icon">⚡</div><div class="htp-text"><strong>What it does:</strong> You choose another player to start the round instead of you. They must now go first.</div></div>
+      <div class="htp-item"><div class="htp-icon">🔄</div><div class="htp-text"><strong>Can they counter?</strong> Yes — if they also have a Saddle Switch, they can redirect it to anyone they choose, including back to you. But the chain stops after one exchange — if it comes back to you, you start the round.</div></div>
+      <div class="htp-item"><div class="htp-icon">🛑</div><div class="htp-text"><strong>Important rule:</strong> A Saddle Switch <strong>CANNOT</strong> be played after a Bray Break has been used to start the round. Once someone has played a Bray Break, it's too late for a Saddle Switch.</div></div>
+    </div>
+
+    <!-- BB -->
+    <div class="htp-section">
+      <div class="htp-h" style="color:#70F090">⏭️ BRAY BREAK (BB)</div>
+      <div class="htp-item"><div class="htp-icon">⏰</div><div class="htp-text"><strong>When:</strong> At any point during a round — whether you're starting it, in the middle, or near the end.</div></div>
+      <div class="htp-item"><div class="htp-icon">⚡</div><div class="htp-text"><strong>What it does:</strong> You skip your turn completely. You don't have to play a card this round at all.</div></div>
+      <div class="htp-item"><div class="htp-icon">🔗</div><div class="htp-text"><strong>Can others chain it?</strong> Yes! Multiple players can play Bray Break in the same round. If Player 1, 2 and 3 all Bray Break, only Player 4 plays a card — and that card is safely discarded with no risk.</div></div>
+      <div class="htp-item"><div class="htp-icon">🛑</div><div class="htp-text"><strong>Rules:</strong>
+        <br/>• You <strong>cannot</strong> Bray Break if you would be the <strong>last person</strong> left to play — someone must play a card.
+        <br/>• A Saddle Switch <strong>cannot</strong> be played after a Bray Break has started the round.
+        <br/>• A Bray Break <strong>can</strong> be played after a Saddle Switch chain has finished.
+      </div></div>
+    </div>
+
+    <!-- TIPS -->
+    <div class="htp-section">
+      <div class="htp-h">🌟 QUICK STRATEGY GUIDE</div>
+      <div class="htp-item"><div class="htp-icon">🔥</div><div class="htp-text"><strong>Play high cards early.</strong> In the first few rounds, play your 10s, 11s, 12s and 13s. High cards force you to start rounds later when it's much riskier.</div></div>
+      <div class="htp-item"><div class="htp-icon">🎨</div><div class="htp-text"><strong>Clear out your weak colours.</strong> If you only have 1 or 2 cards of a colour, lead with that colour or play those cards when you can. Once they're gone, you can freely DONK on that colour.</div></div>
+      <div class="htp-item"><div class="htp-icon">👀</div><div class="htp-text"><strong>Track the DONKs.</strong> Every DONK tells you something. Write it in your head — Player 2 has no Red, Player 3 has no Green. Use that to target them!</div></div>
+      <div class="htp-item"><div class="htp-icon">🔮</div><div class="htp-text"><strong>Save JJ and HH.</strong> These are your lifesavers. Don't waste them — wait until someone DONKs you with a big pile of cards, then strike!</div></div>
+      <div class="htp-item"><div class="htp-icon">🔄</div><div class="htp-text"><strong>Use SS and BB to cycle.</strong> If you have a Saddle Switch or Bray Break, you can use them just to get a new special card from the pile — hoping to get a JJ or HH for later.</div></div>
+    </div>
+
+    <div class="htp-tip">
+      🫏 <strong>One last thing:</strong> When someone gets DONKed and picks up cards — those are the cards played that round, including the DONK card. It can be a lot! That's why avoiding a DONK is so important.
+    </div>
+
+    <div style="margin-top:24px">
+      <button class="btn btn-p" onclick="go('sLobby')" style="width:100%">GOT IT — LET'S PLAY! 🎉</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="gs">
+  <div class="gh" style="justify-content:space-between">
+    <button onclick="confirmLeave()" style="background:none;border:none;color:var(--gl);opacity:.5;font-size:1.1rem;cursor:pointer;padding:4px 8px">✕</button>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+      <div class="gt">Donkey Who</div>
+      <div class="grnd" id="grnd">Round 1</div>
+    </div>
+    <button id="pauseBtn" onclick="togglePause()" style="background:none;border:none;color:var(--gl);opacity:.5;font-size:1.1rem;cursor:pointer;padding:4px 8px">⏸</button>
+  </div>
+  <div class="gtable">
+    <div class="oprow" id="oprow"></div>
+    <div class="ctr">
+      <div class="cbadge" id="cbadge">PLAY ANY CARD TO START</div>
+      <div class="prow" id="prow">
+        <div class="pslot" id="pslot-0"></div>
+        <div class="pslot" id="pslot-1"></div>
+        <div class="pslot" id="pslot-2"></div>
+        <div class="pslot" id="pslot-3"></div>
+      </div>
+      <!-- Special pile + active special cards below in a horizontal row -->
+      <div class="sp-piles-row">
+        <div class="sp-pile-block">
+          <div class="sp-card-back" id="spPileBack">
+            <div class="sp-back-dw">DW</div>
+            <div class="sp-back-sub">SPECIALS</div>
+          </div>
+          <div class="sp-pile-count"><span id="spPileNum">12</span> left</div>
+          <div id="activeSpCards" style="display:flex;flex-direction:row;justify-content:center;align-items:flex-start;gap:6px;flex-wrap:wrap;margin-top:4px;"></div>
+        </div>
+      </div>
+    </div>
+    <!-- LAST ROUND SUMMARY -->
+    <div style="display:flex;justify-content:center;flex-shrink:0;">
+      <div class="last-round hidden" id="lastRound">
+        <div class="lr-title" id="lrTitle">LAST ROUND</div>
+        <div class="lr-cards" id="lrCards"></div>
+        <div class="lr-outcome" id="lrOutcome"></div>
+      </div>
+    </div>
+    <div class="glog" id="glog">Welcome to Donkey Who!</div>
+    <!-- Pending DONK response (shown inline when DONKed) -->
+    <div class="donk-response" id="donkResponse">
+      <div class="dr-title" id="drTitle">💥 You got DONKed!</div>
+      <div class="dr-btns" id="drBtns"></div>
+    </div>
+  <div class="my-turn-bar hidden" id="turnBar">⭐ YOUR TURN</div>
+  <div class="abar">
+    <button class="bplay" id="bpl" onclick="doPlay()" disabled>PLAY CARD</button>
+    <button class="bdonk" id="bdk" onclick="doDonk()" disabled>DONK!</button>
+  </div>
+  <div class="ha">
+    <div class="htop">
+      <div class="hlbl">MY HAND</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="hcnt" id="hcnt">13 cards</div>
+      </div>
+    </div>
+    <div class="htabs" id="htabs"></div>
+    <!-- Playing cards + special card side by side -->
+    <div class="hand-row">
+      <div class="crow" id="myhand"></div>
+      <div class="sp-slot" id="spSlot">
+        <div class="sp-slot-lbl">SPECIAL</div>
+        <div id="spCardEl"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DRAMATIC EVENT OVERLAY -->
+<div class="drama-ov" id="dramaOv">
+  <div class="drama-bg"></div>
+  <div class="drama-card" id="dramaCard">
+    <div class="drama-emoji" id="dramaEmoji"></div>
+    <div class="drama-title" id="dramaTitle"></div>
+    <div class="drama-sub" id="dramaSub"></div>
+  </div>
+</div>
+
+<!-- PAUSE OVERLAY -->
+<div class="pause-ov" id="pauseOv">
+  <div class="pause-title">⏸ PAUSED</div>
+  <div style="font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:2px;opacity:.5;margin-bottom:8px" id="pauseHostMsg"></div>
+  <button class="btn btn-p" id="resumeBtn" onclick="togglePause()" style="max-width:260px;width:100%">▶ RESUME</button>
+  <button class="btn btn-s" onclick="confirmLeave()" style="max-width:260px;width:100%">LEAVE GAME</button>
+</div>
+
+<!-- LEAVE CONFIRM OVERLAY -->
+<div class="leave-ov" id="leaveOv">
+  <div class="leave-title">LEAVE THE GAME?</div>
+  <div style="font-family:'Cinzel',serif;font-size:.65rem;opacity:.5;letter-spacing:1px;text-align:center">You'll be removed from the current game.</div>
+  <div style="display:flex;gap:12px;margin-top:8px;width:100%;max-width:260px">
+    <button class="btn btn-s" onclick="cancelLeave()" style="flex:1">CANCEL</button>
+    <button class="btn btn-p" onclick="leaveGame()" style="flex:1;background:linear-gradient(135deg,#8B1A1A,#4A0A0A)">LEAVE</button>
+  </div>
+</div>
+
+<!-- END SCREEN -->
+<div class="eov" id="eov">
+  <div class="donkey-title">🫏 THE DONKEY IS…</div>
+  <div class="donkey-name" id="donkeyName"></div>
+  <div class="winners-title">WINNERS</div>
+  <div class="winners-list" id="winnersList"></div>
+  <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:260px">
+    <button class="btn btn-p" id="rematchBtn" onclick="doRematch()" style="width:100%">🔄 REMATCH</button>
+    <button class="btn btn-s" onclick="location.reload()" style="width:100%">MAIN MENU</button>
+  </div>
+</div>
+
+<!-- Firebase via REST API — no SDK needed -->
+<script>
+const DB_URL='https://dw-game-709d6-default-rtdb.europe-west1.firebasedatabase.app';
+let _polls={}; // url -> {timer, lastVal, cbs}
+
+function fbGet(path){
+  return fetch(`${DB_URL}/${path}.json`)
+    .then(r=>{
+      if(!r.ok) console.error('fbGet failed:',r.status,r.statusText,path);
+      return r.json();
+    })
+    .catch(e=>{console.error('fbGet error:',e,path);return null;});
+}
+function fbSet(path,val){
+  return fetch(`${DB_URL}/${path}.json`,{method:'PUT',body:JSON.stringify(val),headers:{'Content-Type':'application/json'}})
+    .then(r=>{
+      if(!r.ok) r.text().then(t=>console.error('fbSet failed:',r.status,t,path));
+      return r;
+    })
+    .catch(e=>{console.error('fbSet error:',e,path);});
+}
+function fbUpdate(path,val){
+  return fetch(`${DB_URL}/${path}.json`,{method:'PATCH',body:JSON.stringify(val),headers:{'Content-Type':'application/json'}})
+    .then(r=>{
+      if(!r.ok) r.text().then(t=>console.error('fbUpdate failed:',r.status,t,path));
+      return r;
+    })
+    .catch(e=>{console.error('fbUpdate error:',e,path);});
+}
+function fbDelete(path){
+  return fetch(`${DB_URL}/${path}.json`,{method:'DELETE'}).catch(()=>{});
+}
+function fbOn(path,cb){
+  const poll=async()=>{
+    const val=await fbGet(path);
+    if(!_polls[path]) return;
+    const newSeq=val?._seq ?? val?._ts ?? JSON.stringify(val);
+    if(newSeq!==_polls[path].lastVal){
+      console.log('[DW] poll fire: path='+path+' newSeq='+newSeq+' cbs='+_polls[path].cbs.length);
+      _polls[path].lastVal=newSeq;
+      _polls[path].cbs.forEach(fn=>fn({val:()=>val}));
+    }
+  };
+  if(_polls[path]){
+    _polls[path].cbs.push(cb);
+    // Don't fire immediately — next poll interval will fire if data changed
+    return;
+  }
+  // New poll — fire immediately once, then poll every 500ms
+  _polls[path]={timer:null,lastVal:'__init__',cbs:[cb]};
+  // Use a flag so the immediate fire and first poll don't both fire
+  let _initialFired=false;
+  fbGet(path).then(val=>{
+    if(!_polls[path]) return;
+    const newSeq=val?._seq ?? val?._ts ?? JSON.stringify(val);
+    _polls[path].lastVal=newSeq;
+    _initialFired=true;
+    cb({val:()=>val});
+  });
+  const pollFn=async()=>{
+    const val=await fbGet(path);
+    if(!_polls[path]) return;
+    const newSeq=val?._seq ?? val?._ts ?? JSON.stringify(val);
+    if(!_initialFired){
+      // Initial fetch hasn't returned yet — fire now and let initial fetch dedup
+      _initialFired=true;
+      _polls[path].lastVal=newSeq;
+      _polls[path].cbs.forEach(fn=>fn({val:()=>val}));
+    } else if(newSeq!==_polls[path].lastVal){
+      console.log('[DW] poll fire: path='+path+' newSeq='+newSeq);
+      _polls[path].lastVal=newSeq;
+      _polls[path].cbs.forEach(fn=>fn({val:()=>val}));
+    }
+  };
+  _polls[path].timer=setInterval(pollFn,500);
+}
+function fbOff(path){
+  if(_polls[path]){
+    clearInterval(_polls[path].timer);
+    delete _polls[path];
+  }
+}
+
+// db object matching the API used in game code
+let db={
+  ref(path){
+    return{
+      set:(val)=>fbSet(path,val),
+      update:(val)=>fbUpdate(path,val),
+      remove:()=>fbDelete(path),
+      once:(ev,cb)=>fbGet(path).then(val=>cb({val:()=>val})),
+      on:(ev,cb)=>fbOn(path,cb),
+      off:()=>fbOff(path),
+      onDisconnect:()=>({remove:()=>{},set:()=>{}}),
+      child:(sub)=>db.ref(path+'/'+sub)
+    };
+  }
+};
+</script>
+<script>
+// ══════════════════════════════════════
+// DATA
+// ══════════════════════════════════════
+const SUITS=['blue','red','green','purple'];
+const EM={
+  blue:  ['🐴','😴','🧘','🫐','🌾','🛞','🩹','🌿','💰','🪵','🛒','🔥','🐮'],
+  red:   ['✍️','😴','🥋','🍎','🌾','🛞','🤕','😪','💼','🪓','🛻','🔧','🪣'],
+  green: ['🍃','🏖️','😂','🍏','🌟','🛞','🤕','🌾','💼','🪵','🛒','🚜','🌧️'],
+  purple:['🪶','🏖️','😊','🍇','🌾','🛞','🤕','😱','💼','🪵','🚛','🚜','🌧️']
+};
+const SCLS ={blue:'sb',red:'sr',green:'sg',purple:'spu'};
+const CBCLS={blue:'cb',red:'cr',green:'cg',purple:'cp'};
+
+const SPDATA=[
+  {id:'JJ',name:'JACKASS JINX', abbr:'JJ',emoji:'🔮',desc:'Reverse the DONK back to whoever hit you. They can counter with their own JJ once.'},
+  {id:'HH',name:'HOOF HALT',    abbr:'HH',emoji:'🛑',desc:'Cancel the DONK — all cards go to discard. But YOU must start the next round.'},
+  {id:'SS',name:'SADDLE SWITCH',abbr:'SS',emoji:'🔄',desc:'Force another player to start the round instead of you. They can counter with their own SS.'},
+  {id:'BB',name:'BRAY BREAK',   abbr:'BB',emoji:'⏭️',desc:'Skip your turn this round. Cannot be played as the last active player.'},
+];
+const SP_BY_ID=Object.fromEntries(SPDATA.map(s=>[s.id,s]));
+
+function mkDeck(){const d=[];for(const s of SUITS)for(let n=1;n<=13;n++)d.push({suit:s,num:n,id:`${s}-${n}`,type:'play'});return d;}
+function mkSpecialDeck(){
+  const d=[];
+  for(const sp of SPDATA) for(let i=0;i<4;i++) d.push({id:`${sp.id}-${i}`,type:'special',sid:sp.id,name:sp.name,abbr:sp.abbr,emoji:sp.emoji,desc:sp.desc});
+  return d;
+}
+function shuf(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=0|Math.random()*(i+1);[r[i],r[j]]=[r[j],r[i]];}return r;}
+function dealAll(n){
+  // Deal cards one at a time round-robin to ensure perfectly even distribution
+  const deck=shuf(mkDeck());
+  const hands=Array.from({length:n},()=>[]);
+  // Each player gets exactly 13 cards
+  for(let i=0;i<deck.length;i++) hands[i%n].push(deck[i]);
+  const specials=shuf(mkSpecialDeck());
+  const spHands=Array.from({length:n},()=>null);
+  for(let i=0;i<n;i++) spHands[i]=specials[i];
+  const pile=specials.slice(n);
+  return{hands,spHands,pile};
+}
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let G=null,myI=0,botMode=false,sel=null,hf='all',selSp=null;
+let isHost=false,myName='',rcode='',wplayers=[];
+let donkTimer=null;
+// Special card modal state
+let spModal={open:false,context:null,card:null,targetPi:null};
+
+// ══════════════════════════════════════
+// NAV
+// ══════════════════════════════════════
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+// ══════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════
+const BOT_NAMES=['BELLA 🤖','CHARLIE 🤖','DUKE 🤖'];
+let selectedMode=1; // number of human players
+
+function pickMode(n){
+  selectedMode=n;
+  const subs={1:'1 PLAYER vs 3 BOTS',2:'2 PLAYERS + 2 BOTS',3:'3 PLAYERS + 1 BOT',4:'4 PLAYERS'};
+  document.getElementById('sNameSub').textContent=subs[n];
+  document.getElementById('pname').value='';
+  go('sName');
+}
+
+function confirmName(){
+  myName=document.getElementById('pname').value.trim().toUpperCase()||'PLAYER';
+  if(selectedMode===1){
+    // Solo vs 3 bots — start immediately
+    botMode=true; myI=0;
+    initGame([{name:myName,bot:false},{name:BOT_NAMES[0],bot:true},{name:BOT_NAMES[1],bot:true},{name:BOT_NAMES[2],bot:true}]);
+  } else if(selectedMode===4){
+    // 4 humans — host a room, wait for 3 more
+    botMode=false;
+    createRoom();
+  } else if(selectedMode===2){
+    // 2 humans + 2 bots — host, wait for 1 more then fill with bots
+    botMode=false;
+    createRoom();
+  } else if(selectedMode===3){
+    // 3 humans + 1 bot — host, wait for 2 more then fill with bot
+    botMode=false;
+    createRoom();
+  }
+}
+
+function startBots(){
+  // Legacy — now handled by confirmName
+  myName=document.getElementById('pname')?.value.trim().toUpperCase()||'PLAYER';
+  botMode=true; myI=0;
+  initGame([{name:myName,bot:false},{name:BOT_NAMES[0],bot:true},{name:BOT_NAMES[1],bot:true},{name:BOT_NAMES[2],bot:true}]);
+}
+function genCode(){return Math.random().toString(36).slice(2,6).toUpperCase();}
+
+// ── FIREBASE MULTIPLAYER ──
+let fbRoom=null;
+let fbListeners=[];
+
+function cleanupRoom(){
+  // Stop all polls
+  Object.keys(_polls).forEach(path=>fbOff(path));
+  fbListeners=[];
+  if(fbRoom&&isHost) fbRoom.remove().catch(()=>{});
+  fbRoom=null;
+}
+
+function createRoom(){
+  if(!db){toast('Multiplayer unavailable — no internet connection');return;}
+  rcode=genCode(); isHost=true; myI=0;
+  wplayers=[{name:myName,slot:0}];
+  fbRoom=db.ref('rooms/'+rcode);
+  // Clean up room when host closes the page
+  window.onbeforeunload=()=>{ if(isHost&&fbRoom) fbRoom.remove(); };
+
+  // Write initial room state — use string keys for slots
+  fbRoom.set({
+    host:myName,
+    mode:selectedMode,
+    players:{p0:{name:myName,slot:0}},
+    status:'waiting'
+  }).then(()=>{
+  }).catch(e=>console.error('Room write failed:',e));
+
+  // Listen for players joining
+  const pRef=fbRoom.child('players');
+  pRef.on('value',snap=>{
+    const data=snap.val()||{};
+    wplayers=Object.values(data).sort((a,b)=>a.slot-b.slot);
+    updWait();
+  });
+  fbListeners.push(pRef);
+
+  // Listen for game start signal
+  // Host does not need a gameState listener — host writes state, never reads it back
+
+  // Listen for actions from other players
+  const aRef=fbRoom.child('action');
+  aRef.on('value',snap=>{
+    const data=snap.val();
+    if(!data||!isHost) return;
+    if(data.by===myName) return; // ignore own actions echoed back
+    applyAct(data.act, data.pi);
+    // post() is called by applyAct's internal logic — don't call it again here
+  });
+  fbListeners.push(aRef);
+
+  document.getElementById('rcd').textContent=rcode;
+  document.getElementById('wmsg').textContent=selectedMode>1?`Share code with ${selectedMode-1} more player${selectedMode>2?'s':''}…`:'';
+  updWait(); go('sWait');
+}
+
+function joinRoom(){
+  if(!db){toast('Multiplayer unavailable — no internet connection');return;}
+  myName=document.getElementById('jname').value.trim().toUpperCase()||'PLAYER';
+  const code=document.getElementById('jcode').value.trim().toUpperCase();
+  if(code.length!==4){toast('Enter a 4-letter room code');return;}
+  rcode=code; isHost=false;
+  fbRoom=db.ref('rooms/'+rcode);
+
+  // Debug: fetch the whole room and log it
+  fbGet('rooms/'+rcode).then(data=>{
+    if(!data){
+      toast('Room not found! Check the code and try again.');
+      fbRoom=null;
+      return;
+    }
+
+    // Register as a player — find next available slot
+    const existing=data.players||{};
+    const slots=Object.values(existing).map(p=>p.slot);
+    const mySlot=slots.length>0?Math.max(...slots)+1:1;
+    myI=mySlot;
+    fbRoom.child('players/p'+mySlot).set({name:myName,slot:mySlot});
+
+    // Listen for players list
+    const pRef=fbRoom.child('players');
+    pRef.on('value',snap3=>{
+      const d=snap3.val()||{};
+      wplayers=Object.values(d).sort((a,b)=>a.slot-b.slot);
+      updWait();
+    });
+    fbListeners.push(pRef);
+
+    // Listen for game start + state updates
+    const sRef=fbRoom.child('gameState');
+    const _seenEvts=new Set();
+    let _lastSeq=-1;
+    let _queuedState=null; // state to apply after _roundResolving hold ends
+
+    // Apply queued state after hold
+    function applyQueued(){
+      if(!_queuedState) return;
+      G=_queuedState; _queuedState=null;
+      render();
+      if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
+    }
+
+    sRef.on('value',snap4=>{
+      const d=snap4.val();
+      if(!d||!d._started) return;
+      if(d.slots&&d.slots[myName]!==undefined) myI=d.slots[myName];
+
+      const seq=d._seq||0;
+      console.log('[DW] Firebase fire: seq='+seq+' evt='+(d._evt?JSON.parse(d._evt).t:'none')+' lastSeq='+_lastSeq);
+      const newG=deserialiseG(d.state);
+      const wasOver=G&&G.over;
+
+      // First ever load
+      if(_lastSeq===-1){
+        _lastSeq=seq;
+        G=newG;
+        go('gs'); listenPause();
+        render();
+        if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
+        return;
+      }
+
+      // Check for new event
+      const evtKey=seq+'|'+(d._evt||'');
+      const isNewEvt=d._evt && seq>_lastSeq && !_seenEvts.has(evtKey);
+
+      if(isNewEvt){
+        _seenEvts.add(evtKey); _lastSeq=seq;
+        let evt=null;
+        try{ evt=JSON.parse(d._evt); }catch(e){}
+
+        if(evt&&evt.t==='ROUND_END'){
+          // During hold: keep showing current cards, queue new state for after
+          _roundResolving=true;
+          _queuedState=newG;
+          render(); // hides turnBar
+          handleRemoteEvt(evt, newG);
+          // After hold+discard, apply queued state
+          setTimeout(()=>{
+            discardCards(500).then(()=>{
+              _roundResolving=false;
+              applyQueued();
+            });
+          }, evt.hold||3000);
+        } else {
+          // Normal event: update state, delay render by flight time for CARD
+          G=newG;
+          if(!wasOver) {}
+          handleRemoteEvt(evt, G);
+          const delay=evt&&evt.t==='CARD'?440:50;
+          setTimeout(()=>{
+            render();
+            if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
+          }, delay);
+        }
+      } else if(seq>_lastSeq){
+        // State update, no event (e.g. new round after hold)
+        _lastSeq=seq;
+        if(_roundResolving){
+          _queuedState=newG;
+        } else {
+          G=newG;
+          render();
+          if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
+        }
+      }
+
+      if(d._rematch&&wasOver){
+        G=newG; _roundResolving=false; _queuedState=null;
+        document.getElementById('eov').classList.remove('show');
+        go('gs'); render();
+      }
+    });
+    fbListeners.push(sRef);
+
+    document.getElementById('rcd').textContent=rcode;
+    document.getElementById('wmsg').textContent='Joined! Waiting for host to start…';
+    go('sWait');
+  });
+}
+
+function hMsg(){} // unused — kept for safety
+function cMsg(){} // unused
+
+function hostStart(){
+  if(!isHost) return;
+  const humanSlots=wplayers.length;
+  const botsNeeded=4-humanSlots;
+  const allPlayers=wplayers.map(p=>({name:p.name,bot:false}));
+  for(let i=0;i<botsNeeded;i++) allPlayers.push({name:BOT_NAMES[i],bot:true});
+  botMode=botsNeeded>0;
+  initGame(allPlayers);
+  // Build slot map: name → myI index
+  const slots={};
+  wplayers.forEach(p=>{ slots[p.name]=p.slot; });
+  // Push game state and start signal to all clients
+  fbRoom.child('gameState').set({
+    state:serialiseG(G),
+    slots,
+    _started:true,
+    _ts:Date.now(),
+    _seq:0
+  });
+  // Listen for actions from clients — already registered in createRoom()
+  go('gs'); render();
+  if(G.pl[G.turn].bot) schedBot();
+}
+
+// Called by non-host players to send an action
+function sendAction(act){
+  if(isHost) return; // host applies directly
+  fbRoom.child('action').set({act, pi:myI, by:myName, _ts:Date.now()});
+}
+
+function updWait(){
+  const el=document.getElementById('wlist');
+  el.innerHTML='';
+  for(let i=0;i<4;i++){
+    const p=wplayers.find(x=>x.slot===i);
+    const d=document.createElement('div');
+    d.className='pslot'+(p?' f':'');
+    d.innerHTML=`<div class="pdot"></div><div class="pnt">${p?p.name:(i<selectedMode?'Waiting…':'Bot')}</div>`;
+    el.appendChild(d);
+  }
+  if(isHost&&wplayers.length>=selectedMode) document.getElementById('sbtn').style.display='block';
+}
+
+// ══════════════════════════════════════
+// GAME INIT
+// ══════════════════════════════════════
+function initGame(players){
+  const n=players.length;
+  const{hands,spHands,pile}=dealAll(n);
+  let si=0;
+  for(let i=0;i<n;i++)if(hands[i].some(c=>c.suit==='blue'&&c.num===13)){si=i;break;}
+  G={
+    pl:players.map((p,i)=>({
+      name:p.name, bot:p.bot||false,
+      hand:hands[i],        // playing cards
+      sp:spHands[i],        // current special card (null if none)
+      out:false, outPos:null,
+    })),
+    spPile:pile,            // remaining special cards
+    spDiscardCount:0,       // how many specials used total
+    turn:si,
+    col:null,
+    played:[],              // [{pi,card,isSpecial?,isDonk?}]
+    bbPis:[],               // players who played BB this round (skipped)
+    round:1,
+    log:`${players[si].name} has Blue 13 — they go first!`,
+    over:false, donkey:null, exitOrder:[],
+    missing:Array.from({length:n},()=>new Set()),
+    lastRound:null,
+    // Special card pending state
+    pendingDonk:null,       // {donkerPi, donkedPi, allCards} — waiting for JJ/HH response
+    pendingJJReversed:false,// true if JJ was already used once this donk chain
+    pendingSS:null,         // {originalPi, targetPi} — waiting for SS counter
+    spPlayedOrder:[],       // order specials were played this round (for draw order)
+    roundStarter:si,        // pi who started current round
+  };
+  sel=null; selSp=null; hf='all';
+  document.getElementById('htabs').innerHTML='';
+  go('gs'); render();
+  if(G.pl[G.turn].bot) schedBot();
+}
+
+// ══════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════
+function activePlayers(){return G.pl.filter(p=>!p.out);}
+
+// Immediately exit any player who has 0 cards and isn't already out.
+// ONLY safe to call after a round fully resolves — never mid-round.
+function sweepEmptyHands(){
+  G.pl.forEach((_,pi)=>{
+    if(!G.pl[pi].out && G.pl[pi].hand.length===0){
+      exitPlayer(pi);
+    }
+  });
+}
+function canPlay(card){return !G.col||card.suit===G.col;}
+function canDonkNow(pi){
+  if(G.turn!==pi||G.pl[pi].out)return false;
+  if(G.played.length===0||!G.col)return false;
+  if(G.pl[pi].hand.some(c=>c.suit===G.col))return false;
+  return true;
+}
+function currentHighEntry(){
+  const nd=G.played.filter(e=>!e.isDonk);
+  if(!nd.length)return null;
+  return nd.reduce((b,e)=>(!b||e.card.num>b.card.num)?e:b,null);
+}
+function nextActive(pi){
+  const n=G.pl.length;
+  for(let i=1;i<n;i++){
+    const idx=(pi+i)%n;
+    if(!G.pl[idx].out && G.pl[idx].hand.length>0) return idx;
+  }
+  return pi; // fallback: return self if no valid player found
+}
+// Mark a player as exited immediately — called as soon as their hand hits 0
+// after a clean play (not a DONK). Safe to call multiple times.
+function exitPlayer(pi){
+  if(G.pl[pi].out)return; // already out
+  G.pl[pi].out=true;
+  G.exitOrder.push(pi);
+  G.pl[pi].outPos=G.exitOrder.length;
+  toast(`🎉 ${G.pl[pi].name} is out! (${ordinal(G.exitOrder.length)} to finish)`,'tg');
+}
+
+// ══════════════════════════════════════
+// CORE LOGIC
+// ══════════════════════════════════════
+function applyAct(act,pi){
+  if(G.over)return;
+  // Special card actions don't require it to be your turn in the normal sense
+  if(act.t==='SP_SS')    {playSpecialSS(pi,act.targetPi);return;}
+  if(act.t==='SP_BB')    {playSpecialBB(pi);return;}
+  if(act.t==='SP_JJ')    {playSpecialJJ(pi);return;}
+  if(act.t==='SP_HH')    {playSpecialHH(pi);return;}
+  if(act.t==='SP_ACCEPT'){acceptDonk(pi);return;}
+  if(G.turn!==pi){toast("Not your turn!");return;}
+  if(_roundResolving){toast("Wait for the round to finish!");return;}
+  if(act.t==='P') playCard(pi,act.id);
+  else if(act.t==='D') donkCard(pi,act.id);
+}
+
+function playCard(pi,id){
+  const p=G.pl[pi];
+  const ci=p.hand.findIndex(c=>c.id===id);if(ci===-1)return;
+  const card=p.hand[ci];
+  if(!canPlay(card)){toast(`Must play a ${G.col.toUpperCase()} card!`);return;}
+
+  // Start flight animation BEFORE mutating state
+  // Calculate slot BEFORE push — this card will be at current non-donk count
+  const FLIGHT=420;
+  // Before push: calculate which slot this player occupies
+  // For first card, pi IS the starter so slot=0; otherwise use turn order
+  // targetSlot = pi's position in clockwise order from roundStarter
+  const targetSlot=(()=>{
+    const order=getClockwiseOrder(G.roundStarter,4);
+    const idx=order.indexOf(pi);
+    return idx>=0?idx:0;
+  })();
+  flyCardToCentre(pi, card, Math.min(3,targetSlot));
+  sfxCard();
+
+  // Mutate state but DON'T render yet — wait for animation to complete
+  p.hand.splice(ci,1);
+  if(!G.col)G.col=card.suit;
+  G.played.push({pi,card});
+  G.log=`${pname(pi)} played ${card.suit.toUpperCase()} ${card.num}`;
+  _pendingEvt={t:'CARD',pi,card:JSON.parse(JSON.stringify(card)),slot:Math.min(3,targetSlot)};
+
+  const activePisPlayed=new Set(G.played.filter(e=>!e.isDonk).map(e=>e.pi));
+  const stillMustPlay=G.pl.filter((p2,idx)=>{
+    if(p2.out) return false;
+    if(G.bbPis.includes(idx)) return false;
+    if(activePisPlayed.has(idx)) return false;
+    return true;
+  });
+
+  if(stillMustPlay.length===0){
+    _roundResolving=true;
+    sel=null; // deselect card immediately so play button disables
+    // Push CARD event immediately so non-host sees the card fly
+    if(isHost&&fbRoom&&wplayers.length>1){
+      _seq++;
+      fbRoom.child('gameState').update({state:serialiseG(G),_ts:Date.now(),_seq,_evt:JSON.stringify(_pendingEvt)});
+      _pendingEvt=null;
+    }
+    render(); // hide turnBar immediately — _roundResolving blocks it
+    // After flight lands, show last card properly then resolve
+    setTimeout(()=>{
+      render();
+      setTimeout(()=>resolveRound(), 100);
+    }, FLIGHT);
+    return;
+  } else {
+    G.turn=nextActive(pi);
+    let safety=0;
+    while((activePisPlayed.has(G.turn)||G.pl[G.turn].hand.length===0||G.bbPis.includes(G.turn))&&safety<G.pl.length){
+      G.turn=nextActive(G.turn);
+      safety++;
+    }
+  }
+
+  // Delay render/post until flight completes
+  setTimeout(()=>{ chkOver(); post(); }, FLIGHT);
+}
+
+function donkCard(pi,id){
+  const p=G.pl[pi];
+  if(!canDonkNow(pi)){
+    if(G.played.length===0)toast('No cards played yet!');
+    else if(!G.col)toast("Can't DONK on an open round!");
+    else toast("You have matching cards — can't DONK!");
+    return;
+  }
+  const ci=p.hand.findIndex(c=>c.id===id);if(ci===-1)return;
+  const card=p.hand[ci];
+
+  // Calculate target slot BEFORE push — it's the next available slot
+  const targetSlot2=(()=>{
+    const order=getClockwiseOrder(G.roundStarter,4);
+    const idx=order.indexOf(pi);
+    return idx>=0?idx:0;
+  })();
+  flyCardToCentre(pi, card, Math.min(3, targetSlot2));
+  sfxDonk();
+
+  p.hand.splice(ci,1);
+  G.played.push({pi,card,isDonk:true});
+  G.missing[pi].add(G.col);
+
+  const highEntry=currentHighEntry();
+  const tpi=highEntry.pi;
+  const allCards=G.played.map(e=>e.card);
+
+  // Set up pending DONK — DONKed player can respond with JJ or HH
+  G.pendingDonk={donkerPi:pi, donkedPi:tpi, allCards:[...allCards]};
+  G.pendingJJReversed=false;
+  G.log=`${pname(pi)} DONKed ${pname(tpi)}! ${G.pl[tpi].sp?`${pname(tpi)} can use JJ or HH…`:`${pname(tpi)} picks up ${allCards.length} cards!`}`;
+  animDonk();
+  showDrama('💥','DONK!',`${pname(pi)} → ${pname(tpi)}`,'#FFB3B3',1400);
+  _pendingEvt={t:'DONK',pi,tpi};
+
+  // Delay so donk card animation lands before resolving
+  const FLIGHT=420;
+  setTimeout(()=>{
+    if(!G.pl[tpi].sp){
+      resolveDonk(tpi);
+    } else {
+      post();
+      if(G.pl[tpi].bot) schedBotSpecial(tpi);
+    }
+  }, FLIGHT);
+}
+
+// DONKed (or re-DONKed after JJ) player accepts the pickup
+function acceptDonk(pi){
+  if(!G.pendingDonk)return;
+  const tpi=G.pendingDonk.donkedPi;
+  if(pi!==tpi){toast("Not your DONK to accept!");return;}
+  resolveDonk(tpi);
+}
+
+function resolveDonk(tpi){
+  if(!G.pendingDonk)return;
+  const{allCards}=G.pendingDonk;
+  G.pendingDonk=null;
+  G.pendingJJReversed=false;
+
+  // Save snapshot
+  const donkerPi=G.played.find(e=>e.isDonk)?.pi??tpi;
+  G.lastRound={
+    roundNum:G.round,
+    plays:G.played.map(e=>({...e})),
+    spPlays:G.spPlayedOrder.map(e=>({pi:e.pi,spSnap:e.snap})),
+    outcome:'donk',
+    donkerPi,
+    donkedPi:tpi,
+    pickedUpCards:[...allCards],
+  };
+
+  G.pl[tpi].out=false;
+  G.pl[tpi].hand.push(...allCards);
+  G.log=`${pname(tpi)} picks up ${allCards.length} cards!`;
+
+  sweepEmptyHands();
+  const starter = G.pl[tpi].out ? nextActive(tpi) : tpi;
+
+  // Capture pslot cards NOW before post()/render() clears them
+  const cardClones=[];
+  for(let s=0;s<4;s++){
+    const slot=document.getElementById('pslot-'+s);
+    const c=slot?slot.querySelector('.card'):null;
+    if(c){
+      const r=c.getBoundingClientRect();
+      const clone=c.cloneNode(true);
+      clone.style.cssText=`position:fixed;z-index:800;pointer-events:none;width:${r.width}px;height:${r.height}px;left:${r.left}px;top:${r.top}px;border-radius:8px;transition:none;`;
+      document.body.appendChild(clone);
+      cardClones.push({el:clone,r});
+    }
+  }
+
+  // Show drama then animate clones flying to the player's panel
+  _pendingEvt={t:'PICKUP',tpi,count:allCards.length};
+  showDrama('📥',`${pname(tpi)} picks up!`,`${allCards.length} cards!`,'#FFB3B3',1600);
+  if(cardClones.length){
+    const toEl=getPlayerEl(tpi);
+    const to=getElCenter(toEl);
+    setTimeout(()=>{
+      cardClones.forEach((item,i)=>{
+        setTimeout(()=>{
+          item.el.style.transition='left 450ms cubic-bezier(.4,0,.2,1),top 450ms cubic-bezier(.4,0,.2,1),transform 450ms,opacity 450ms';
+          item.el.style.left=(to.x-item.r.width/2)+'px';
+          item.el.style.top=(to.y-item.r.height/2)+'px';
+          item.el.style.transform='scale(.3)';
+          item.el.style.opacity='0';
+          setTimeout(()=>item.el.remove(),520);
+        },i*60);
+      });
+    },300);
+  }
+
+  showDonkOverlay(tpi,allCards);
+  drawSpecialsAfterRound();
+
+  G.played=[]; G.col=null; G.bbPis=[]; G.spPlayedOrder=[];
+  G.round++; G.turn=starter;
+  chkOver(); post();
+}
+
+// ── SPECIAL CARD: JACKASS JINX ──
+function playSpecialJJ(pi){
+  if(!G.pendingDonk){toast('No DONK to reverse!');return;}
+  const{donkerPi,donkedPi,allCards}=G.pendingDonk;
+  if(pi!==donkedPi&&pi!==donkerPi){toast("Can't use JJ now!");return;}
+  if(!G.pl[pi].sp||G.pl[pi].sp.sid!=='JJ'){toast("You don't have a Jackass Jinx!");return;}
+
+  consumeSpecial(pi);
+  sfxJJ();
+  const JJ_DRAMA=1600;
+  _pendingEvt={t:'JJ',pi};
+  showDrama('🔮','JACKASS JINX!',`${pname(pi)} reverses the DONK!`,'#B07FE8',JJ_DRAMA);
+
+  if(!G.pendingJJReversed){
+    G.pendingDonk={donkerPi:donkedPi, donkedPi:donkerPi, allCards};
+    G.pendingJJReversed=true;
+    G.log=`${pname(pi)} used Jackass Jinx — DONK reversed to ${pname(donkerPi)}!`;
+    post(); // render the updated state
+    if(!G.pl[donkerPi].sp){
+      // Delay pickup until drama finishes
+      setTimeout(()=>resolveDonk(donkerPi), JJ_DRAMA+100);
+    } else {
+      if(G.pl[donkerPi].bot) setTimeout(()=>schedBotSpecial(donkerPi), JJ_DRAMA+100);
+    }
+  } else {
+    const finalVictim=G.pendingDonk.donkerPi;
+    G.log=`${pname(pi)} countered with Jackass Jinx — ${pname(finalVictim)} picks up!`;
+    post();
+    setTimeout(()=>resolveDonk(finalVictim), JJ_DRAMA+100);
+  }
+}
+
+// ── SPECIAL CARD: HOOF HALT ──
+function playSpecialHH(pi){
+  if(!G.pendingDonk){toast('No DONK to cancel!');return;}
+  const{donkedPi,allCards}=G.pendingDonk;
+  if(pi!==donkedPi&&pi!==G.pendingDonk.donkerPi){toast("Can't use HH now!");return;}
+  if(!G.pl[pi].sp||G.pl[pi].sp.sid!=='HH'){toast("You don't have a Hoof Halt!");return;}
+
+  consumeSpecial(pi);
+  sfxHH();
+  const HH_DRAMA=1600;
+  _pendingEvt={t:'HH',pi};
+  showDrama('🛑','HOOF HALT!',`${pname(pi)} cancels the DONK!`,'#FFB3B3',HH_DRAMA);
+  post(); // render immediately so state is visible
+
+  // Snapshot
+  const safePlayed=(G.played||[]).map(e=>({...e}));
+
+  G.lastRound={
+    roundNum:G.round,
+    plays:safePlayed,
+    spPlays:G.spPlayedOrder.map(e=>({pi:e.pi,spSnap:e.snap})),
+    outcome:'hh',
+    hhPi:pi,
+    cancelledCards:[...allCards],
+  };
+
+  G.pendingDonk=null;
+  G.pendingJJReversed=false;
+
+  G.log=`${pname(pi)} used Hoof Halt — all ${allCards.length} cards discarded!`;
+
+  G.pl.forEach((_,idx)=>{if(!G.pl[idx].out&&G.pl[idx].hand.length===0)exitPlayer(idx);});
+
+  let nextStarter=pi;
+  if(G.pl[pi].out) nextStarter=nextActive(pi);
+  G.log+=` ${G.pl[nextStarter]?.name||'?'} starts next round.`;
+
+  drawSpecialsAfterRound();
+
+  // Wait for drama to finish, THEN animate discard and clear state
+  setTimeout(()=>{
+    discardCards(450).then(()=>{
+      G.played=[]; G.col=null; G.bbPis=[]; G.spPlayedOrder=[];
+      G.round++; G.turn=nextStarter; G.roundStarter=nextStarter;
+      chkOver(); post();
+    });
+  }, HH_DRAMA+100);
+}
+
+// ── SPECIAL CARD: SADDLE SWITCH ──
+function playSpecialSS(pi,targetPi){
+  // Can only be played to start a round (no playing cards on table yet, no BBs yet)
+  if(G.played.filter(e=>!e.isSpecial).length>0){toast("Saddle Switch can only be played at the start of a round!");return;}
+  if(G.bbPis.length>0){toast("Can't use Saddle Switch after a Bray Break!");return;}
+  if(G.pendingSS&&G.pendingSS.depth>=1){toast("SS chain already happened once!");return;}
+  if(!G.pl[pi].sp||G.pl[pi].sp.sid!=='SS'){toast("You don't have a Saddle Switch!");return;}
+  if(targetPi===pi||G.pl[targetPi].out||G.pl[targetPi].hand.length===0){toast("Invalid target!");return;}
+  if(pi!==G.turn&&!(G.pendingSS&&G.pendingSS.targetPi===pi)){toast("Not your turn to use SS!");return;}
+
+  consumeSpecial(pi);
+  sfxSpecial();
+  _pendingEvt={t:'SS',pi,targetPi};
+  showDrama('🔄','SADDLE SWITCH!',`${pname(pi)} makes ${pname(targetPi)} start!`,'#F0C060',1400);
+
+  G.pendingSS={originalPi:G.pendingSS?G.pendingSS.originalPi:pi, targetPi, depth:(G.pendingSS?.depth||0)+1};
+  G.log=`${pname(pi)} makes ${pname(targetPi)} start!`;
+  G.turn=targetPi;
+
+  if(!G.pl[targetPi].sp||G.pl[targetPi].sp.sid!=='SS'||G.pendingSS.depth>=1){
+    // Chain ends — targetPi starts the round
+    G.pendingSS=null;
+    G.roundStarter=targetPi;
+    G.log=`${pname(targetPi)} starts the round!`;
+    post();
+    if(G.pl[targetPi].bot) schedBot();
+  } else {
+    post();
+    if(G.pl[targetPi].bot) schedBotSpecial(targetPi);
+  }
+}
+
+// ── SPECIAL CARD: BRAY BREAK ──
+function playSpecialBB(pi){
+  if(G.pendingDonk){toast("Can't use BB while a DONK is pending!");return;}
+  if(G.pendingSS){toast("Can't use BB after Saddle Switch!");return;}
+  if(!G.pl[pi].sp||G.pl[pi].sp.sid!=='BB'){toast("You don't have a Bray Break!");return;}
+  if(pi!==G.turn){toast("Not your turn!");return;}
+
+  // Can't BB if you'd be the last active non-BB player who can actually play
+  const activeNonBB=G.pl.filter((_,idx)=>!G.pl[idx].out&&!G.bbPis.includes(idx)&&G.pl[idx].hand.length>0);
+  if(activeNonBB.length<=1){toast("Can't use BB — you're the last player!");return;}
+
+  consumeSpecial(pi);
+  G.bbPis.push(pi);
+  G.log=`${pname(pi)} used Bray Break — turn skipped!`;
+  sfxSpecial();
+  _pendingEvt={t:'BB',pi};
+  showDrama('⏭️','BRAY BREAK!',`${pname(pi)} skips!`,'#70F090',1200);
+
+  // Advance to next player who hasn't BB'd, isn't out, and has cards
+  G.turn=nextActive(pi);
+  let safety=0;
+  while((G.bbPis.includes(G.turn)||G.pl[G.turn].out||G.pl[G.turn].hand.length===0)&&safety<G.pl.length){
+    G.turn=nextActive(G.turn);
+    safety++;
+  }
+
+  // Check if round should end — everyone has either played, BB'd, or has no cards
+  const activePisPlayed=new Set(G.played.filter(e=>!e.isDonk).map(e=>e.pi));
+  const stillMustPlay=G.pl.filter((_,idx)=>
+    !G.pl[idx].out &&
+    !G.bbPis.includes(idx) &&
+    !activePisPlayed.has(idx) &&
+    G.pl[idx].hand.length>0
+  );
+  if(stillMustPlay.length===0){
+    _roundResolving=true;
+    resolveRound();
+    return;
+  }
+
+  post();
+  if(G.pl[G.turn].bot) schedBot();
+}
+
+// ── CONSUME A SPECIAL CARD ──
+// Saves a snapshot of the card BEFORE nulling, keyed by pi
+function consumeSpecial(pi){
+  const card=G.pl[pi].sp;
+  if(!card)return;
+  // Animate coin flying from player's special slot to active specials area
+  flySpecialToCentre(pi, card);
+  G.spPlayedOrder.push({pi, snap:{...card}});
+  G.spDiscardCount++;
+  G.pl[pi].sp=null;
+}
+
+// ── DRAW REPLACEMENTS AFTER ROUND ──
+function drawSpecialsAfterRound(){
+  for(const entry of G.spPlayedOrder){
+    const pi=entry.pi;
+    if(G.spPile.length>0){
+      G.pl[pi].sp=G.spPile.shift();
+    }
+  }
+  G.spPlayedOrder=[];
+}
+
+
+function resolveRound(){
+  // Sweep first — exit anyone with 0 cards immediately
+  sweepEmptyHands();
+
+  // Snapshot BEFORE any exits or clearing
+  const snap={
+    roundNum: G.round,
+    plays: G.played.map(e=>({...e})),
+    spPlays:G.spPlayedOrder.map(e=>({pi:e.pi,spSnap:e.snap})),
+    outcome: 'clean',
+    exitedPis: [],
+    nextStarterPi: null,
+  };
+
+  // Step 1: identify and exit anyone who played their last card this round
+  // (only non-DONK plays; DONKed player already picked cards up so they stay in)
+  const exitingThisRound=[];
+  G.played.forEach(e=>{
+    if(!e.isDonk && G.pl[e.pi].hand.length===0 && !G.pl[e.pi].out){
+      exitingThisRound.push(e.pi);
+    }
+  });
+  exitingThisRound.forEach(pi=>{
+    snap.exitedPis.push(pi);
+    exitPlayer(pi); // marks out, adds to exitOrder, shows toast
+  });
+
+  // Step 2: also catch any player who somehow has 0 cards and isn't marked out yet
+  // (defensive: catches edge cases like empty hand before their turn was skipped)
+  G.pl.forEach((p,pi)=>{
+    if(!p.out && p.hand.length===0){
+      snap.exitedPis.push(pi);
+      exitPlayer(pi);
+    }
+  });
+
+  // Step 3: find next round starter — player with highest card among those still active with cards
+  // Exclude BB players (they skipped, didn't play a card this round)
+  const remainingPlays=G.played.filter(e=>{
+    if(e.isDonk) return false;
+    if(G.pl[e.pi].out) return false;
+    if(G.pl[e.pi].hand.length===0) return false; // finished their hand — they're leaving
+    return true;
+  });
+  let nextStarter=null;
+  if(remainingPlays.length>0){
+    nextStarter=remainingPlays.reduce((b,e)=>(!b||e.card.num>b.card.num)?e:b,null).pi;
+  }
+  // Fallback: next active clockwise from the last player who played
+  if(nextStarter===null || G.pl[nextStarter].out || G.pl[nextStarter].hand.length===0){
+    const lastPlayed=G.played.filter(e=>!e.isDonk);
+    const lastPi=lastPlayed.length>0 ? lastPlayed[lastPlayed.length-1].pi : 0;
+    nextStarter=nextActive(lastPi);
+  }
+  snap.nextStarterPi=nextStarter;
+  G.lastRound=snap;
+
+  const exitNames=exitingThisRound.map(pi=>G.pl[pi].name).join(', ');
+  G.log=exitNames
+    ? `Round done. ${exitNames} finished! ${pname(nextStarter)} starts next.`
+    : `Round done — cards discarded. ${pname(nextStarter)} starts next.`;
+
+  // Snapshot the played row DOM BEFORE clearing G.played
+  // We delay post() so cards stay on screen for 3 full seconds
+  const HOLD=3000;
+  const DISCARD_DUR=500;
+
+  if(exitNames){
+    setTimeout(()=>showDrama('🎉',exitNames.split(',')[0].trim()+' is OUT!','Well played!','#70F090',1600), HOLD+200);
+  }
+
+  // Push ROUND_END event immediately so non-host starts their 3s hold at same time
+  if(isHost&&fbRoom&&wplayers.length>1){
+    _seq++;
+    fbRoom.child('gameState').update({state:serialiseG(G),_ts:Date.now(),_seq,_evt:JSON.stringify({t:'ROUND_END',hold:3000})});
+  }
+  // After hold, run discard animation then clear state and continue
+  setTimeout(()=>{
+    discardCards(500).then(()=>{
+      _roundResolving=false;
+      drawSpecialsAfterRound();
+      G.played=[];G.col=null;G.bbPis=[];G.spPlayedOrder=[];G.round++;G.turn=nextStarter;G.roundStarter=nextStarter;
+      chkOver();post();
+    });
+  }, HOLD);
+}
+
+function ordinal(n){return n===1?'1st':n===2?'2nd':n===3?'3rd':`${n}th`;}
+
+function chkOver(){
+  // Only count players who are formally marked out — don't use hand.length
+  // because a player with 0 cards mid-round hasn't officially exited yet
+  const active=G.pl.filter(p=>!p.out);
+  if(active.length===1){
+    G.over=true;
+    G.donkey=G.pl.indexOf(active[0]);
+    G.log=`🫏 ${G.pl[G.donkey].name} IS THE DONKEY!`;
+  }
+}
+
+let _seq=0;
+let _roundResolving=false;
+
+// Return perspective-aware name: "you" for myI, player name for others
+function pname(pi){
+  return pi===myI?'You':G.pl[pi].name;
+}
+// Perspective-aware log — called on each client with their own myI
+function plog(pi, action, rest=''){
+  return `${pname(pi)} ${action}${rest?(' '+rest):''}`;
+}
+
+function getClockwiseOrder(startPi, maxSlots){
+  // Walk clockwise by player index from startPi, skipping out players
+  const n=G.pl.length;
+  const order=[];
+  for(let i=0;i<n&&order.length<maxSlots;i++){
+    const idx=(startPi+i)%n;
+    if(!G.pl[idx].out) order.push(idx);
+  }
+  return order;
+}
+function serialiseG(g){
+  // Sets can't be JSON serialised — convert missing Sets to arrays
+  const out=JSON.parse(JSON.stringify(g));
+  out.missing=g.missing.map(s=>Array.from(s));
+  return JSON.stringify(out);
+}
+
+function deserialiseG(str){
+  const g=JSON.parse(str);
+  // Convert missing arrays back to Sets
+  g.missing=g.missing.map(a=>new Set(a));
+  return g;
+}
+
+let _pendingEvt=null; // set before calling post() to push event to non-host clients
+
+function post(){
+  render();
+  if(!_roundResolving&&!G.over&&!G.pendingDonk&&!G.pendingSS&&G.pl[G.turn]?.bot&&!G.pl[G.turn].out){
+    if(_dramaActive) _pendingBotAfterDrama=true;
+    else schedBot();
+  }
+  // Push updated state to Firebase if host and there are human non-host players
+  if(isHost&&fbRoom&&wplayers.length>1){
+    _seq++;
+    const update={state:serialiseG(G),_ts:Date.now(),_seq};
+    if(_pendingEvt){ update._evt=JSON.stringify(_pendingEvt); _pendingEvt=null; }
+    fbRoom.child('gameState').update(update);
+  } else {
+    _pendingEvt=null;
+  }
+}
+
+// ══════════════════════════════════════
+// NON-HOST EVENT HANDLER
+// Plays animations/drama that host already showed locally
+// ══════════════════════════════════════
+function handleRemoteEvt(evt, g){
+  if(!evt) return;
+  console.log('[DW] handleRemoteEvt: '+evt.t);
+  switch(evt.t){
+    case 'CARD':
+      sfxCard();
+      // Hide the destination slot so real card doesn't appear until ghost lands
+      const destSlot=document.getElementById('pslot-'+evt.slot);
+      if(destSlot) destSlot.style.visibility='hidden';
+      flyCardToCentre(evt.pi, evt.card, evt.slot);
+      setTimeout(()=>{ if(destSlot) destSlot.style.visibility=''; }, 420);
+      break;
+    case 'DONK':
+      sfxDonk(); animDonk();
+      showDrama('💥','DONK!',`${pname(evt.pi)} → ${pname(evt.tpi)}`,'#FFB3B3',1400);
+      break;
+    case 'PICKUP':
+      showDrama('📥',`${pname(evt.tpi)} picks up!`,`${evt.count} cards!`,'#FFB3B3',1600);
+      setTimeout(()=>{
+        const cardClones2=[];
+        for(let s=0;s<4;s++){
+          const slot=document.getElementById('pslot-'+s);
+          const c=slot?slot.querySelector('.card'):null;
+          if(c){
+            const r=c.getBoundingClientRect();
+            const clone=c.cloneNode(true);
+            clone.style.cssText=`position:fixed;z-index:800;pointer-events:none;width:${r.width}px;height:${r.height}px;left:${r.left}px;top:${r.top}px;border-radius:8px;transition:none;`;
+            document.body.appendChild(clone);
+            cardClones2.push({el:clone,r});
+          }
+        }
+        const toEl=getPlayerEl(evt.tpi);
+        const to=getElCenter(toEl);
+        cardClones2.forEach((item,i)=>{
+          setTimeout(()=>{
+            item.el.style.transition='left 450ms cubic-bezier(.4,0,.2,1),top 450ms cubic-bezier(.4,0,.2,1),transform 450ms,opacity 450ms';
+            item.el.style.left=(to.x-item.r.width/2)+'px';
+            item.el.style.top=(to.y-item.r.height/2)+'px';
+            item.el.style.transform='scale(.3)';
+            item.el.style.opacity='0';
+            setTimeout(()=>item.el.remove(),520);
+          },i*60);
+        });
+      },300);
+      break;
+    case 'JJ':
+      sfxJJ();
+      showDrama('🔮','JACKASS JINX!',`${pname(evt.pi)} reverses the DONK!`,'#B07FE8',1600);
+      break;
+    case 'HH':
+      sfxHH();
+      showDrama('🛑','HOOF HALT!',`${pname(evt.pi)} cancels the DONK!`,'#FFB3B3',1600);
+      setTimeout(()=>discardCards(450),1700);
+      break;
+    case 'SS':
+      sfxSpecial();
+      showDrama('🔄','SADDLE SWITCH!',`${pname(evt.pi)} makes ${pname(evt.targetPi)} start!`,'#F0C060',1400);
+      break;
+    case 'BB':
+      sfxSpecial();
+      showDrama('⏭️','BRAY BREAK!',`${pname(evt.pi)} skips!`,'#70F090',1200);
+      break;
+    case 'ROUND_END':
+      // Discard animation is handled by the listener after the hold
+      // Just show drama if someone finished
+      break;
+  }
+}
+let _ctx=null;
+function getCtx(){
+  if(!_ctx) _ctx=new(window.AudioContext||window.webkitAudioContext)();
+  if(_ctx.state==='suspended') _ctx.resume();
+  return _ctx;
+}
+function playTone(freq,type,dur,vol=0.3,delay=0){
+  try{
+    const ctx=getCtx();
+    const o=ctx.createOscillator();
+    const g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type=type;o.frequency.setValueAtTime(freq,ctx.currentTime+delay);
+    g.gain.setValueAtTime(vol,ctx.currentTime+delay);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+dur);
+    o.start(ctx.currentTime+delay);o.stop(ctx.currentTime+delay+dur);
+  }catch(e){}
+}
+function sfxCard(){
+  // Crisp card slap — short click + brief tone
+  playTone(320,'square',0.08,0.18);
+  playTone(180,'triangle',0.12,0.1,0.04);
+}
+function sfxDonk(){
+  // Heavy impact — low thud + alarm swell
+  playTone(80,'sawtooth',0.25,0.35);
+  playTone(160,'sawtooth',0.2,0.28,0.06);
+  playTone(240,'square',0.15,0.2,0.12);
+  playTone(60,'sine',0.4,0.3,0.0);
+}
+function sfxSpecial(){
+  // Magical coin spin — ascending chime
+  [523,659,784,1047].forEach((f,i)=>playTone(f,'sine',0.18,0.22,i*0.07));
+}
+function sfxJJ(){
+  // Reverse zap
+  playTone(800,'sawtooth',0.08,0.25);
+  playTone(600,'sawtooth',0.08,0.2,0.07);
+  playTone(400,'sawtooth',0.12,0.18,0.14);
+}
+function sfxHH(){
+  // Cancel thud
+  playTone(200,'square',0.15,0.3);
+  playTone(150,'square',0.2,0.25,0.1);
+}
+function sfxWin(){
+  // Fanfare
+  [523,659,784,1047,1319].forEach((f,i)=>playTone(f,'sine',0.3,0.25,i*0.1));
+}
+function sfxDonkey(){
+  // Sad trombone
+  [349,330,294,247].forEach((f,i)=>playTone(f,'sawtooth',0.35,0.3,i*0.18));
+}
+
+// ══════════════════════════════════════
+// DRAMATIC OVERLAY
+// ══════════════════════════════════════
+let _dramaTimer=null;
+let _dramaActive=false;
+let _pendingBotAfterDrama=false;
+
+function showDrama(emoji, title, sub, color='#F0C060', dur=1400){
+  if(_dramaTimer) clearTimeout(_dramaTimer);
+  const ov=document.getElementById('dramaOv');
+  const card=document.getElementById('dramaCard');
+  const eEl=document.getElementById('dramaEmoji');
+  const tEl=document.getElementById('dramaTitle');
+  const sEl=document.getElementById('dramaSub');
+  eEl.textContent=emoji;
+  tEl.textContent=title;
+  tEl.style.color=color;
+  sEl.textContent=sub;
+  card.classList.remove('drama-exit');
+  void card.offsetWidth;
+  ov.classList.add('show');
+  _dramaActive=true;
+  _dramaTimer=setTimeout(()=>{
+    card.classList.add('drama-exit');
+    setTimeout(()=>{
+      ov.classList.remove('show');
+      _dramaActive=false;
+      // Resume any pending bot turn
+      if(_pendingBotAfterDrama){
+        _pendingBotAfterDrama=false;
+        if(G&&!G.over&&G.pl[G.turn]?.bot&&!G.pl[G.turn].out&&!G.pendingDonk&&!G.pendingSS)
+          schedBot();
+      }
+    },250);
+  },dur);
+}
+
+// ══════════════════════════════════════
+// CARD FLIGHT ANIMATIONS
+// ══════════════════════════════════════
+function getElCenter(el){
+  if(!el) return {x:window.innerWidth/2, y:window.innerHeight*0.45};
+  const r=el.getBoundingClientRect();
+  return {x:r.left+r.width/2, y:r.top+r.height/2};
+}
+
+// Get centre of the played row area
+function getProwCenter(){
+  const prow=document.getElementById('prow');
+  if(!prow) return {x:window.innerWidth/2, y:window.innerHeight*0.4};
+  const r=prow.getBoundingClientRect();
+  return {x:r.left+r.width/2, y:r.top+r.height/2};
+}
+
+// Get the player's name/panel element for fly-from
+function getPlayerEl(pi){
+  if(pi===myI){
+    // My hand area — bottom of screen
+    return document.querySelector('.ha');
+  }
+  // Opponent panels
+  const oprow=document.getElementById('oprow');
+  if(!oprow) return null;
+  const ops=oprow.querySelectorAll('.op');
+  const opPis=G.pl.map((_,i)=>i).filter(i=>i!==myI);
+  const idx=opPis.indexOf(pi);
+  return idx>=0?ops[idx]:null;
+}
+
+// Fly a proper face-up card from player to its designated slot in prow
+// Get which slot index a player occupies (clockwise from round starter)
+function getSlotForPi(pi){
+  const order=getClockwiseOrder(G.roundStarter,4);
+  const idx=order.indexOf(pi);
+  return idx>=0?idx:0;
+}
+
+function flyCardToCentre(pi, card, slotIdx=0){
+  const FLIGHT=420;
+
+  // Source: for myI find the actual card in hand; for others use their panel
+  let fromX, fromY;
+  if(pi===myI){
+    const mh=document.getElementById('myhand');
+    let cardEl=null;
+    if(mh){
+      mh.querySelectorAll('.card').forEach(el=>{
+        if(!cardEl && el.querySelector('.cn')?.textContent==String(card.num) && el.className.includes(SCLS[card.suit]))
+          cardEl=el;
+      });
+    }
+    const r=(cardEl||document.querySelector('.ha')).getBoundingClientRect();
+    fromX=r.left+r.width/2; fromY=r.top+r.height/2;
+  } else {
+    const el=getPlayerEl(pi);
+    const r=el?el.getBoundingClientRect():{left:window.innerWidth/2,top:0,width:0,height:60};
+    fromX=r.left+r.width/2; fromY=r.top+r.height/2;
+  }
+
+  // Target: the specific slot this card will land in
+  const slotEl=document.getElementById('pslot-'+Math.max(0,Math.min(3,slotIdx)));
+  let toX, toY;
+  if(slotEl){
+    const r=slotEl.getBoundingClientRect();
+    toX=r.left+r.width/2; toY=r.top+r.height/2;
+  } else {
+    toX=window.innerWidth/2; toY=window.innerHeight*0.4;
+  }
+
+  const ghost=document.createElement('div');
+  ghost.className='flying-card';
+  const inner=mkCard(card);
+  inner.classList.add('psz');
+  inner.style.cssText+=';pointer-events:none;position:relative;';
+  const cardW=80, cardH=114;
+  ghost.style.cssText=`
+    position:fixed;z-index:850;pointer-events:none;
+    left:${fromX-cardW/2}px;top:${fromY-cardH/2}px;
+    width:${cardW}px;height:${cardH}px;
+    transition:left ${FLIGHT}ms cubic-bezier(.4,0,.2,1),top ${FLIGHT}ms cubic-bezier(.4,0,.2,1),transform ${FLIGHT}ms;
+    transform:scale(.75);
+  `;
+  ghost.appendChild(inner);
+  document.body.appendChild(ghost);
+
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>{
+    ghost.style.left=(toX-cardW/2)+'px';
+    ghost.style.top=(toY-cardH/2)+'px';
+    ghost.style.transform='scale(1)';
+  });});
+  setTimeout(()=>ghost.remove(), FLIGHT+80);
+}
+
+function flySpecialToCentre(pi, sp){
+  const FLIGHT=420;
+  // Source: the special coin slot for this player
+  let fromEl;
+  if(pi===myI){
+    fromEl=document.getElementById('spCardEl');
+  } else {
+    fromEl=getPlayerEl(pi);
+  }
+  if(!fromEl) return;
+  const from=fromEl.getBoundingClientRect();
+  const fromX=from.left+from.width/2;
+  const fromY=from.top+from.height/2;
+
+  // Target: activeSpCards area
+  const target=document.getElementById('activeSpCards');
+  const toR=target?target.getBoundingClientRect():null;
+  const toX=toR?(toR.left+toR.width/2):window.innerWidth/2;
+  const toY=toR?(toR.top+toR.height/2):window.innerHeight*0.45;
+
+  const size=72;
+  const ghost=document.createElement('div');
+  ghost.className='flying-card';
+  const inner=mkSpCard(sp,'pile');
+  inner.style.cssText+=';pointer-events:none;';
+  ghost.style.cssText=`
+    position:fixed;z-index:850;pointer-events:none;
+    left:${fromX-size/2}px;top:${fromY-size/2}px;
+    width:${size}px;height:${size}px;
+    transition:left ${FLIGHT}ms cubic-bezier(.4,0,.2,1),top ${FLIGHT}ms cubic-bezier(.4,0,.2,1),transform ${FLIGHT}ms;
+    transform:scale(.7);
+  `;
+  ghost.appendChild(inner);
+  document.body.appendChild(ghost);
+
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>{
+    ghost.style.left=(toX-size/2)+'px';
+    ghost.style.top=(toY-size/2)+'px';
+    ghost.style.transform='scale(1)';
+  });});
+  setTimeout(()=>ghost.remove(), FLIGHT+80);
+}
+function discardCards(dur=480){
+  return new Promise(resolve=>{
+    const lrEl=document.getElementById('lastRound');
+    const to=getElCenter(lrEl);
+    const cards=[];
+    for(let s=0;s<4;s++){
+      const slot=document.getElementById('pslot-'+s);
+      const c=slot?slot.querySelector('.card'):null;
+      if(c) cards.push(c);
+    }
+    if(!cards.length){resolve();return;}
+    let done=0;
+    cards.forEach((c,i)=>{
+      const r=c.getBoundingClientRect();
+      const clone=c.cloneNode(true);
+      clone.style.cssText=`position:fixed;z-index:800;pointer-events:none;width:${r.width}px;height:${r.height}px;left:${r.left}px;top:${r.top}px;border-radius:8px;transition:left ${dur}ms cubic-bezier(.4,0,.2,1),top ${dur}ms cubic-bezier(.4,0,.2,1),transform ${dur}ms,opacity ${dur}ms;`;
+      document.body.appendChild(clone);
+      const delay=i*45;
+      setTimeout(()=>{
+        clone.style.left=(to.x-r.width/2)+'px';
+        clone.style.top=(to.y-r.height/2)+'px';
+        clone.style.transform='scale(.25)';
+        clone.style.opacity='0';
+      },delay);
+      setTimeout(()=>{ clone.remove(); if(++done>=cards.length) resolve(); },dur+delay+60);
+    });
+  });
+}
+
+// Pickup animation — all cards fly toward a player's panel
+function flyCardsToPlayer(tpi, dur=500){
+  return new Promise(resolve=>{
+    const toEl=getPlayerEl(tpi);
+    const to=getElCenter(toEl);
+    const cards=[];
+    for(let s=0;s<4;s++){
+      const slot=document.getElementById('pslot-'+s);
+      const c=slot?slot.querySelector('.card'):null;
+      if(c) cards.push(c);
+    }
+    if(!cards.length){resolve();return;}
+    let done=0;
+    cards.forEach((c,i)=>{
+      const r=c.getBoundingClientRect();
+      const clone=c.cloneNode(true);
+      clone.style.cssText=`position:fixed;z-index:800;pointer-events:none;width:${r.width}px;height:${r.height}px;left:${r.left}px;top:${r.top}px;transition:left ${dur}ms cubic-bezier(.4,0,.2,1),top ${dur}ms cubic-bezier(.4,0,.2,1),opacity ${dur}ms,transform ${dur}ms;border-radius:8px;`;
+      document.body.appendChild(clone);
+      const delay=i*60;
+      setTimeout(()=>{
+        clone.style.left=(to.x-r.width/2)+'px';
+        clone.style.top=(to.y-r.height/2)+'px';
+        clone.style.transform='scale(.3)';
+        clone.style.opacity='0';
+      },delay);
+      setTimeout(()=>{ clone.remove(); if(++done>=cards.length) resolve(); },dur+delay+60);
+    });
+  });
+}
+
+function animDonk(){
+  const gs=document.getElementById('gs');
+  gs.classList.remove('donk-screen-flash');
+  void gs.offsetWidth;
+  gs.classList.add('donk-screen-flash');
+  setTimeout(()=>gs.classList.remove('donk-screen-flash'),600);
+  const prow=document.getElementById('prow');
+  prow.classList.remove('donk-shake');
+  void prow.offsetWidth;
+  prow.classList.add('donk-shake');
+  setTimeout(()=>prow.classList.remove('donk-shake'),500);
+}
+
+function floatLabel(text,color='#F0C060'){
+  const el=document.createElement('div');
+  el.className='float-label';
+  el.style.cssText=`color:${color};font-size:1rem;top:35%;`;
+  el.textContent=text;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1050);
+}
+
+// ══════════════════════════════════════
+// PAUSE / LEAVE / REMATCH
+// ══════════════════════════════════════
+let _paused=false;
+
+function togglePause(){
+  if(!isHost&&!botMode&&!_paused){toast("Only the host can pause!");return;}
+  _paused=!_paused;
+  document.getElementById('pauseOv').classList.toggle('show',_paused);
+  document.getElementById('pauseBtn').textContent=_paused?'▶':'⏸';
+  document.getElementById('pauseHostMsg').textContent=_paused&&isHost?'Game paused — only you can resume':'';
+  // Push pause state to Firebase
+  if(fbRoom&&isHost){
+    fbRoom.child('paused').set(_paused);
+  }
+}
+
+function confirmLeave(){
+  // Close pause if open
+  document.getElementById('pauseOv').classList.remove('show');
+  document.getElementById('leaveOv').classList.add('show');
+}
+function cancelLeave(){
+  document.getElementById('leaveOv').classList.remove('show');
+  if(_paused) document.getElementById('pauseOv').classList.add('show');
+}
+function leaveGame(){
+  cleanupRoom();
+  location.reload();
+}
+
+function doRematch(){
+  if(wplayers.length<=1){
+    // Solo — just reinit
+    initGame(G.pl.map(p=>({name:p.name,bot:p.bot})));
+    document.getElementById('eov').classList.remove('show');
+    go('gs'); render();
+    if(G.pl[G.turn].bot) schedBot();
+    return;
+  }
+  if(!isHost){toast("Waiting for host to start rematch…");return;}
+  // Host reinits and pushes new state
+  const players=G.pl.map(p=>({name:p.name,bot:p.bot}));
+  initGame(players);
+  document.getElementById('eov').classList.remove('show');
+  _seq++;
+  fbRoom.child('gameState').update({state:serialiseG(G),_ts:Date.now(),_seq,_rematch:true});
+  go('gs'); render();
+  if(G.pl[G.turn].bot) schedBot();
+}
+
+// Listen for pause state from Firebase (non-host)
+function listenPause(){
+  if(!fbRoom||isHost) return;
+  fbOn('rooms/'+rcode+'/paused',snap=>{
+    const val=snap.val();
+    if(val===null||val===undefined) return;
+    _paused=val;
+    document.getElementById('pauseOv').classList.toggle('show',_paused);
+    document.getElementById('resumeBtn').style.display=isHost?'':'none';
+  });
+}
+// ══════════════════════════════════════
+function showDonkOverlay(tpi, cards){
+  // Clear any existing timer
+  if(donkTimer){clearTimeout(donkTimer);donkTimer=null;}
+
+  // If it's me who got DONKed, show it in the DONK response area (already rendered)
+  // For opponents, show a pulsing badge under their name in their panel
+  if(tpi!==myI){
+    // Badge shows after render() places the panel — set a small delay
+    setTimeout(()=>{
+      const badge=document.getElementById(`donkBadge-${tpi}`);
+      if(badge){
+        badge.classList.add('show');
+        donkTimer=setTimeout(()=>{
+          badge.classList.remove('show');
+          donkTimer=null;
+        },5000);
+      }
+    },50);
+  }
+  // If it's me, the donkResponse panel already handles it — no extra UI needed
+}
+
+// ══════════════════════════════════════
+// LAST ROUND SUMMARY
+// ══════════════════════════════════════
+function renderLastRound(){
+  const lr=G.lastRound;
+  const el=document.getElementById('lastRound');
+  if(!lr){el.classList.add('hidden');return;}
+  el.classList.remove('hidden');
+
+  document.getElementById('lrTitle').textContent=`ROUND ${lr.roundNum} —`;
+
+  const cardsEl=document.getElementById('lrCards');
+  cardsEl.innerHTML='';
+
+  // Playing cards played that round — card on top, name underneath, DONK badge last
+  (lr.plays||[]).forEach(e=>{
+    const wrap=document.createElement('div');wrap.className='lr-wrap';
+    const cel=mkCard(e.card);cel.classList.add('smsz');
+
+    wrap.appendChild(cel);
+    const name=document.createElement('div');name.className='lr-name';
+    name.textContent=e.pi===myI?'YOU':G.pl[e.pi].name.split(' ')[0];
+    wrap.appendChild(name);
+    if(e.isDonk){
+      const badge=document.createElement('div');badge.className='lr-donk-badge';badge.textContent='DONK💥';
+      wrap.appendChild(badge);
+    }
+    cardsEl.appendChild(wrap);
+  });
+
+  // Divider + special cards used if any
+  const spPlays=lr.spPlays||[];
+  if(spPlays.length>0){
+    const div=document.createElement('div');
+    div.className='lr-divider';
+    cardsEl.appendChild(div);
+    spPlays.forEach(e=>{
+      const sp=e.spSnap||{};
+      const wrap=document.createElement('div');
+      wrap.className='lr-wrap';
+      const cel=mkSpCard(sp,'smsz');
+      wrap.appendChild(cel);
+      const name=document.createElement('div');
+      name.className='lr-name';
+      name.textContent=e.pi===myI?'YOU':G.pl[e.pi]?.name?.split(' ')[0]||'?';
+      wrap.appendChild(name);
+      cardsEl.appendChild(wrap);
+    });
+  }
+
+  const outcomeEl=document.getElementById('lrOutcome');
+  if(lr.outcome==='donk'){
+    outcomeEl.className='lr-outcome donk';
+    outcomeEl.textContent=`💥 ${G.pl[lr.donkerPi].name} DONKed ${G.pl[lr.donkedPi].name} (+${lr.pickedUpCards.length} cards)`;
+  } else if(lr.outcome==='hh'){
+    outcomeEl.className='lr-outcome clean';
+    outcomeEl.textContent=`🛑 ${G.pl[lr.hhPi].name} used HOOF HALT — ${lr.cancelledCards.length} cards discarded!`;
+  } else {
+    const exits=(lr.exitedPis||[]).map(pi=>G.pl[pi].name).join(', ');
+    outcomeEl.className='lr-outcome clean';
+    outcomeEl.textContent=exits
+      ?`✅ Cards discarded · ${exits} finished!`
+      :`✅ Cards discarded · ${G.pl[lr.nextStarterPi]?.name||'?'} starts next`;
+  }
+}
+
+// ══════════════════════════════════════
+// BOT AI — SMART STRATEGY
+// ══════════════════════════════════════
+function schedBot(){
+  // Much slower when playing the last card of a round — player must see what happened
+  const activePisPlayed=G.played?new Set(G.played.filter(e=>!e.isDonk).map(e=>e.pi)):new Set();
+  const stillLeft=G.pl.filter((_,i)=>!G.pl[i].out&&!G.bbPis.includes(i)&&!activePisPlayed.has(i)&&G.pl[i].hand.length>0).length;
+  const isLastCard=stillLeft<=1;
+  const delay=isLastCard?3000+Math.random()*1000:2000+Math.random()*800;
+  setTimeout(()=>{
+    if(G&&!G.over&&!_roundResolving&&G.pl[G.turn]?.bot&&!G.pl[G.turn].out&&!G.pendingDonk&&!G.pendingSS)
+      botTurn();
+  },delay);
+}
+
+function gamePhase(pi){
+  const total=G.pl[pi].hand.length;
+  if(total>=9) return 'early';
+  if(total>=5) return 'mid';
+  return 'late';
+}
+
+// Bot responds to pending DONK (JJ/HH) or pending SS
+function schedBotSpecial(pi){
+  setTimeout(()=>{
+    if(!G||G.over)return;
+    if(G.pendingDonk&&G.pendingDonk.donkedPi===pi){
+      botRespondDonk(pi);
+    } else if(G.pendingSS&&G.pendingSS.targetPi===pi){
+      botRespondSS(pi);
+    }
+  },800+Math.random()*600);
+}
+
+function botRespondDonk(pi){
+  const sp=G.pl[pi].sp;
+  const pd=G.pendingDonk;
+  if(!pd)return;
+  // Use HH if we have it — best outcome (cards discarded, we start)
+  if(sp&&sp.sid==='HH'){
+    applyAct({t:'SP_HH'},pi);return;
+  }
+  // Use JJ if we have it and it hasn't been reversed yet
+  if(sp&&sp.sid==='JJ'&&!G.pendingJJReversed){
+    applyAct({t:'SP_JJ'},pi);return;
+  }
+  // Otherwise accept
+  applyAct({t:'SP_ACCEPT'},pi);
+}
+
+function botRespondSS(pi){
+  const sp=G.pl[pi].sp;
+  // Counter SS if we have it and it's worth doing so
+  if(sp&&sp.sid==='SS'){
+    const phase=gamePhase(pi);
+    // Counter if: cycling is worthwhile OR risk is high OR not late game
+    if(shouldCycle(pi)||donkRiskScore(pi)>=3||phase!=='late'){
+      // Pick best target — player with most cards who isn't us
+      const targets=G.pl.map((_,i)=>i).filter(i=>!G.pl[i].out&&G.pl[i].hand.length>0&&i!==pi);
+      if(targets.length>0){
+        const tpi=targets.sort((a,b)=>G.pl[b].hand.length-G.pl[a].hand.length)[0];
+        applyAct({t:'SP_SS',targetPi:tpi},pi);
+        return;
+      }
+    }
+  }
+  // Accept — start the round
+  G.pendingSS=null;
+  G.roundStarter=pi;
+  post();
+}
+
+// How dangerous is this bot's position — higher = more DONK risk
+function donkRiskScore(pi){
+  let score=0;
+  const hand=G.pl[pi].hand;
+  const afterMe=[];
+  let cur=nextActive(pi);
+  while(cur!==pi){afterMe.push(cur);cur=nextActive(cur);if(afterMe.length>=G.pl.length)break;}
+  // Each upcoming player missing a colour we hold = DONK threat
+  for(const suit of SUITS){
+    if(!hand.some(c=>c.suit===suit))continue;
+    for(const npi of afterMe){
+      if(G.missing[npi]&&G.missing[npi].has(suit)) score+=2;
+    }
+  }
+  // High cards increase risk (likely to start more rounds)
+  score+=hand.filter(c=>c.num>=10).length;
+  return score;
+}
+
+// Should bot cycle their BB/SS to fish for JJ/HH?
+function shouldCycle(pi){
+  const sp=G.pl[pi].sp;
+  if(!sp) return false;
+  if(sp.sid==='JJ'||sp.sid==='HH') return false; // already have what we want
+  if(G.spPile.length<=2) return false; // pile too low, not worth it
+  const risk=donkRiskScore(pi);
+  const phase=gamePhase(pi);
+  if(phase==='early') return risk>=6;
+  if(phase==='mid')   return risk>=3;
+  return risk>=2; // late game — cycle aggressively
+}
+
+function botTurn(){
+  const pi=G.turn;
+  const sp=G.pl[pi].sp;
+  const phase=gamePhase(pi);
+
+  // ── SS: use at start of round ──
+  if(sp&&sp.sid==='SS'&&G.played.length===0&&G.bbPis.length===0&&!G.pendingSS){
+    const afterMe=[];
+    let cur=nextActive(pi);
+    while(cur!==pi){afterMe.push(cur);cur=nextActive(cur);if(afterMe.length>=G.pl.length)break;}
+    const targets=afterMe.filter(i=>!G.pl[i].out&&G.pl[i].hand.length>0);
+
+    if(targets.length>0){
+      // Cycle SS to fish for JJ/HH
+      if(shouldCycle(pi)){
+        const tpi=targets.sort((a,b)=>G.pl[b].hand.length-G.pl[a].hand.length)[0];
+        applyAct({t:'SP_SS',targetPi:tpi},pi);
+        return;
+      }
+      // Use defensively if risk is high enough
+      const risk=donkRiskScore(pi);
+      if(risk>=4&&phase!=='early'){
+        const tpi=targets.sort((a,b)=>G.pl[b].hand.length-G.pl[a].hand.length)[0];
+        applyAct({t:'SP_SS',targetPi:tpi},pi);
+        return;
+      }
+    }
+  }
+
+  // ── BB: use to skip dangerous turn ──
+  if(sp&&sp.sid==='BB'&&!G.pendingDonk&&!G.pendingSS){
+    const activeNonBB=G.pl.filter((_,i)=>!G.pl[i].out&&!G.bbPis.includes(i));
+    if(activeNonBB.length>1){
+      let useBB=false;
+
+      // Cycle BB to fish for JJ/HH
+      if(shouldCycle(pi)) useBB=true;
+
+      // Defensive: skip if we're stuck with high cards in a DONK-threatened colour
+      if(!useBB&&G.col){
+        const matching=G.pl[pi].hand.filter(c=>c.suit===G.col);
+        if(matching.length>0){
+          const minMatch=Math.min(...matching.map(c=>c.num));
+          const curHigh=G.played.filter(e=>!e.isDonk).reduce((m,e)=>Math.max(m,e.card.num),0);
+          const afterMe=[];
+          let cur=nextActive(pi);
+          while(cur!==pi){afterMe.push(cur);cur=nextActive(cur);if(afterMe.length>=G.pl.length)break;}
+          const donkThreat=afterMe.some(npi=>G.missing[npi]&&G.missing[npi].has(G.col));
+          // Skip if our lowest matching card is higher than current high and someone can DONK us
+          if(minMatch>curHigh&&donkThreat&&(phase==='mid'||phase==='late')) useBB=true;
+        }
+      }
+
+      // Skip at round start if no colour set and risk is very high
+      if(!useBB&&!G.col&&donkRiskScore(pi)>=5&&phase!=='early') useBB=true;
+
+      if(useBB){
+        applyAct({t:'SP_BB'},pi);
+        return;
+      }
+    }
+  }
+
+  // ── Normal play ──
+  if(canDonkNow(pi)){botDonk(pi);return;}
+  if(!G.col){botLead(pi);return;}
+  botFollow(pi);
+}
+
+// DONK: always offload highest card to get rid of big numbers
+function botDonk(pi){
+  const sorted=[...G.pl[pi].hand].sort((a,b)=>b.num-a.num);
+  donkCard(pi,sorted[0].id);
+}
+
+// FOLLOW a colour already set this round
+function botFollow(pi){
+  const hand=G.pl[pi].hand;
+  const matching=hand.filter(c=>c.suit===G.col);
+  if(!matching.length){botDonk(pi);return;}
+
+  const phase=gamePhase(pi);
+
+  // What's the highest card already played this round (non-DONK)?
+  const playedNums=G.played.filter(e=>!e.isDonk).map(e=>e.card.num);
+  const currentHigh=playedNums.length>0?Math.max(...playedNums):0;
+
+  // My highest card in this colour
+  const myHighest=Math.max(...matching.map(c=>c.num));
+
+  // Is there already a card on the table higher than anything I hold?
+  // If so, I CANNOT end up being highest — play freely (highest card = best discard)
+  const safeToPlayHigh = currentHigh > myHighest;
+
+  // How many active players still need to play after me?
+  const activePisPlayed=new Set(G.played.map(e=>e.pi));
+  let playersAfter=0;
+  let cur=nextActive(pi);
+  while(!activePisPlayed.has(cur)&&cur!==pi){
+    playersAfter++;
+    cur=nextActive(cur);
+    if(playersAfter>=G.pl.length)break;
+  }
+  const isLast=playersAfter===0;
+
+  let chosen;
+
+  if(safeToPlayHigh){
+    // Someone already beat everything I have — play my highest to discard it
+    chosen=matching.reduce((b,c)=>c.num>b.num?c:b);
+  } else if(phase==='early'){
+    if(isLast){
+      // Last to play — try to stay under current high, else play lowest
+      const under=matching.filter(c=>c.num<currentHigh).sort((a,b)=>b.num-a.num);
+      chosen=under.length>0?under[0]:matching.sort((a,b)=>a.num-b.num)[0];
+    } else {
+      // Early game, not last — play highest of this colour to offload big cards
+      // BUT don't play higher than current high if it means I'll start next round
+      // (only worry if I'm last to play — since I'm not last, someone else might beat me)
+      chosen=matching.reduce((b,c)=>c.num>b.num?c:b);
+    }
+  } else {
+    // Mid/late — play low to avoid being highest
+    if(isLast){
+      const under=matching.filter(c=>c.num<currentHigh).sort((a,b)=>b.num-a.num);
+      chosen=under.length>0?under[0]:matching.sort((a,b)=>a.num-b.num)[0];
+    } else {
+      matching.sort((a,b)=>a.num-b.num);
+      chosen=matching[0];
+    }
+  }
+
+  playCard(pi,chosen.id);
+}
+
+// LEAD a new round (no colour set yet)
+function botLead(pi){
+  const hand=G.pl[pi].hand;
+  const phase=gamePhase(pi);
+
+  // Players who will play after me in clockwise order this round
+  const afterMe=[];
+  let cur=nextActive(pi);
+  while(cur!==pi){afterMe.push(cur);cur=nextActive(cur);if(afterMe.length>=G.pl.length)break;}
+
+  // Count cards per suit in my hand
+  const suitCounts={};
+  for(const suit of SUITS){
+    const own=hand.filter(c=>c.suit===suit);
+    if(own.length>0) suitCounts[suit]=own.length;
+  }
+  if(Object.keys(suitCounts).length===0){playCard(pi,hand[0].id);return;}
+
+  // Score each suit — lower = better to lead
+  const suitScores={};
+  for(const [suit,count] of Object.entries(suitCounts)){
+    let score=0;
+
+    // Always: heavy penalty if an upcoming player is known to be missing this suit
+    // (they'll DONK us and we pick up everything)
+    for(const npi of afterMe){
+      if(G.missing[npi]&&G.missing[npi].has(suit)) score+=300;
+    }
+
+    if(phase==='early'){
+      // Early game: PREFER leading suits we have few of — run them down fast
+      // so we can DONK freely with that colour later
+      score+=count*8;   // penalty for having lots (we want to lead scarce suits)
+      // Also prefer leading high numbers early (get rid of dangerous cards)
+      const maxNum=Math.max(...hand.filter(c=>c.suit===suit).map(c=>c.num));
+      score-=maxNum*2;  // bonus for leading a suit where we have high cards
+    } else {
+      // Mid/late: prefer suits with more cards (clear fastest)
+      score-=count*4;
+      // Prefer suits where our lowest card is low (less likely to end up highest)
+      const minNum=Math.min(...hand.filter(c=>c.suit===suit).map(c=>c.num));
+      score+=minNum*3;
+    }
+
+    suitScores[suit]=score;
+  }
+
+  const sortedSuits=Object.entries(suitScores).sort((a,b)=>a[1]-b[1]);
+  const bestSuit=sortedSuits[0][0];
+  const pool=hand.filter(c=>c.suit===bestSuit);
+
+  let chosen;
+  if(phase==='early'){
+    // Early: lead highest card of chosen suit to offload big numbers
+    chosen=pool.reduce((b,c)=>c.num>b.num?c:b);
+  } else {
+    // Mid/late: lead lowest card to avoid being highest
+    chosen=pool.reduce((b,c)=>c.num<b.num?c:b);
+  }
+
+  playCard(pi,chosen.id);
+}
+
+// ══════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════
+function render(){
+  if(!G)return;
+  const pb=document.getElementById('pauseBtn');
+  const canPause=isHost||botMode;
+  if(pb) pb.style.opacity=canPause?'.5':'.15';
+  if(pb) pb.style.pointerEvents=canPause?'auto':'none';
+  const mt=G.turn===myI&&!G.pl[myI].out;
+  document.getElementById('grnd').textContent=`Round ${G.round}`;
+  document.getElementById('glog').textContent=G.log||'';
+  document.getElementById('turnBar').classList.toggle('hidden',!mt||G.over||!!G.pendingDonk||!!G.pendingSS||_roundResolving);
+  document.getElementById('spPileNum').textContent=G.spPile.length;
+  const pileBack=document.getElementById('spPileBack');
+  if(pileBack) pileBack.classList.toggle('empty',G.spPile.length===0);
+
+  // Opponents — show in clockwise turn order from myI
+  const oprow=document.getElementById('oprow');oprow.innerHTML='';
+  const n_=G.pl.length;
+  const opOrder=[];
+  for(let i=1;i<n_;i++) opOrder.push((myI+i)%n_);
+  opOrder.forEach(i=>{ const p=G.pl[i];
+    const at=(i===G.turn||
+      (G.pendingDonk&&G.pendingDonk.donkedPi===i)||
+      (G.pendingSS&&G.pendingSS.targetPi===i))&&!p.out;
+    const d=document.createElement('div');
+    d.className='op'+(at?' at':'')+(p.out?' out':'')+(at&&p.bot&&!p.out?' th':'');
+    const spTxt=p.sp?'✨ 1 special':'— no special';
+    d.innerHTML=`<div class="opn">${p.name}</div>
+      <div class="opc">${p.out?`🎉 OUT (${ordinal(p.outPos)})`:p.hand.length+' cards'}</div>
+      <div class="opc" style="color:var(--gold);opacity:.7">${p.out?'':spTxt}</div>
+      <div class="donk-badge" id="donkBadge-${i}">💥 PICKS UP</div>
+      <div class="optd"></div>`;
+    oprow.appendChild(d);
+  });
+
+  // Colour badge
+  const cb=document.getElementById('cbadge');
+  cb.className='cbadge'+(G.col?` ${CBCLS[G.col]}`:'');
+  if(G.col){
+    cb.textContent=G.col.toUpperCase()+' ROUND';
+  } else {
+    if(G.turn===myI&&!G.pl[myI].out){
+      cb.textContent='PLAY ANY CARD TO START';
+    } else {
+      const starter=G.pl[G.turn];
+      cb.textContent=starter?(pname(G.turn).toUpperCase()+' IS STARTING…'):'WAITING…';
+    }
+  }
+
+  // Build slot order: clockwise from roundStarter by player index, skip out players
+  const turnOrder=getClockwiseOrder(G.roundStarter, 4);
+
+  // Show only as many slots as active players
+  const activeCount=G.pl.filter(p=>!p.out).length;
+  for(let s=0;s<4;s++){
+    const slot=document.getElementById('pslot-'+s);
+    if(!slot) continue;
+    // Hide slot if beyond active player count
+    slot.style.display=s<activeCount?'':'none';
+    if(s>=activeCount){ slot.innerHTML=''; slot.classList.remove('filled'); continue; }
+
+    const pi=turnOrder[s];
+    if(pi===undefined){
+      slot.innerHTML=''; slot.classList.remove('filled'); continue;
+    }
+
+    const playedEntry=G.played.find(e=>e.pi===pi&&!e.isDonk);
+    const donkEntry=G.played.find(e=>e.pi===pi&&e.isDonk);
+    const bbEntry=G.bbPis.includes(pi)&&!playedEntry&&!donkEntry;
+    const entry=playedEntry||donkEntry;
+
+    if(!entry&&!bbEntry){
+      slot.innerHTML=''; slot.classList.remove('filled'); continue;
+    }
+
+    slot.classList.add('filled');
+
+    if(bbEntry){
+      if(!slot.querySelector('.bb-placeholder')){
+        slot.innerHTML='';
+        const wrap=document.createElement('div');wrap.className='pw';
+        const lbl=document.createElement('div');lbl.className='plbl';
+        lbl.textContent=pi===myI?'YOU':G.pl[pi]?.name.split(' ')[0]||'?';
+        wrap.appendChild(lbl);
+        const ph=document.createElement('div');ph.className='bb-placeholder';
+        ph.style.cssText=`width:80px;height:114px;border-radius:8px;border:2px dashed #70F090;background:rgba(26,107,53,.15);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;`;
+        ph.innerHTML=`<div style="font-size:1.8rem">⏭️</div><div style="font-family:'Cinzel',serif;font-size:.55rem;color:#70F090;letter-spacing:1px">BB</div>`;
+        wrap.appendChild(ph);
+        slot.appendChild(wrap);
+      }
+    } else {
+      const cardId=entry.card.id;
+      const existing=slot.querySelector('.card');
+      if(!existing||existing.dataset.cardId!==cardId){
+        slot.innerHTML='';
+        const wrap=document.createElement('div');wrap.className='pw';
+        const lbl=document.createElement('div');lbl.className='plbl';
+        lbl.textContent=pi===myI?'YOU':G.pl[pi].name.split(' ')[0];
+        wrap.appendChild(lbl);
+        const cel=mkCard(entry.card);cel.classList.add('psz');
+        cel.dataset.cardId=cardId;
+        if(entry.isDonk) cel.style.borderColor='#E05B5B';
+        wrap.appendChild(cel);
+        slot.appendChild(wrap);
+      }
+    }
+  }
+
+  renderLastRound();
+  renderDonkResponse();
+  renderSpModal();
+  renderActiveSpecials();
+
+  // My hand
+  if(G.pl[myI].out){
+    document.getElementById('hcnt').textContent='You are out! 🎉';
+    document.getElementById('myhand').innerHTML='<div style="opacity:.4;font-family:\'Cinzel\',serif;font-size:.7rem;letter-spacing:2px;padding:10px">Watching the rest play…</div>';
+    document.getElementById('spCardEl').innerHTML='';
+    document.getElementById('bpl').disabled=true;
+    document.getElementById('bdk').disabled=true;
+    if(G.over)showEndScreen();
+    return;
+  }
+  renderHand();
+  renderMySpecial();
+  if(G.over)showEndScreen();
+}
+
+// Show special cards played in the current round face-up next to the pile
+function renderActiveSpecials(){
+  const el=document.getElementById('activeSpCards');
+  if(!el)return;
+  el.innerHTML='';
+  if(!G.spPlayedOrder||G.spPlayedOrder.length===0)return;
+
+  G.spPlayedOrder.forEach(entry=>{
+    const sp=entry.snap||{};
+    const pi=entry.pi;
+    const wrap=document.createElement('div');
+    wrap.className='active-sp-wrap';
+
+    const card=mkSpCard(sp,'pile');
+    wrap.appendChild(card);
+
+    const lbl=document.createElement('div');
+    lbl.className='active-sp-plbl';
+    lbl.textContent=pi===myI?'YOU':G.pl[pi]?.name?.split(' ')[0]||'?';
+    wrap.appendChild(lbl);
+
+    el.appendChild(wrap);
+  });
+}
+
+
+function renderDonkResponse(){
+  const el=document.getElementById('donkResponse');
+  const pd=G.pendingDonk;
+  const isMyDonk=pd&&pd.donkedPi===myI;
+  el.classList.toggle('show', !!isMyDonk);
+  if(!isMyDonk)return;
+
+  const mySp=G.pl[myI].sp;
+  document.getElementById('drTitle').textContent=`💥 You got DONKed! ${pd.allCards.length} cards coming your way…`;
+  const btns=document.getElementById('drBtns');
+  btns.innerHTML='';
+
+  if(mySp&&mySp.sid==='JJ'){
+    const b=document.createElement('button');b.className='dr-btn jj';
+    b.textContent=`🔮 JACKASS JINX — Reverse it!`;
+    b.onclick=()=>{ if(botMode||isHost){applyAct({t:'SP_JJ'},myI);}else{sendAction({t:'SP_JJ'});} };
+    btns.appendChild(b);
+  }
+  if(mySp&&mySp.sid==='HH'){
+    const b=document.createElement('button');b.className='dr-btn hh';
+    b.textContent=`🛑 HOOF HALT — Cancel DONK!`;
+    b.onclick=()=>{ if(botMode||isHost){applyAct({t:'SP_HH'},myI);}else{sendAction({t:'SP_HH'});} };
+    btns.appendChild(b);
+  }
+  const acc=document.createElement('button');acc.className='dr-btn accept';
+  acc.textContent=`Pick up ${pd.allCards.length} cards`;
+  acc.onclick=()=>{ if(botMode||isHost){applyAct({t:'SP_ACCEPT'},myI);}else{sendAction({t:'SP_ACCEPT'});} };
+  btns.appendChild(acc);
+}
+
+// Show my special card in the slot — coin design
+function renderMySpecial(){
+  const me=G.pl[myI];
+  const el=document.getElementById('spCardEl');
+  el.innerHTML='';
+  if(!me.sp){
+    // Empty coin placeholder
+    const empty=document.createElement('div');
+    empty.style.cssText=`width:72px;height:72px;border-radius:50%;border:2px dashed rgba(139,111,212,.25);display:flex;align-items:center;justify-content:center;opacity:.35;font-family:'Cinzel',serif;font-size:.45rem;letter-spacing:1px;color:var(--gold);`;
+    empty.textContent='NONE';
+    el.appendChild(empty);
+    return;
+  }
+  const card=mkSpCard(me.sp,'full');
+
+  const mt=G.turn===myI&&!me.out&&!G.pendingDonk;
+  const isSS=me.sp.sid==='SS'&&G.played.filter(e=>!e.isSpecial).length===0&&G.bbPis.length===0&&!G.pendingSS;
+  const isBB=me.sp.sid==='BB'&&!G.pendingDonk&&!G.pendingSS;
+  const canUseSp=mt&&(isSS||isBB);
+
+  if(!canUseSp) card.classList.add('dim');
+  if(selSp===me.sp.id) card.classList.add('sel');
+
+  card.onclick=()=>{
+    if(G.pl[myI].out)return;
+    if(me.sp.sid==='JJ'||me.sp.sid==='HH'){
+      toast('JJ and HH can only be played when you get DONKed!');return;
+    }
+    if(!mt){toast("It's not your turn!");return;}
+    if(!canUseSp){
+      if(me.sp.sid==='SS') toast('Saddle Switch can only be played at the start of a round!');
+      else if(me.sp.sid==='BB') toast("Can't use Bray Break now!");
+      return;
+    }
+    if(me.sp.sid==='SS'){
+      openSpModal();
+    } else if(me.sp.sid==='BB'){
+      if(botMode||isHost){applyAct({t:'SP_BB'},myI);}else{sendAction({t:'SP_BB'});}
+    }
+  };
+  el.appendChild(card);
+}
+
+function openSpModal(){
+  const me=G.pl[myI];if(!me.sp)return;
+  spModal={open:true,card:me.sp,targetPi:null};
+  document.getElementById('spModalTitle').textContent=`${me.sp.emoji} ${me.sp.name}`;
+  document.getElementById('spModalDesc').textContent=me.sp.desc;
+  const list=document.getElementById('spTargetList');list.innerHTML='';
+  G.pl.forEach((p,i)=>{
+    if(i===myI||p.out)return;
+    const b=document.createElement('button');b.className='sp-target-btn';
+    b.textContent=`${p.name} (${p.hand.length} cards)`;
+    b.onclick=()=>{spModal.targetPi=i;list.querySelectorAll('.sp-target-btn').forEach(x=>x.classList.remove('chosen'));b.classList.add('chosen');};
+    list.appendChild(b);
+  });
+  document.getElementById('spModalOv').classList.add('show');
+}
+function renderSpModal(){
+  // SS counter prompt for human player
+  if(G.pendingSS&&G.pendingSS.targetPi===myI&&G.pl[myI].sp?.sid==='SS'&&!document.getElementById('spModalOv').classList.contains('show')){
+    // Show SS counter modal
+    spModal={open:true,card:G.pl[myI].sp,targetPi:null,isSsCounter:true};
+    document.getElementById('spModalTitle').textContent='🔄 SADDLE SWITCH — Counter?';
+    document.getElementById('spModalDesc').textContent=`${G.pl[G.pendingSS.originalPi].name} switched to you! Use your SS to redirect, or accept and start the round.`;
+    const list=document.getElementById('spTargetList');list.innerHTML='';
+    G.pl.forEach((p,i)=>{
+      if(p.out)return;
+      const label=i===myI?'Accept (start yourself)':p.name+` (${p.hand.length} cards)`;
+      const b=document.createElement('button');b.className='sp-target-btn';b.textContent=label;
+      b.onclick=()=>{spModal.targetPi=i;list.querySelectorAll('.sp-target-btn').forEach(x=>x.classList.remove('chosen'));b.classList.add('chosen');};
+      list.appendChild(b);
+    });
+    document.getElementById('spModalOv').classList.add('show');
+  }
+}
+function confirmSpModal(){
+  if(!spModal.card)return;
+  if(spModal.card.sid==='SS'){
+    if(spModal.targetPi===null){toast('Pick a target!');return;}
+    if(spModal.isSsCounter&&spModal.targetPi===myI){
+      // Accepted — just close, G.turn is already myI
+      closeSpModal();G.pendingSS=null;post();
+      if(G.pl[myI].bot)schedBot();
+      return;
+    }
+    if(botMode||isHost){ applyAct({t:'SP_SS',targetPi:spModal.targetPi},myI); } else { sendAction({t:'SP_SS',targetPi:spModal.targetPi}); }
+  }
+  closeSpModal();
+}
+function closeSpModal(){
+  document.getElementById('spModalOv').classList.remove('show');
+  spModal={open:false,card:null,targetPi:null};
+}
+
+// size: 'full'=coin 72x72 (hand), 'psz'=80x114 (played area), 'smsz'=40x57 (last round), 'pile'=coin 72x72
+function mkSpCard(sp, size='full'){
+  const el=document.createElement('div');
+  const sizes={
+    full:{w:'72px',h:'72px',em:'20px',fn:'16px',coin:true},
+    psz: {w:'80px',h:'114px',em:'32px',fn:'8px',sn:'4.5px'},
+    smsz:{w:'40px',h:'57px',em:'13px',fn:'5px',sn:'3px'},
+    pile:{w:'72px',h:'72px',em:'20px',fn:'16px',coin:true},
+  };
+  const s=sizes[size]||sizes.full;
+
+  if(s.coin){
+    el.className='sp-coin';
+    el.style.cssText=`width:${s.w};height:${s.h};border-radius:50%;background:radial-gradient(circle at 35% 35%,#2A1A4A,#0E0818);border:3px solid #8B6FD4;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 0 5px rgba(107,79,200,.18),0 4px 14px rgba(107,79,200,.35);position:relative;flex-shrink:0;cursor:pointer;`;
+    // Just the abbreviation — bold and centred
+    el.innerHTML=`<div style="font-family:'Cinzel',serif;font-weight:700;font-size:${s.fn};color:#C8A8F8;letter-spacing:1px;position:relative;z-index:1">${sp.abbr}</div>`;
+    const ring=document.createElement('div');
+    ring.style.cssText='position:absolute;inset:6px;border-radius:50%;border:1.5px dashed rgba(139,111,212,.4);pointer-events:none;';
+    el.appendChild(ring);
+  } else {
+    el.className='card s-sp';
+    el.style.width=s.w; el.style.height=s.h;
+    el.innerHTML=`<div class="cc tl"><div class="cn" style="font-size:${s.fn}">${sp.abbr}</div></div><div class="cmid" style="font-size:${s.em}">${sp.emoji}</div><div class="sn" style="font-size:${s.sn}">${sp.name}</div>`;
+  }
+  return el;
+}
+
+
+function renderHand(){
+  const me=G.pl[myI];if(!me||me.out)return;
+  const mt=G.turn===myI&&!G.pendingDonk&&!G.pendingSS&&!_roundResolving;
+  document.getElementById('hcnt').textContent=me.hand.length+' cards';
+  const tabs=document.getElementById('htabs');
+  if(!tabs.children.length){
+    [['all','ALL'],['blue','BLUE'],['red','RED'],['green','GREEN'],['purple','PURPLE']].forEach(([f,l])=>{
+      const b=document.createElement('button');b.className='ht'+(f===hf?' on':'');b.textContent=l;
+      b.onclick=()=>{hf=f;tabs.querySelectorAll('.ht').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderHand();};
+      tabs.appendChild(b);
+    });
+  }
+  const mh=document.getElementById('myhand');mh.innerHTML='';
+  const SUIT_ORDER={blue:0,red:1,green:2,purple:3};
+  const sortHand=cards=>[...cards].sort((a,b)=>{
+    const sd=SUIT_ORDER[a.suit]-SUIT_ORDER[b.suit];
+    return sd!==0?sd:b.num-a.num;
+  });
+  const filtered=hf==='all'?sortHand(me.hand):sortHand(me.hand.filter(c=>c.suit===hf));
+  const iDonk=canDonkNow(myI);
+  filtered.forEach(card=>{
+    const playable=mt&&canPlay(card);
+    const donkable=mt&&iDonk;
+    const active=playable||donkable;
+    const el=mkCard(card);
+    if(!active)el.classList.add('dim');
+    if(iDonk&&mt)el.classList.add('dg');
+    if(sel===card.id)el.classList.add('sel');
+    el.onclick=()=>{
+      if(!mt){toast("It's not your turn!");return;}
+      if(!active){if(G.col)toast(`Must play a ${G.col.toUpperCase()} card — or DONK if you have none!`);return;}
+      sel=(sel===card.id)?null:card.id;renderHand();
+    };
+    mh.appendChild(el);
+  });
+  const sc=sel?me.hand.find(c=>c.id===sel):null;
+  document.getElementById('bpl').disabled=!(sc&&mt&&canPlay(sc));
+  document.getElementById('bdk').disabled=!(sc&&mt&&iDonk);
+}
+
+function mkCard(card){
+  const el=document.createElement('div');
+  el.className=`card ${SCLS[card.suit]}`;
+  const em=EM[card.suit]?.[card.num-1]||'🐴';
+  const sn=card.suit.slice(0,3).toUpperCase();
+  el.innerHTML=`<div class="cc tl"><div class="cn">${card.num}</div><div class="cs">${sn}</div></div><div class="cmid">${em}</div><div class="cc br"><div class="cn">${card.num}</div><div class="cs">${sn}</div></div>`;
+  return el;
+}
+
+function showEndScreen(){
+  document.getElementById('donkeyName').textContent=G.pl[G.donkey].name;
+  const wl=document.getElementById('winnersList');wl.innerHTML='';
+  const trophies=['🥇','🥈','🥉'];
+  G.exitOrder.forEach((pi,i)=>{
+    const d=document.createElement('div');d.className='winner-row';
+    d.innerHTML=`<div class="winner-trophy">${trophies[i]||'🏅'}</div><div class="winner-rname">${G.pl[pi].name}</div><div class="winner-pos">${ordinal(i+1)}</div>`;
+    wl.appendChild(d);
+  });
+  // Sound
+  if(G.donkey===myI){ sfxDonkey(); floatLabel('🫏 YOU\'RE THE DONKEY!','#FFB3B3'); }
+  else { sfxWin(); floatLabel('🏆 YOU WIN!','#F0C060'); }
+  // Show/hide rematch button based on role
+  const rb=document.getElementById('rematchBtn');
+  if(wplayers.length>1&&!isHost){
+    rb.textContent='⏳ WAITING FOR HOST…';
+    rb.disabled=true;
+  } else {
+    rb.textContent='🔄 REMATCH';
+    rb.disabled=false;
+  }
+  document.getElementById('eov').classList.add('show');
+}
+
+function doPlay(){
+  if(!sel||G.turn!==myI||_roundResolving)return;
+  const act={t:'P',id:sel};
+  if(botMode||isHost){ applyAct(act,myI); } else { sendAction(act); sel=null; return; }
+  sel=null;
+}
+function doDonk(){
+  if(!sel||G.turn!==myI||_roundResolving)return;
+  const act={t:'D',id:sel};
+  if(botMode||isHost){ applyAct(act,myI); } else { sendAction(act); sel=null; return; }
+  sel=null;
+}
+
+function toast(m,c=''){
+  const t=document.getElementById('toast');t.textContent=m;t.className='toast show '+c;
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ── PWA meta (works when hosted over HTTPS) ──
+(function(){
+  try{
+    var mlink=document.createElement('link');
+    mlink.rel='manifest';
+    mlink.href='data:application/json;base64,ewogICJuYW1lIjogIkRvbmtleSBXaG8iLAogICJzaG9ydF9uYW1lIjogIkRvbmtleSBXaG8iLAogICJkZXNjcmlwdGlvbiI6ICJUaGUgY2FyZCBnYW1lIHdoZXJlIHRoZSBsYXN0IG9uZSBob2xkaW5nIGNhcmRzIGlzIHRoZSBEb25rZXkhIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzEzMEMwNCIsCiAgInRoZW1lX2NvbG9yIjogIiMxMzBDMDQiLAogICJpY29ucyI6IFsKICAgIHsic3JjIjogImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBTUFBQUFEQUNBWUFBQUJTM0d3SEFBQWcra2xFUVZSNG5PMmRlWGdjeFpYQVgvZmM5eVZwUnByUmFWcytzR1g1eG81bEV5Y0dsaEFJU1NBc1pDRUJkaGUrN0FiWUpSeUJzSUVsQ3l4SkhFZ0M3RzZ5SWJBSlI4SU5Edm5BZ0kzQjJKWXNTNzRrV2ZjOTkzMVBkKzBmTXlQUGpHYWs3cDdSU05iVXo5OThuOVZYdmU1K3IrdTlxbGRWUkV1dEdPWUFOQmNYeFpROFJLRXZ5RWVvWUxxS2xSNHoxNlRxV0VHTWdaL24rVE1xL2MvdTJaRG41VEVZZ0g5OXZDM2I1b0lZQTdHOVJzVGx2SnlLajVVZU01ZmtNSVlrckEyQml3Rk1VMzZzOUpqNUlJY3hzRElDNGd2c0RDQk4rWCtPRlIrekFQaVg2WWJBMkFpWUdzQzByejVUNWM4aUhBYkRtRHoxYkZaRFlHSUFySlFmS3p4bUx1R2dlek1hd1d3R3dOamx3WXFQS1NZc2RUR25FY3hrQUl5VUh5cytaajVob1pkWmpZRFl4c0FBOXVRbzVFNnMvSmdGQUVQOXpHRUExVmtONEp6eTM1dmo0bzloNWNjc0hCanE2VFFqeU5ZVFBHUHZMbFo4ekVJa3FaZTVEQ0VCZ2d3aklMTWNNTVVzRjhOZ0ZqeFpkRGhOeDRtdDZTN1ExTTVmWkZIK08vRFhIM01ld0VCM3AycUIxQm9BS3o5bVVaQk5Wek4wZWtyWE0xMGd4aGZFWUJZeVRIVjJtZ0ZrKy9wak1JdUJiTHFkTklDY0xULzQ2NDg1WDVsRmR4RUFBSCsyWVZ4NG1CZG1NWkdwejJrdTBKTVpWY1R0K091UE9jL0oxT0ZNSGVjRG11RWpqei8vbU1YSU9iMUdqRnFCTUpqRkNva2diaEJQM2pjOVFrYjRoMytMNEpmSmsvZHRtTnFYc3diNC9xUFkvOGNzRG1iU1pld0NZVW9hYkFDWWtnWWJBS2FreWRrUmxtczdCck1ZU09vM3JnRXdKUTAyQUV4Snc4L3A2MkFmQ0xPWVNlZzNyZ0V3SlEwT2dqRWxDUTZDTVJqQUJvQXBjYkFCWUVvYUhBTmdTaEljQTJBd2dBMEFVK0pnQThDVU5MZ25HRk9hSlBRYkI4R1lrZ1FId1JnTVlBUEFsRGpZQURBbERZNEJNQ1VKamdFd0dNQUdnQ2x4K0xtZEhld0VZUll6Y2YzR05RQ21wT0dqSEIvNlhOc3htTVVBd21PQ01SaHNBSmdTQnhzQXBxVEJIV0dZa2dSM2hHRXdnQTBBVStMd2kxbllkNjZvaDYxTnVxS1VoUkJBaktJaEdrTVFpZExnQzhiQTdZMkN4eDhGcXpNRVk1WWdqRnVEWUhXRUMrN3UzZlMxZXRpeWVtN3Y4eGQvNklFekF4NU81MVlicFBEQUxhc1lIWHZ2VTUzZzlFUTRsZlAxWFNhNFpKdUIwN2tBQUNkNjNmQ3JsODV5UHA4SlJUV0FZa0lRQUFJK0NRSStnRlRNQTdWQ0FLWUt5YlRqdklFWWRBOTZvR3ZRQzhlN25lRDF4K1pCMnVMU3ZGek42dGlQamxybVRwaDVwdVNEWUlXVUR4dFhhV0hqS2kxY2Qya05uT3Izd0tmSGJkRGU3VnpRbllHTlZiekRNcEp2Nng2bnRuaUNxSXpOdWMzTE5ZeVBiV25XMkx3T3grR09vZGlYSWpFUXN5a24zOGVua2hLV2pVdjRSMTBCVkhGMmd0cVU1K1hTU01wVzNESEJDMWloQUFCSWtvQTFTMVd3WnFrS0ptMGgyUHZwQkJ6dXRMTVh1OWozeWFLOE1yVW9hMDJZaThvS3VVNGs1QW5VVW5yUzRxYnIyQXRYQUhJdDk1anZOYUhJTHREdjNocUEzNzAxQVBWNlhrZVpnaGhOM2ZmdHExWi9XU0xtaTloY3IyZkFNYnIvOCtHT3pPMThQc2tUOG5sOHVWd29VU3RFY24yNVRGTmRxU3lYU1FXTTM3eWhUQXczWFZrUEYyMnNnUDk3ZHhCR3pVSEdjdjMyalFINDdSc0QwS0RuSGRjcGlERUFnTVlHYmZYT0xUVk5qQytTd09vSXVOLzRhODlCdHVmbFl0MEtOYXZqU1lJZ2FxcFVGVmEzM1d4eFF4MmJjMS9iTndxdjdSc0ZrNDdzcXRTUWZjbnRhNWFYMTErNDNwZ1doUHg1YjljQnB6dmtaU1ZjQVZpVU1VQXNSbE94R0UwRlF0R3d4ZVozOVF3NFJna0NpQ3E5UXJmdUF2M1N5Z281NHdpMXdTaURCMjVaQmEvdUc0WDNQemR6bG1sNHpHTkdDQ0dDSUFnMjU1VnJwU3FaVkNEMkI2SWh6b1dud01iOVNWSlhyVEwwRERpTzhVbUl4bWdRNUN0RHJVbVZGaGw3Zk9IQWZDZy93RHdad0lDWldqdGdocldwMjc1RklXQmVNYWRqOHlMVGdKbGFtN21kSklIaUVSQVRDWWlnV0FBK2k5dnRIQmoxZHF4b1VLdTNiNnBlSXhMeUdMMU1raVRnNnQzVnNNUWtpLzdtOVFGQmpHSldIL2VicWVaK016VEgvNHJCaFJ0OXNLeEd3ZnpHRXRRYVZmcWpKNjJ1MHlQVWR0WW5weUNYOG1GSnRZejFlYVpLUmJtQVQ1SXFHV0d4ZTVHUjdmbWpkbnJGcUoxZWtaVGg1dkowR1FaSDNaUEovNThjcG5ZRUk0ajlRK0lJbWN1OW11L1Z2Tm1TN1pvVURid0lCU0p2Q0ttdFhtUWFzTkJyamcvR3ZyajNjM3ZOSDkvcVB1WHpSNWo3TlFDd2ZxVldjTWYxeXdJOEhzSHBIdHU3WEp6dXJjNmtNc2hFaEZ2QWgxQSt6M2h0b3hwSWRoVVFBQUR3ZVNUUFdLa28wOGpKeVh6ZmMxTVdHWVpHM1dZQWdIQVVTUU1ScENpR2ZpVzNsMkpIR09FSm9MTFB6Z1NhZi8xeWp6Y1Vqa1habk54WXE1VCs2N2VYdWtrU2FMWUZ0M2U3Mko0Q0FQRkFWQ2prQ1RReWtyc1BCZ0RyVnJCM2Y1TFVHVlVHbFpTd2tnUlFlY21RMFFRYkRNVWlacHZmQ1FEZzlDUHVuUVljS1VVRG1LSjNMRlR4dXpjSFdML1FwVFVxMVhjdU0wMFFCRHNqc0xuQ3JJTHBKQ1JKRURWVnlncU5qSmljL2Vqc2lBUWtyS3puN2xuVUdKVVZQSktnVlZMQ3h2VWFRZ0VKcXhxVWFkdUd4OXhtaE9JZmFhY1A2VGtMeUpHU05nQUFnR1BkYm5IYkdRZHJJOWk2em1EODhucDFMN0QwNEk3M3VOZ1dCUUFBZFNhVlhpRWg3RHdTV05WWVNTNVlxZ0lCbi92ckZvdjRRa081VEp1UEVhNWVNbDJHd2JHNC94K2xRT2dOSWU1VkZFY1dkUXpBOVBmYVIrTThMcDFlbDJ5dk50YVU4M3BaeFFIZFRrNzNaNnBVbHZONUJLR1dFUll1OTVqcGVuQ2hybHBsVU10SUMwQzhqNUR0TDdNSE9oYWpxYkZKbncwQXdPV245UWlBS0paK2xYSU1NQTJ6UGNUcHk2eFNpbVFYWDZpUEtTWE0zWUtoaVFBNDNPeHphd1I4a204MEtNcTR4QUVrU1VEVE1qWHJNak9wTTZuMGZCNUVGQkxDd1UwR1ZkcTJrUW1QbGFKb0dnREFNUS8rUHdBQU9hdUpuQTlWUUFIS1A5Umg1MVQwbWhYbERVc052Tk1FQU0yMExLN0JjSzBwRVlpeUtBc1F3SXBhQlVqRlBFNWxwaUtYQ2lWbEdvbEtJeU1tMlQ3ZnhobzV5Q1RwcmU3SjVrK2FCcDdIajhxS3FsK0o3YmdHU0hDaTF3MlJHT3VHSFpDS0JhTFZqVHExUVUwT01qMkhxeHRVYTFSVjhIbEFLVmtHb3RuY240RVIxd1FuR1V3cXZWYk92aFphbDlFQlJ5T0VSc1k5RmdBQVZ3Q1YwMmgrZEJFYlFJSm9qSWJlWVIrbmN4dnJ0YVpLRGRsUE1td1Y2aG55UVNERXZqVlJJdWFMS3Nwa2FyYUJhS2J2SFFoRncwZU9UM1N4RmdBQTZxdlZCaUVmZ2pJUjRXWnpYcVlSVGxoODluQ0VpZ0lBT0gzMHZMZy9BSXNrQ0M2VURHYzVHb0MrVEtaUnlRU2dVNUJqVE1xaGFBUWRaMTJjeXFvenFRd2FPV2xCd0N3UXJhdVNnVVlwVEx2RzhLakg3UEdGQXc0WCsvUURqVXFzVUNwRU1vMmNNRE45cmpXVlV0Q3EwbVZJZG40aEJJVFRqeXFLclYvSjdiZ0dTR0ZvTXNEcFBJSUFvc2FvckNoWHBpZjR6UVRYWHVGYW8wb3Y0RUZZSVNFWVhTQmI4bHZTOSs0ZmNYRnEwNjh6cXZRYU9mTmFhSDJXRHJqQmhBRjRna2hYaVB3aXJtQURTR0hNd3I2VEtvbStUS1pSU0FpbmdBZGhKc2VmN0hWRGxFUE1vVktJWkJxVldLNWw2QVpsdWg3UktCMGJOM3Z0QUFBZDNTNU92YnAxSnBWQktpUzhZZ0hoNXlLRHpSbDArd1BSSUFDQTAxLzh6cTlVc0FHazRQQkVnT1k0Q3FhaVRLb0JBS1NSazR5R1Q0V2pOSnp1NTVZQVdXdFNHVFJ5WXRaQVZLOFZRMVY1ZW9yaHlJVEhTdEdJQmdBNFBlUlhjV21TclNpVHFTVml2b2lKREJVYUVSZ3p4aDhrM1I4QUFJZVBubDhEV0F3eFFLSGtwV2dFTGkrbmpsWlFLY1F5a2lRSXVSaWNUTXM3eHJFMXFNNmswb3NGaEY4c0pId3pYWDhtOTRlaWdlOE9JTjB4RGsyeUJBRkVyVkdsMThxSVdaUGpzdVVmRFk2NkpnRUEvR0drQ3NkQU1oLzZoV09BSFBnQzNNWUVFd1FRTXFsQW9oQVRqTFg2ZUxlTDA3RExjcTFVTFpNSXhOcFovUEQxR1FaQTA5T2JIcmsyeWRaVnF3d0tDZUdhemVYTE5FS3ZMeklWZkR2bUlmY25FMndBR2ZpQzNBZkZ5NlZDaVVSSStBbUNXYVhtRGNTZ2Q1UmJ5MU90U2FYWHluSzdJQ3E1QUJxTThyUnRFeGFmUFJLbFlnQUFqa1RUWS9lUUQvd2M3cmxLcjlBSkJDUnZwajRCcFl3UFMwM3BNcVRtL3M5WDcyOHFpNk1udUlEeWhzTGNzMzNGSXI0QUFKQ1FSd1NabHBmUEdBRzVtSEFKZVJES2R0MTFqV3JJVFAxUEtoOUNRRGg5cUFJUUFFMGg2RGpMcWtrZkFBQjRKRUZXVnlvcnREUDBDamRubGNGbEJnQUlSWkUwRUVLS2VkT3Z4SFpjQTJSQU1SenRsUTAraitRQkFJZ0V3TGc1NmRnWmJpNUlaWVZjSnhUdytMbSt3Tm44LzZHVXBrZUtQamNhTUE4ajFDdWxoSjFIUXRZcUpMUDVNeFJPeWYzM3pmL1hIMkNSQk1HRmxDT2Fqd0h3Q1I0QUFKK0VLTlB5ek00d2pGbnpHQ01nbng2SWlvUThXRm1mbm5kdmRRUmMvbUI4WExIZGh3eXB4M2R5VEFPcHJsSlc4SGtFWk10UUZRcW41LzRQalhtbWN2L3RQcVNmVC8xS2JzYzFRQVljUmd4T2tYelFKTWx1MU5ReHJwMWlKcFZCSlpuK0JWN2JxQUkrTC8xR0JtZG9lb3hFYVRqVngzNldPYUdBeHpmcUZicHN0VkRUMG13eXhOMmZLQVZDVDdENHVmL1p3QWFRQVkva2JnR3hHRTBCQUpBRVVSUURxRTZNRWRESWlMUytoOHpXSHdDQW9ZVC83d3NoZGJZSnJyaktVR2RTR1RReXdwSTVPaTdUL1Vuay9sc0JBSnh4QTh6alUxTTRzQUZrd09keGZ5UXhpdVlVUVErTyt6bk52eWtRa1B3cWc2Sk1KeWVuV2xiNHZQamtYcW00dldHLzB4M3lBZVJ1ZWp6ZTQrTFVDVmhqVXVyNVBLQlVVbUlxbjV5WEpmZC9kTUo3THZkL0FUUi9KbGtVTVVBaDVaWGtrVGNmQ3NVaUFBQVVRankyNVhMcGtBS0lCNkpxR1dFbENLQVJBS3lvVjRKRWxINFBxVDJ2bWY1Lzh1Y054RGdsQTByRkFsR0ZUcWJXcHNRaXkrdW1qejhZSEl2TFFOSEFjd1pRK1h6ckY0NEJjaURMd3dCOC9uaCtDMDBENjR0d2RVRnFqRk5mWUJzQXdJWVplbitERVNRTFJKQjgyZ0Y1eWxCblVobTA4WkZxQ0NCTEJ4eENhRGhoQVBPWis1K05CU1BJUWtFaDR6WlhHSTBRU3JheVJDa1F6blo4SmwyRFhrNWpCSkpmWUoyY01CT1FkZHFSc01YdWR3RUFPR1pKUE12REFQUkNmanhEbFlEcEJqQnA4VHVTdWYvem5mdVRDVGFBRkhna0FXbzVhOTBGQUFDWE8rUkZLTzVFaDZPSTlTUjNGSTJnazBPSEZFQzhWMWdqSTgxTFRIS2trcWRuRmcrbFREdGluNlh0M2VvS3d3aUhhVnVVOFF4VmhVNU9UTlliWmFCUlRNdjluK3FBbTgwSWk4M0M2UW5PSnhBb1VQbGxLaUhuWmxDTFBlQUNpTC9rU0JURVhNcHY2M0p5S3J2T3BESUkrUkMrY0xWNldsNU9zdmt6R2dPUk40RFVzOGx3akxzTWVwMk1NSy9QTXZ3eUpmZGZHNHVCWUVIb1ZtTDdnZ21DODlIL1FzbHIxRXM1bDUvczRReEVrSUxtT0wxSFo2OEhZakgyVDBLbEVNblVTckY4M1hKTldvMGVqZEd4OFVtdkRRREF6bkRha2JZODRnQ3hrUEJ2WEtWSmF3NjFPNE1lWHlBK0JXV3VBSHdlOVIrN1FLblVHTGhOejRzUVFzTmo4U3hMYndpcHVaWWZDbE53bXVPeVIrc3UwQy9WcVVWcHZzZkkrTG5jZjd1WG1lc3hOQkVBbTR0OWsyeVpWcW95R2hSbEJwMDRUYWRTazkvc0M4ei9COEFHa0VZamg1bWJBUUFtTEg1SEtCeHZBdlVHSWE4ZVRxNWY0S1YxbW1tek5nK2w1LzR6WGtXRzY3UXQyemVhVm1kdVM3by92akJTaHFPY0p3Q2ZNN0FCSkJBS1NHaXN6dGxDT0NNOS9ZNFJBQUFFUURoOGRFVStjclJ6SENPUUNVMGpORHpoaWZlOCt0azFQWEtOUlpRS1VkcTg1L0hjLzZBSEFNRGhYUmpKYjVsZ0EwalEzS2dHUHA5OUJPd1BSRU45dzg1eEFBQjNBR201TklHbTR2WkZvWS9qR0lGVUppdytleVRSOUdobk9lMUk5NUNQODhDZ1ZKS2RYM0VaRmxiclR4SVNRZnhmSnFqSS8vS2hFT1YvWWEyV1U5bWRaeXg5ZENLSHdPeW1xd3NoQzFjM0tKWFUzSCtIank1blV6NUYwM0NjNDdRdHFTUmRzRkFVU1gxaFdqa1hlc1AwWHliSjdiZ0dBSUNxY2dtczVUQjNwc01WOHA0K2F4c0NBQWpIa05qcXBhc0tJUTlYRnlTVm9jVFgxODF4MnBGOGpUQVVqa1VtcmZHV3NZWDY5UWZBTGhBQUFIemppMGJXN2Y4SUlYU3dkZVFFbmVqOEduWFFTeEFxVElianBEMEVFemJ1UzRKWkhRRjNjazB4dTVmYnJHc25ldDBRaWJJZkk1QmtlTXhqU1hZTWNwV2hHSlM4QVRRM3FtSFRLdllOTjBjN0o3ck5pUytjUDR3VUV5NjZ0cEJ5NVZNTERLVTFQWEw3K2thaU5KenM1OVlrQzVBKzcvOUN5ZjNQeG9McENNc1hMbVZXYUVYd0QxZlZzeTZyZjlnMTBYSGEwcGNvbHpocnB0YlFxTEJ6MjdmbVlRREpwa2R2Q0tsQ01TVG1LZ05YSTR4Uk5EVTJFZStBYy9qb0NxNGRnOFhwQ0N0UkM2alVpZUcrRzFlQVhNSXUrVzF3eEQzNTBXZEQ3Vk4vVzZubG5nRFNGUHA1OUkvNndjbGhqaUpQUFBmZkM1QndQZktRb2IzTEJUVE4vdVdNVG5pdHliRVJOaS9LUzRhNXRvQ1NkSUcycnRIQ2ovOStGZWhVN0Zvc2Uvb2RJL3MrR3p5VzlQdXRYcnB5eEU0dm1Rc1pFUUpvNS9BRlRtMTZ0T1VaZkhvRE1lZ1pZZDhrbXh4L1FOUEFjL3BweGgxdzg4R2lYQ2c3R3dRQmNFR0RFcTdjV1FVcmF0bjErTkkwb2c4ZEd6dWRiUEVCQUxCNWFVUFhPTFd1NElLbTBOYmxnbDJiMlBXcnBlWCtoL05mYjdmdGpKUFY4MElJb2VIRTVGdE9QMTFPSS9aakk0ckpvak1BZ2dBUThFbVFpSGhRcGhKQ1pia0VHcXZsc0xaUkJWb2wrejZxQ1l2UGNmRG82QW1YSnpUMUtaeDAwOVZuSjZrMWhXcjF5Y1hwQVE4RXc5UzBFVjY1Q0laaUVZc3RudnRmcUtiSDFqTXV1UDdTR3NiSFQxclBwWVhrV3dNVkEzNHVENjhRYm5rbS8zaFZQYlEwRjY1R2JLelhtaHJydGFhQ1hUQUZwenZrUFhaeXNyZC8yRFdlM0lZUWtMMFdhdFc0czdBdFBybUlKaWF0dW5BMXMwNjYxTngvbTVjMkZPSWRXbDFoR0RZSG9JWmhwbXd5QUVjQWhOMUhWOHlGSGhXQ3BGeUxyZ2JJQjVwR2FHVENZK25xczQ4TWozblNwdnB3QjVDMlo1SmFNOU9Rd3JtZ3JjdkozQUJHenpVOXVvUGNzMUtueVhER3hjWUFKZ0VLa3haU0RFcmVBSUtoV0dUYzdMV05tWDIyb1ZHM09WbDlKL0dIa1dMSVRpKzFlZ3JUeTh1VzR6MXVpRkZvMmh3N21VUmpkR3dza2Z0djh4WjIycEcyTGlkY2RkSHN0MjkzQmowK2Z6ejNQeUhEZ21kUkd3QkYwVFJGSXpwRzBWUTRURVVDd1dqWUg0eUdFbG1LWG9jcjVQSDR3dE9XaFlrUDNhTXJKbHlvZXI1ejJJT0pNUUpOR1ZPZFpES2FNdTgvMitTMzJSaWNDSURWRllaeXRXam00OUk3NEJaczcyOHFSWTBCbm4xOUFKNTlmUUJXVlBJNkRDcVM4WEpDeFNCQ2dkRGxwOHVjQVZSbTg5TDZoVlI5UC81Q0QvQkppRzFiSm5oL3RvWDRLQnI0RGo4cUsvVDd1Mk5QSjhqRmhHZGpIZitUMlk3MWhaQXl5R0ZjZERFcHFSaUFSa0RTQ0VpYUJsNlVRc0pJREVUaEdCSUhvMGpxRDRQQ0gzOWgzTWRERm9FWURYeFhBT20wTXNJNjAzR09lTlBqblBUditFSklHWW9paVZoQXpEaHkzamFQcXo2eWhaL3pVeitINFh2WE9MVzJhNXhhTzNjbExFNDZoMk9iNTF1R3ozdGp1K1piaG9LUTBPK1M3QW5HWUpKZ0E4Q1VORVVOZ2pHWWhVSlN2M0VOZ0NscHNBRmdTaHBzQUppU0JzY0FtSklFeHdBWURHQUR3SlE0ODlJVGpNSE1PN2duR0lQQlFUQ21STUZCTUFZRDJBQXdKUTQyQUV4Smd3MEFVOUxnSUJoVGt1QWdHSU1CYkFDWUVnZjNCR05LazRSKzR4Z0FVNUxnR0FDREFXd0FtQkpuWGlmR1VzaUUwWVAvZC9WN21kdURvUmpQNWdxSk8zdHM2amYzOWRVYzdwek1PYVcwVmlVTy85MFZLL3AzYmpTWlRRWjVnS1lSakpwOXN2MUhSL1V2dk4zVjRQS0VwMlo0VzFxajlyNzY1RmMrVHY3OThOT0gxNzc2Zm0vYTNOOU5qV1hPRng2LzVHRHF0cXZ2Zkhmbm4vWjhaWC9xdGhNOU5zMjM3L25yZGdDQVYvWmN0bjk1bldacVFhMDdIenV3NmVoSnN5N2J2V1hpOG9hRk8yLzQ4eVhMNnpXZVYzNStXVm9aai8xUDYrb1g5M2JYQXdDc1cxbnVlTzQvTHY0MHVlL0JYeDVxZnZQRC91clU0L2MvLzgyL3FoV2lxYmxOWC8rZ3IrYkh2LzU4YXY2bFBmZnNPTHE1eVdEZmNjT2ZMcUVvUkFBQTFGUXEvRzgvZmNXSHFXVytzMy9BbENsNzZ2MENBSHorNHJmMlNzUjhLdm0zeFI0UTc3N2w5ZDNKdjltOGwvbUVxTlVJRUFEQUs0OXNTdHR4elFOSGl5YkVQMXk5K3V6M3JsdmJkZDBQM21zNTFXdFh5NlNDMkxJYXRlZnJ1NWNPWDdtclllUzlnMFBHSHozMVdYTWtTcWZWV0dzYXk1eFAvWERuMGU1QnAvTFpsMDQwZGcwNFZTUUI2SUpsT3RjL1hiZTIyMlNRKzcvL2svMmJUL1hhMWFubjNYWnRVL2V0MzFyVEU0M1I1SGZ2ZjMvYmlSN2J0RVhjN3I1NXd5bXpQU0QrL1J0bnBsYUF5WlF6dVgxNXZjYnp4RjNiVzU5NTZjVHl2M3d5YUp6cDNsTDM2WFhTMEN0N0x0dS84NFkvWDVMYzlzdjdMenF5WTZQUi9FK1BmTHo1azdheHRIbEpHK3ZVbnAvYy9vWDI2Ky8rUzB2bXMwanlMemV1UDMzajExYjJaWmJINTVIMGdSZSsrVmVaUkJDNytZSDN0N1dlc3VoU3ozdjc2U3MrdlA3dTkxbzh2c2pVa3FvenlRNEFjT1d1aHBHSC8zbnI4VHNmTzdEcHc4TWpVN1BCY1gwdmMwa3UvVjVRaStRbC8rOExSUG50WFZidGozNTVxUG1ocHcrdnZYUjc3ZGlQYnR2U21YcThUaTBKLytyK2k0NzBEcnNWdHozODBaYjJMcXMyR0k3eC9LRVkvOGdKYzlrdEQzNncxZW9JaXArNmYrY1JsVUlVeVN5dnZjdXE1WkVFK3ZuZExhMWF0VGljYTBtcG1lUkVBUENsclRVVFAvMUJTK3Q5ZXo1YnYvZVRRZU5zOXpiYnZvZWVPZHprOVVjRUQ5NjJ1Vk1tRlVTVDIwa2VnZjd0ZXhkMlBQek00YVp3bENaelhXOS82NmdlQUtCbG85R2N1bjNkcWdxSE82SGNtZnZxakVxZnpSa1V1WDBSQVJ2WnMrM1A5NzNNcFg2bE12VmNzK3hiVUx6NmZtOU42eW1MN29vdk5veWt1aGszZjJOVnIxb3Bpanp6Y21jalRhTnBVNEZIb2pUNVg2K2NiQ3hUUzhMZi91cUsvc3o5clNmTnVwLy92bjFWaFU0YSt0a1BXbHI1UEpMMW9yaTNYck9tNTd0Zlc5bjMzZnZmMzNhUzVkZnNmeDc2MHFHbE5XclBqcFN2UHdDQTFSRVVQL0c3WXhkVTZLU2h1NzZ6L25SeSszZXZ1cUMzN1pSRjE1bWx0a3FsdmN1cTlmb2pncDBialduckc3UnNxTEk4OS9ycHBYWlhTTlN5M21oSjNiZGpvOUc4djNXc0lMTmc1L3RlaXMyQ053QUFnSDJIaGlzQkFIWnVPdmRTdjdpNWVqSVNwY25qWGRhY3EwY2NPVEdwQTRpLzRHejduMy9yVE1QYkh3K1kxcStxY1B6Z3BuUEtOaHNpSVk5KzRxN3RiYlZHcGUrbUJ6N1lablVHeGN6dlpuYmUyTmRYL1ZuN1JQblhkeThkM3RKa3NEV1lWTDdMV21ySGZ2WEhqdVd6blV0UmlQaTBmYUo4WllQV1hhYVdoSlBiV3paVW1RKzBqdWtQSGh1dldGS2o4bGFWeTRMbjloa3RCOW9LWXdDRmVDL0Y1THlZSFhyVTRwTUNBQmoxOGdBQUFFa1N5RkF1RFZyc1FYRXltTXVHTHhBVkJFSXh2aWx4WGpZZWZ2cncybnFUMHZlM2x5MGZPTm5yVUwvOVVmK3NTeTQ5Y2RmMnRtQW94dnY2N2U5Y2xNc1h6K1RGSnk2ZE5xMzRjeW54UlNZL2Z2cnp0YTg5ZWZuSEQzM3Z3ZzZiS3loNjVMK09Ob1VqRktQRndnNjBqdWt2M1Y0N3ZtTmpsZm0xRC9wcXFpcGtBWnBHeExqVkw5bmZPcWEvY2xmRFNNdEdvL25sdi9UVXlhV0NtRjRuQ2ZZTnUzT3VoSmROOW13VThyMFVDejdLMGVPVmEvdGNnbEQyY29uNE9zdFQrMU9QbVUxT0l1SHFwUjJYY3AxUWhDSnZmL1RBcHBkL2V1bUJCMi9kM0hGMnlLVTQwK2RRWlNzclNmK0lXNzZseVdCNzZvY1hIYm45MFFPYlF1SFlySXA1N1YzcGdlUnZIdjdTb1pua243QUdKTDk0dm4zbEE3ZHVQdkY1NTJSWjJ5a0xzM1dTQU9DVHR2RUtHaUdpWllQUi9PcjdmVFU3TmhndEIxckg5UWdCZk5ZK1VSNk4wV1RMK2lyTFMzdDc2cmF1cmJSKzFqNVJNZE56ekpROXlaVzdHa1llK2Y3VzR3VjdMMFVrV2U1NTRRSWx2eFJqNW5oTlFOT0ltTFFHSkZxVk9NempFVGtmb1Z3cWlFckVmR3BrMGpmajNQOFdlMEI4eDJNSE5wRWtBVS9ldStPb1JpbUt6SFQ4bnVlUHIzenVqVE5MdGpWWFd2Lzd4N3MrbDBzRjdGZTBac0RKWG9jYUFHQjR3aXRqYzU3TEd4WjJkdHMwVzVzcmJRSStTYmRzT09mais0TlIvckhURnUyV0pvTk5KT1JST3pZYXpRZmF4dG10eFpxRFFyK1hZbkJlR01EdWJUVVRBQUFmSFJtZDhsTS9PaktxRndwSXVubEZ1U1BYZVp2WEdPenhZMGRtWGJDaG85dW1lZVRaSTJzcXkyWEJKKzdhM3NZamM3OUFBSUNmUFhkczFYLy82ZVN5ZFN2TEhmLzd5TzVEc3hsTkpyYzh1Ry9yd1dPRlVieHM3RzhkcTVDSytiSHQ2NnNzeStzMW51TmQxcW5nK1VEcm1GNGs1RkZibWd5MkRSZFUySStjeU4zUHdwWkN2NWU1aHB5OW9haVlqVlRUOS8zdFZ4b0gxcTBzZDd6NVlWLzEyU0duTXJuOU42K2VYT2J5aG9XM2ZXdE5EMGtDeWp4UEtDRHBXNjlaM1dPMkI4UXZ2SFdtbmtuajVHc2Y5TmE4dUxlN2JrdVR3WGJGcm9hUjZjZWt5L25MUHh4Zjhlc1hPNWF2Yk5DNGYvOGZGMytxMTBsQ2JPNE5BRUhibjY1OVZ5cm14WmczTkRMNzdUOGEvMWpjY1VQem1iWlRaaDFOMDhUVXZrUlQ2VDllcy9yczJVR25NaEtseU54bHoxVCs5UDM1djVlNTFyRjBtUmRrRFNDVENHTHJWcFk3Zm5MN3R2WWYvdjJtays4ZEhLcDYrSmtqVGFuSDJKeEIwZmYrL2FQTnkyclYzbWNlM0hXNGVVVzVReVRrVVdJUm45cTBXbS8vemNOZlBxUlJpU08zUHZUaGhiNUFWSkNyckV3ZS8yM3I2cU1uelRxWlJCQmpjdnl6TDU5bzNQTjgrOHA2azlMMy9LTVhmMXB0VVBqWjN1OWNjSGJJcFp5dytpVU5KcFh2UU90WVdrMHpOTzZWRFkxN1pVMk5aYzVDdGY0a21hdjNNbGNRSm5VOElmVFZuNlN2dnZPTis0L01lZUVLbVRCNjZBL1hURXNYQ0Vjb250VVpGSFYwMnpSdjdPdXJQdFF4VVo3ckdocWxPSExqbFN2N0x0cGtORmNiRkFHQXVNKzg3L0NJNGZtM3pqU2s5bXd1cTFGN1gzL3E4bzlUei8vbW5lL3U3QnB3S3RPdktZcTg5Tk8vK2VURnZUMTF6NzF4ZWtrMk9UdDdiSnJyN241dktqWGc3NzY2b3YrZW16ZWVBb2luY3V5NitiWGQyZTR0RzV1dmZlbHZBcUZZV292Y0gvL3owb05OaldYTzFHMWJyMy9sVXE4L3dsaHBmblRyNWhOWFg3SnNhT2VOZjc3WW1aRjZjUGRORzA3ZGNNWEsvbDAzdmJyYjRraHZ4bVZ5djBkZnVuWmFLc1N1bTErYlNvVmc4MTZLUVM3OW5sY0R3R0NLUlM3OVhwQXVFQVpUTExBQllFb2FQQ0lNVTVJazlSdVBDY2FVSmduOXhpNFFwcVRCQm9BcGFiQUJZRW9hSEFSalNwS2tmdU1hQUZQU1lBUEFsRFRZQURBbERUWUFURW1EZzJCTVNZSjdnakdsRGU0SnhtQ3dBV0JLSEJ3RFlFb1MzQkdHd1FBMkFFeUprOU1BM254MGM2NWRHTXg1eFV5NlBHVUFWOTZIQjhGalNvTlVYYzhaQkFQZ1FCaXpPRW5WYXhJQWNzN2lpOEVzY2doQ3IrQURwQmpGVzQrbCswdFgzSXRkSTh6NXl5ejZUT0JXSUV4SmsxeHJpc2cxaGVoYmoyMHUydlNsK0lkL2hmeGxmdjBoZlQrQklFc3o2RmV4eTROWnBHVFRiVVl1ME50WkxBbURXY2d3MWRsVUE1aHFEY3BtS2RnSU1PY0wyWFExUTZlbmREMW5EWUNOQUhNK3drRDUwOGhjY0psSS9mdnlMQ2ZPZDJDRGYvZzMweStUeSs4OWtubE1tbzVuV3lhVnlIRXRBQUI0SjJGaDJZd0RnNWt2M21IbW5VenI5TTNsQWswZG1FdlJHUmFJd2N3NXVYVHg4aHgrZjlyR2Nubk90YkxUYW9GM0hzOVJ5RDI0SnNETUh5ejBNcnNCbE9VMkFJQU1JM2czUjJFQUFGL0Job0FwSWl4MU1XZSsyMndHQUpBbEhzQ0dnSmt2T09qZWpNbWVUQXdBZ0tVUk1CQUtnMkZFbm5vMmE2WXpVd05Jd3RnbHdtQ0tCUnVYWjlxQkxBMEFJSS9hQUlNcEpGeS8rbWtINjlnYkFNQU0vUVI3c1RGZzVwRExabmFwV1EvdTRtb0FTWElhQWdBMkJreGhtRVhwQWZJWTFaaXZBYVF5b3pGZ01BV21JRU41QzZiOWtDNFFOZ2JNWEZEdzhldi9Ed1psWnRRdWM1bEdBQUFBQUVsRlRrU3VRbUNDIiwgInNpemVzIjogIjE5MngxOTIiLCAidHlwZSI6ICJpbWFnZS9wbmciLCAicHVycG9zZSI6ICJhbnkgbWFza2FibGUifSwKICAgIHsic3JjIjogImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBZ0FBQUFJQUNBWUFBQUQwZU5UNkFBQmJhRWxFUVZSNG5PM2RlWHdrVjNrdi9LZXE5MFhkclYwYWFTVE52dTllWnNZMk5zWUdCekFrSm9Gd2dRQ3hJUkFJTzJHNU5pR0V6U0VRREplUUFBYnVDNFJBQ0NiMmhRQTIzajFlWnQ4MW1rM1NhSmRhdmU5ZGRkNC9XalhUYXJVMFhiM1Y2YTdmbDA5LzhHaTZ1bytxZStvOGRjNXpuaVBjMUdzbEhXTmFOd0FBQURRbGFOMEFyUmdaMDBVZnFJdGZFZ0FBVkZ1c2Y2ajd3TUNvZFFNcVJGV0gvOVZQN0twVU93QUFnRU1mdmYvZzFaNlMyNC9VWFVBZzNOaGowYm9ONVZCUWg0K09IZ0FBbGxKQVlLQ28rWUNnMWdPQUpUdCtkUGdBQUZDS0FnS0NtZzBFYWpFQVdMVFRSNGNQQUFDVmRKV0FvS2FDZ1ZvS0FORHhBd0FBRitvaEVLaUZBQ0J2eDQ5T0h3QUFlTEJFTU1CMUlNQnpBSUNPSHdBQWFrYXRCUUk4QmdEbytBRUFvR2JWU2lEQVV3Q0FqaDhBQU9vRzc0RUFMd0hBZ3M0ZkhUOEFBTlNEUlFJQnpZTUFyUU1BZFB3QUFLQUx2QVVDSXFOTUw2ekJnK1grREowL0FBRFVxNjkrWWxkQmZXRzFIc0lOMm93QXpMdnoveG9ISGY5SENpLy9DQUFBTll6VFBxZnFJd0hWRGdBV0RQbFgrNE5BUnc4QUFQbHcwaDlWTFJDb1pnQ2dTZWVQRGg4QUFJcWhZUjlWbFNDZ1dnRkFWWWY4MGVrREFFQTVhZEJ2VlR3SXFFWUFVTFhPSHgwL0FBQlVVcFg3c0lvR0FaVU9BQ3JlK2FQVEJ3QUFMVlNwVDZ0WUVGREpBS0NpblQ4NmZnQUE0RUVWK3JlS0JBR1ZDZ0FxMXZtajR3Y0FBQjVWdUs4cmV4QWdsdnNGQ1owL0FBRG9VRG43cUR4OVo5Nzlja3BSN2hHQWluVCs2UGdCQUtDV1ZMRC9LOXRJUURsSEFORDVBd0FBVVBuNnJrcU9CQWg3eXpNQ01LOUIvMXlHenYvRDZQZ0JBS0FPVktoUExIa2tvQndqQU9qOEFRQUFGbEdPUGkxUDMxcnlTSUN3ZDNsSkl3RHpPLzlQbHFIei96STZmd0FBcUQ4VjZpT0xIZ2tvV3dCUTZpK0dqaDhBQVBTZ3pQMWwwUUZBS1ZNQTZQd0JBQUJVS3JYUHkrbHppNTRLS0RZQUtGc1dJanAvQUFEUW16TDNmVVgxeWNVRUFHV2I5MGZuRHdBQWVsVktINWluNzFVZEJKUzBDZ0NkUHdBQVFQSEtIQVNvb2pZQUtNdThQenAvQUFDQWpESUdBYXBHQWRRRUFHV1o5MGZuRHdBQU1GOForOGFDKytxaXBnREtzWllSQUFBQVNsZHNuMXhvQUlDaGZ3QUFnQXFxOWxTQXNlejdDeTdpUStqOEFRQUFsdlNoTHgra3J4ZDVvNjIyUHk5a0JPRHlheGJiS0hUK0FBQUFoU20yei95NnlsR0FjbTRIREFBQUFEWGlhZ0VBN3Y0QkFBQ3FyQnFqQUJVZEFVRG5Ed0FBVUp4Szk2RkxCUUFsMy8wREFBQkFkUlU2Q2xDeEVRRGMvUU1BQUpTbWtuM3BZZ0ZBU1hmLzZQd0JBQURLbzVnK3RaQlJBS3dDQUFBQTBLRWxBd0RjL1FNQUFHaXZES01BQytRTEFLcFZIQkFBQUFDcVkwSGZYdFlwQU56OUF3QUFWRWE1KzlqY3ZRQXUvL0dCSW9iL01YUUFBQURBajY5L2NoZDk4RXJnd0loSVVQNkFKRUFBQUFBZHloc0FGSFAzLzBFTS93TUFBRlJVTVgzdFluMDZSZ0FBQUFCMEtEc0FLSG9LSDNmL0FBQUExVkZpbjN1NXJ6ZVdKWE1QMlg4QUFBRDh5dE5QTDVnQ2VPQlQyUGdIQUFDZ251VHIyMHZPQWZqZ2x6RDhEd0FBVUUzbDZIdVZBQUNEK0FBQUFQckFpTEFLQUFBQVFKZm1CUUNZL3djQUFLaFB1WDE4U1NNQW1QOEhBQURRUnFsOWNPNWVBS29nY1FBQUFLQjJaUGZieUFFQUFBRFFJWkZ3SXc4QUFLQTNEQ01BQUFBQU9uUTVBUGdHVmdBQUFBRFV0ZXkrdnVnUmdBOWdCUUFBQUlDbVN1bUxNUVVBQUFDZ1F3Z0FBQUFBZEFnQkFBQUFnQTRoQUFBQUFOQWhCQUFBQUFBNmhBQUFBQUJBaHhBQUFBQUE2RkRSbXdHaGZqQUFBRUR0VWZwdmpBQUFBQURvRUFJQUFBQUFIVUlBQUFBQW9FTUlBQUFBQUhRSUFRQUFBSUFPSVFBQUFBRFFJV1BSNi9td0RoQUFBS0QyelBYZkdBRUFBQURRSVFRQUFBQUFPb1FBQUFBQVFJY1FBQUFBQU9nUTlnSUFBQURRRWV3RkFBQUFvR01JQUFBQUFIUUlBUUFBQUlBT0lRQUFBQURRSVFRQUFBQUFPb1FBQUFBQVFJY1FBQUFBQU9nUUFnQUFBQUFkUWdBQUFBQ2dRd2dBQUFBQWRBZ0JBQUFBZ0E1aEx3QUFBQUFkd1Y0QUFBQUFPb1lBQUFBQVFJY1FBQUFBQU9nUUFnQUFBQUFkUWdBQUFBQ2dRd2dBQUFBQWRBZ0JBQUFBZ0E0aEFBQUFBTkFoQkFBQUFBQTZaQ3k2cEI5S0FRSUFBTlNldWY0Ykl3QUFBQUE2aEwwQUFBQUFkQVI3QVFBQUFPZ1lBZ0FBQUFBZFFnQUFBQUNnUXdnQUFBQUFkQWdCQUFBQWdBNGhBQUFBQU5BaEJBQUFBQUE2aEFBQUFBQkFoeEFBQUFBQTZCQUNBQUFBQUIxQ0FBQUFBS0JEMkFzQUFBQkFSN0FYQUFBQWdJNGhBQUFBQU5BaEJBQUFBQUE2aEFBQUFBQkFoeEFBQUFBQTZCQUNBQUFBQUIweUZyK2dEd3NCQVFBQWFrK20vOFlJQUFBQWdBNGhBQUFBQU5BaEJBQUFBQUE2aEFBQUFBQkFoeEFBQUFBQTZKQ1JGWm5NWCt4eEFBQUFvQjJsLzhZSUFBQUFnQTRoQUFBQUFOQWhCQUFBQUFBNmhBQUFBQUJBaHhBQUFBQUE2QkFDQUFBQUFCMUNBQUFBQUtCRENBQUFBQUIwQ0FFQUFBQ0FEaUVBQUFBQTBDRUVBQUFBQURwa0xMYWtQN1lDQUFBQXFEMUsvNDBSQUFBQUFCMUNBQUFBQUtCRENBQUFBQUIwQ0FFQUFBQ0FEaUVBQUFBQTBDR2oxZzNnM1ZjK3ZJMWNEcFBXemVDYXpCakpNcEVrTTVKbFJtbUpVVElwVVNJbFV6d3BVeUlwVVRRdVVTaVNvbkEwVGVGWW1vTGhGUG1DU1pvTkppa1FUaEhEc3BMTDN2L25hMmpMYXJmV3plREM5Ly83SXIxNDNLdDFNNjdxbGJzNzZBMjNkVmZsdmM1ZEN0TlgvbTkvVmQ2ckZPOTQzUXJhczdWWjYyWVU3TDUvT1U1VHN3bXRtMUZWQ0FDZ1pLSWdrR2dnTWhxRUt6KzBGLzdWa21SR3ZtQ1NKcjBKbXZER2FOSWJwd2x2bkVZbVl4U0pwU3ZRWW9EeTJyN09VN1gzV3RYdHBBYUhrVUlSL051QTBpQUFBTTBaUklGYVBCWnE4VmhvMHlyWHZML3oraE0wUEJHbG9mRW9uUjhKMDhYUkNLWFNza1l0aFdwYjBTWWVrVllaUnk5T1NkdTlJZGFsZFh2eWFYQVlhV1czczJydkp3aEVyN3VoK2RqQmt6T1IvbEZwVDlYZXVNNXQ3akUrR1d5VUlzZUhwVnNTS2ViUXVqM1ZnQUFBdU5ic3NWQ3p4MEk3MWpjU1VXYTBZR2dzUW1lSHczVGlmSURPWHdxVEpHUCtBTFN6YmEySEJPSHF6eXVudmk1M3g1bnozZ05HQXlYVEVwbXIrKzVRTHhBQVFFMHhpQUt0N0hiU3ltNG52V3B2QjhXVEVwMitHS1JqQXdFNmNzWkgwYmlrZFJOQlo3YXRiYXo2ZTNaMU9GdU1SbEgwT01USm1hQzh2T29OZ0xxQUFBQnFtdFZzb0Izckdtbkh1a1o2NjJ0NjZkU0ZJQjA0T1V1SCszMlVTR0dxQUNyTFloSnB3NHFHcXIrdndTQ0t5enRkcmQ2Z2IySW1TQWdBb0NqWUN3RHFoa0VVYU10cU4yMVo3YVkzLzFFUHZYUmlscDQ1UEVORDR4R3Rtd1lsWXNUbk5XZmpLamVaak5xc3B1N3JkbmVjSC9ZZkUwU1NaSmtNbWpTaUR2SDZYU3NuNWZmRENBRFVKYXZaUUMvYjJVb3YyOWxLUStOUmV2U0ZDVHB3MmtjeThnV2dqS3FaL1o5citUSlhtMUVVbU5zbVRQc2lyRU96aGtETlFpRWdxSHU5blhhNjUwOVcwaGZldDRWZWNWMjdabmRzVUY5RVVhQ3RhenlhdmIvRmJEQjF0am1iR3gzaWhHYU5nSnBtTEhxc0F6ZFNVR09hM1daNjB5dVgwNnYydE5Pdm54bW5ady9QOExtQ2dNTW1hWTdEY2RtMXk1MWt0Mm83OHQ3YjdXNGZHZzhOQ0VTTU1hcnlXb1NyNE96ektoaUgzN1d5bS92OWNDc0V1dU5wTU5OYlh0MUwvL0MremJSemZmVXp1S0UrYk9mZ3U5UFg3VzQzaXBScXNBcjhsMHNFN2lBSDRDbys5cldqUkVTMGZZWHhNWk9CaXE0VGVkY2ZyYnVwMldOelhmMloxWEZoMkQvMmgrY0dENnM5emlBS290RW9Hb3hHMFdnMGlxTEpJQm90WnFPcG9jRnNkemtzOWdhbjJlNXltdTF1bDlWaE1vcGNmNzlhUEJaNno1K3RvdE1YZy9RZnY3dEU0OU14clp0RVJFVGYvSSt6UkVTMHB0T3czK01RcGdvOTdnMS90TzZtSm82K1k0b25uaDg2Y203UU42cDFPOHB0MjFxUDFrMGdoOTFrYTJteXU2Y0M0Y2xnakxWbzNaNXNQM2o0SXYzZzRZdTBvdDF3dEtWQkdDbm1OZDd5eDV0dXM5dE1sa0tmZi9ENHhNQ2hFeE5uaTNrdlBlTDZBZzM4a1dRbVMwbEpUaVNsMUx5L21Kei9QRUVRaEpaR202dWoxZEhVMGVaczZtaDFORmt0Umk0TGxteFk0YUxQdkhzai9mcVpjZnJOcytNMW15ZzRPQktZNURFQTZPdDJ0OWRiQU5EVFlhZG1OeDlmNTk0dVYvdllWUFRTMExTOFNldTJsRk5iaThPanB2TW5JaG9hRFV4ZS9WbWdRQUJRb0NNWDA3ZVZjdndmSmZqc1ZHYkRiTm41Q1dtSDJ1TUVnV1NEU0pJb1VGb1VCVmtVS0cwVUtXVXhDVkdMaWFJV2t4QU54eVBSeVpub3BlTm5waThTRVhXMk9adlhyR2pxV3JIYzNXazJHYmo2N2hsRWdWNTM4ekxhdGNFalAvaXJRWEZrTXFwMWsranN1SFN0bXVkUFJtWnA1MmIra3NHN08xMnRCbEVRejQ2bnQvSmF6bGN0TGJQL2MvVjFlem9PSHA4WWNGaUVRQ1RCdU50RjZ1S2t0TzNpSkcxVGU5eGR2ZXJxSzRRanlaalhGd3NTRVkzT3ltdkhadVUxYXQ5VGI3aTZDRVB0WUl6RXRFUWlFWm5tWmN6RTVnYzZBaEd6VzRTZzB5Yk0raUtoMlV2ajRYNkxXVHpSMSszdTJMUzJwYSs5eGFIOVJHcVdyamE3K09tN043RC9mUFFTUGJGL2lxK2txcXNZSG8vU2JDQkpUWnpjbVNwTVJ0RzRyS09oWlNZWW1QU0dwRG9KQVBqNTJqWjVyQTBOVHJQZDQ0aFA4aGdBRkV0dGtEV1lkZmZ2ajdEMmNyZW5IaUVBZ0lwaVJFSWt3ZHlSQkhOUCtta0ZFVkdEVGZCTytyeWpBeGQ5TC9WMXU1cXUyZHE1dHFYUnhzMkZ5MmdRaERmZjBVUHIreHBTUDNoNDBCUlAxRTU1NGFNRGZucjV0VzFhTjJPQnZpNTMrOUJJOExRZ2tNeFliU2NmTjNzczFOMXUwN29aOC9SMXV6dW1aaE1UbzdPMFZ1dTJsRU5IczVVNm1xMnFqaGthQ1V3UUVTWFRaSXNtR0hkVFlUeXE2WCtJVUp0Q01kWjhjVXJlZXVSaSt2WW5EL202ZnZTci9wT1BQbnZ4WURpYTVDTUxiODZPOVkybWUrL1prR3J4cUpxRzFOVGhNMzZ0bTVCWFQ3ZXJYUlFwN2JJSk0xcTNwVlE3T0JyK1YvUjFlOXB0WmlGa01RbmF6MTJWZ2RxNy8wUlNTazFNUldhSmlIeGhHWGYvQlVJQUFKcVJHWW16WWJiczlJaTA5L2N2emk3LzhhLzZqL0tXTE5iV1pEWGQrNjRONmJVOXpwb1lCaGdZQ25HNUlaTGRhckswdFRnOGpVNmg1cE8wZUpyL1Y3UzNPQnF0RnFPNTBTSFVSVkVndFVzc0w0MEZwMlRHR0JHUkgxVVJDeVlXVy9PQTRhSDZ3U3V0endzakluK1V0UjA4bjl6OW5ZY3VHSDczOU9DSkJhc01OR1MzR28wZmZ1czY0WnFOalFtdHo5UFZIcExNNlBoWmY4WE9SU242dXR3ZEhvYzRxZlU1S3VYaHNCbHBkWSt6QW1lbk5JSkFRbStYcTkzakVHcjYvRElpY2psTnRLTExvZXIzSDV3Yi9rL0xaQXJHV1pQV3YwTzFIMm9weDJFRUFMamlDN09PaDU2WldmL0RYNTQ1RjRyd015VmdNQWppUFhldE5OKzB2Wm43bllXT0RQaTFia0pldmQydWRwT0JFazZyNE5lNkxjWGF1dFpEb3NCbmJtaGZ0NmU5d1NiNGpBWkthdDJXVW14YjYxRlYwbENTbVR3eUhwd2hJZ3BFV0J0M0ZSRTVoZ0FBdUNQSlpEeHdOcnJoRy8vZUg1b054TU5hdDBjaENvTHd0dGV1c045MmJVdFE2N1lzNWZpNUFLV2xZdTRMS3N2anNqcmRMb3VqbG9lcGVaei9WM1IxT0Z1TlJsRnNkSWcxUGMyaTloeVBUb1JtVW1rNVRVVGtpOGdZL2xjQkFRQndhM0FpMlhiL0Q4Nklrek1SYmpwY1FTRGhqYS9xYmJoNWUrT3MxbTFaVENJcFUvOUZiazdaUEgzZDdvNUdSMjNtQVppTUltMWN5Vzl5dWNFZ2l0MmREYTIxZW42Sk1ydDRybCtoN2h3UGpXU1cvekZHWWlES1Z6VkUzaUVBQUs3TmhsTDJyLzc0ck1VZlNuQXpIU0FJZ3ZEbTE2ejA3TjdrbnRhNkxZdmhkVFZBYjVlNzNXb1d3bGF6d1AxVVNxNU5xMXhrTnZGOXllenJkbmU0N01LMEtCSi9tYUFGMkx6YVRVWkQ0U1A0akJGVHF2OEZvcXhGa3JHMFhRMit2ODBBUk9RTHBTMFAvUFNzS1ptU3VMbW9HVVJCL0lzN1Z6V3U3N1Z4dWF6dDZJQy9xT1NnU210cmRuanNWcE9sRnFjQmVCNytWL1FzYzdjWlJZRzU3UUszd2VsUzFKN2pLVy9FSDR1bkUwUkVQaFQvVVEwQkFOU0VrY200OGJ1L3ZNQVk0NmRmTTVsRTQ3dnVXbTN2YkRaeHR4TmJJSnlpaTZQODNXUUxBZ2s5WGE3MldodW1GZ1dCdHE3eGFOMk1xN0tZRGFhT05rZFRvME9zdVFETElBcTBlYlZiMVRISzhEOFJDZjRJMXYrcmhRQUFhc2FSZ1lEeHQvdkd1VmtlU0VUa2NscnNmM1hYS3NGdUViaEpWbFFjT2VQVHVnbDU5WFc3MjUxV3dWL0s3cHJWdG5xNWs1ejIyaGhkN3UxMmQzanN3cFFnOEJNc0YySmRYd1BaclFaVnh3eU9acGIvaGVQTWs1S29kaXAyY1FJQkFOU1UvMzV5ekR3NkZVMXIzWTVzWFIzT3B2LzF5bVhUdkMyLzRqVVBZRmxIUTR2SktCbzhOWlN0dm4yOVIrc21GS3l2eTkxdU5GQ3F3U3B3bTZpYWo5cmhmMzh3SGc0RUV4RWlEUDhYQ3dFQTFCUkpadlNEaHdlTmpMTjdtK3UyZGZUZHZNMTlsb3FyeTFFUkV6TnhtdkRHdFc3R0FnWlJFTHM3WGEyMVZCVncrMXFQMWswb21OTmh0alUzMmx5MWxtZXhUZVU1SGhvSlh2NysrRkQ5cnlnSUFLRG1ESTFINmJramZPWGVDWUlndlBhVzNwVXIybzBYdEc1THRpT2NqZ0wwZGJ2YjNUWmh4aUFTVjZNNStYUzMyNmkxc2JaR2wvdTYzUjBlWisyTXNQUjFPcWpScFc0WFMyWDRQNTVrem5pU3FTc2RDRVNFQUFCcTFFTlBqRkl5SlhOenQwMlV1Zk42M1MxZEJwNkdYbmtOQUpZdmM3VVphaVJidlpidS9oVjkzZTUyaTVGaWRvdkFaMEdJSEdxbldLTHhWR0pxSnVJbnd2Qi9LYkFYUUpVZXZOTDZ2QlQ3Q0VSUzlQaUJLZTVLZm01YTA5cTdaM1BEQlZHa3ROYm5pQkhSK2RFd0JTTmM1VTBTMFpWczlWcllHMkQ3T25VYjAvQ2d5V056TlRqTjlrYUhNS0gxK1N2a29YYitmemhyK0g4MndqcTBici9XRDdXVTR6QUNBRFhyZC9zbUtKV1d0VzdHUElKQXdxMjdsNjlkM2l5ZTBib3RSRVNNRVIwZENHamRqTHo2dXQwZEhnZmYyZXBOTGpQMWR0cTFia1pSK3JyYzdiV1FaOUhhYUtGbHJUWlZ4d3pPRmY5SlNXUUp4NW1uRXUzU0F3UUFVTE5DMFRROWY0eTdKZmpVM0doejNiU2pSZUpsMDV2RG5DNEg3TzEydHh0RnZyUFZhNkg0ejJKNnU5MGRkck1RdEppRXFOWnRXY3BPbFZ2L3B0SnllbXdpTkVORTVNUGEvNUlnQUlDYTl0aExVMW8zSWE5cnQzYXVYZDFwUEVuRmpkQ1YxZW1MSVVxaytCb3BJU0p5MnVleTFaMzhacXR2citFQW9LUFYwV2kxR00yOEYxMVNlNDVIeG9QVGtzeGtJaUpmR1BQL3BVQUFBRFZ0YkRwRzUwZTRxOEZEZHB2SmV1M20xcVpXbHppcWRWdFNhWmxPbnVkM0dxQ0owM29BZHF1QjF2VTJhTjJNb2dtQ0lQUjB1ZHFiT0Y0TzJHQTMwdXB1cDZwakJ1ZXEvMGt5R1lNeGJQNVRDZ1FBVVBPZTVXeEpvR0xyK3JhVmZhM0dzNktnL2NZc3ZCWUY2dTEydDV1TkZITndtSzIrZFkySFJKRzdQRk5WK3JyZDdVNmI0T090U0pWaSt6b1BDU3BPc2N3WXV6UVduQ0lpQ2tSWnE4elFoNVZDTERtTkVJL0twR2xXaTlibnBReVBnNmQ4bEpiNE84azJxOUd5ZFYxelc3dGJITkw2SEIwYkNKRE0xNnBKSWlKcTl0aGNEUTZ6cmRFaFRHaDlqbklmdFR6L3IranFhR2d4R1VTeDBTNU9hbjArODU3anRlcm0veWVtSXJPSnBKUWlJdktGNVhhdDI4L05RNjI1NHhBOVFjMkx4aVU2ZFlHN0cwZ2lJdHF5dm5YbHNpYnhvdGFqQUpGWW1nYUcrWnNxSWNva3EvRTJUMjAwQ0xSNWxWdnJacFRNYUJBTjNaME5YRlpkTkp0RTJyQlMzUlRMNEVpbStBOWpKUGdqckswaURkTVJCQUJRRnc2ZTltbmRoTHljRHJOdDFYSzN1ODB0WHRLNkxid1dCZXJyZHJmYkxVTFFZaEppV3JkRnNYR2xpeXhtZFpmSGtZblFkRnFTTlovdXlkWGI3VzUzMjRVWnJZUFFYSnRYdThsa1ZIZU9sZDMvUWpIV2xKYkpWSkdHNlFnQ0FLZ0x4ODhHaWhvSnE0Wk5hMXY2T2hyRkMxVGNZRjNaSE83bk0wanFhSFUwV2N3R0UwKzE2M2VvWEpwR1JIUit5RGMyT3JjOGpTYzltYXFMc3R2QlY5VkZ0Vk1zWGw4c0dJNG1ZMFNvL1Y4dUNBQ2dMZ1FqS1JvYWkyamRqTHk2T2hwYVdqeG1vZEVoYUxwbTBSdEkwcVZKL3BhRVo3TFYrU2xhSXdoRTI5YXFHLzVuakxIaDBlRFU0Slg5NmJsaHRSak5IYTJPSnA1V1c0aWlRRnZYcUR2SHl2QS9FZEZzR092L3l3RUJBTlNOL3NHUTFrMVkxT3JleG1YdEhuRlE2M1ljN3ZkcjNZUzgrcnJjN1EwMllkWm9JTTNyRnEvcWRwTExvVzUwZVdJNjRvc24wc25oMGVDa3pOdFdsWlNaWnZFNGhDbEI0MUVveGRvZUp6bHNSbFhIS01QL2tRUnpKZE9rcm5RZzVJVUFBT3JHR1o0RGdMN0dMcmRkbU5HNktodXZlUURkblEydFJvTW9lRGhJQml5bStNL1EzTjFwTEpGT1hSaUpjTkhKWnV2dGRuY1lEWlJzc1BGUmRWSHRGRXNva294NS9iRWdFWkV2ak9IL2NzRm1RRlY2OEV6cmMxT3V4OEJ3bURpOCtTSWlJby9MNm14dXRMbWFHNFF4TGMvUjBFU1V2QUgrbG9RYmphS2hxOFBaMnNqQjVrREZMUDlUYXRPSFlxenhVTCtQdStJQkRZN0xWUmMxUDcrTTFBZFpROW5EL3hIV3JuWDdlWHVvcFJ5SEVRQ29HL0drUk9NejNDU1NMOURiNVc1dmFSQTByd3pJNnloQVg1ZTczV01YcGtXQk5LdGJ2S3pWUnUzTlZsWEh6UHJqb1ZBNEdTWEszSjF5TzgyU1dXNnBlYUpsVDRlZG10MW1WY2NNelFWWWlSU3pSUlBNVlpHRzZSQUNBS2dyRnpsTkJDUWk2dWx5dGR2TVFsanJxbmU4Ymc3VTArVnVOeGhJZHR1MXkxWXY2dTUveEQvdjduVEtsNkRSS2Y0QzBkNXVkN3ZGSkdoZWRYSEhlbytxNXllU1VtcGlLakpMaE96L2NrTUFBSFZsY0l5L0xIZEZhNVBkYmJlWkxGb1h2VGt6Rktab25Lc2w0VVJFWkxNYXpXMHREbytXcXdHS0NRQ0dSak43MDBjVHJDR1JZbllpUGtzdlg2NjZxUEhtUzJyUDhmQllZRXBtbWNtOVdXeitVMVlJQUtDdWpIQjQ1NVd0cTcyaFJlc0FRSllaSFQzcjE3SUppOG9NVTR1VFZOelVaa2s4RFNicTYzS29PaVlTVGNWblpxTUJvdmwzcHp3R0FFU1paTUFtRGI5L0xSNExMVyszcXpwR1dmNlhsc2dVaXJPbWlqUk1weEFBUUYzaGNlZzFXMGVibzlsaEZRSW1JeVcwYkFldmVRQzlYZTUyVXlaYjNWL3Q5OTZ4emtOcXMvZVV1V21pK1hlblEyTVI4Z1g1UzdiVXV1cWkycnQvU1pMbGtmSFFOQkdSUDhyYUdGUDlFY0VTRUFCQVhZbkUwaFFJYTc2VWZGR2RiYzRtSWlLM1RkQzBZdHp4Y3dFdU4xQnlOMWdjalc2clU0c3RiSGVzVTEvOVQ3azdUYWJKR2trd3QvSnpSa1JIQnZ4bGExdTVkTFE2bXF3V28xbXJMWUxWenYrUFRvUm4wdWxNZWVYWnNJejUvekpEQUFCMVozSlcwNXZySmJrYkxBNmIxV2h4MlFTdmx1MUlKR1Z1TjFEcTdYSjNWRHNQd0dZeDBMbytkUnZUSkpOU2Fud3E3Q1dhMjVrdUI0L1RBSUlnQ0QzTFhHMWE1Rms0YkVaYTArTlVkY3pRYUNiQWtobUovaWhyclVqRGRBd0JBTlNkcWRtNDFrMVlVa3VUM2UzaW9DQUxqeDBVVVdhWTJtb1NJamF6VUxYdEM3ZXNkcFBSb0c1MGVYZzhPQzNQbGYyYnpaT2Qzbjh4UkxFRWY4bVd2ZDJYcXk1V2RZNWkyMW8zaVVMaDU1Z3hZa09qZ1NraW9rQ1V0Y2d5R1NyV09KMUNBQUIxWjRyakVRQWlvcFpHbTh0cUZpSW1nL1o1QUR3V1RtcHR0bnZzTnBPMXFZclo2bXFIcG9tdUZLZEp5MlFLeGxoejd0OUxNcU5qWndPbE42N011anNiV2swR1VhejIzaFE3VlU2eFRIa2ovbGc4blNEQzhyOUtRUUFBZFdlV3crU3JiTTJOTmpjUmtjTXFhTm83QkNNcHVqQmF0WnRzVlhxNzNPM1ZXaTFoTkFpMFpiWDc2ay9NSXNsTXZqUWV6Q1NuUlZqcllzbHBQQ1piR2cyaW9hdXpvYVd4aXBzRG1ZMGliVnFscm41UDF1WS9naThzdDVXL1ZZQUFBT29PajluWDJabzl0Z1lpSXEwTHNoRHhQUTNndEFwK3M1RXFQcCt6dnErQmJCWjFvOHRqa3lGdktpV25pWWg4U3lTbkhUdkxaN0psWDVlN3crTVFwa1dCcWpKSHNXbVZpOHdtZGQyTnN2bFBLTTQ4S1lrc0ZXbVl6bUV2Z0NvOWVLYjF1U24zdzh0NUFPQjBtdTJpSUFoMml4RFErbHdkNHJSczdiSjJaN1BaWkRCNnFyQTNnTnFOYVlpdURQL0xqRVJmbExVdTl0cXhwTVRsTHBVOVhhNDJneWpJYnJzd1U0M3ZtZHJhLy81Z1BCd0lKU0pFUkxOaDFxSDF2eFBlSDJvcHgyRUVBT3BPTUp6V3VnbExFZ1ZCYUhDYTdRNExhZDR6VEhqak5PSGxMMmxTRkFXeHU3T2hyYW5DMmVvQ0VXMWY2MUY5bkZMOUx4aGx6WkpNUys1cmU2amZWMVRiS3NscU1abzdXaDFOMWNpekVBU2liU3JQOGVCSVZuMkZDS3IvVlFvQ0FLZzc4YVJFcWJSbSs4a1V4TlZnY1ZpTVFsUVFpZ3JneTRybmFRQzNUZkFhUktwWVJMZWl5MEdlQnBPcVk2YThVWDgwbGtvUTVjLyt6M1Zrd0svOWg1eEhYN2U3dmRFaFRnbkYzVVFXYkUxUEF6WFlsNHlSRmhnYURXYTJWMDR5Wnp6SjFKVm5oSUloQUlDNkZJN3lQUXJRNEREYkJJR1l4U2hvdm5rQnI5TUF5NWU1Mmd3R2dYa3FtSzFlVk8zL3JLMXBmWkdGNi85eitVTXBHaHpsYjVPcTNpNTN1ekZUZGJHaVMxSjNxanpIMFhncU1UVVQ4UlBoN3IvU0VBQkFYUXB4SGdEWWJTWXJFWkhOVEpyM0RCZEd3bHhXVHpTYkRNYk9ObWR6VXdXejFYY1dNZit2REUrSDQ4eVRUQmVXbkhhSXcxR1dCcWZaM3V5eHVTbzl6YUo2ODUrUjRPWDIrTUpZL2xkSkNBQ2dMdkZZZ0NXYncyYXlFQkZwVlpNOUd5TSt5OVlTWGQ3RGZxb1NVeVh0VFZicWJMR3FPaVlRU2tUOHdYaVlLSk9jVnVoeHZFNno5SGE3Mnl1NU9WQjNtNDFhRzlVbDhDdkwvMUlTV1VKeDVxbEV1eUFEQVFEVUpkNERBSnZOYUNVaU1oc3F2OHl0RU54MlVGM3Vkb05JNlVxVVR0NVpSUEdmckxYcHFvYW54NlpqTk1saGhjcStibmVIeFNSRUs3VWtWVzJCcFZSS1RvOU5ocnhFUkxONXlpdERlU0VBZ0xyRWZRQmdNWnFKaUxUZUZWQng2a0tRRWtuK0VpY2RkcE8xdGNudXJrUzJlakVCZ0xJMlBaNWtqbGlTcVNwc3oyT1ExZHhvY3prZFpsdWxpaTZwcmY1M2FUdzRMY2xNSmlvc3dSSktJNWE4a0JDUHlpelVyQ2F0ejAwRkhqeDJadG5NSm9PUmlNaHNFT0phbnl0aVJPazBveFBuK1N0YlM2VHNZUzlPbHZQM2RkbE50TEpMM2NZMHNYZzZNZVdkUzA0THN3NjE3M240dEwrNEUxQmhmVjN1OWlhbk1GSHU3MVJUZzVsNk8rMnEycUpzcnl6SlpBeEdXTFBXL3k1cTVxSFczSEVZQVlDNnhQc3lRTFBaWUNJaU1sVjVRNWFsOExvYW9LL2IzVzQyVXR4Wnh0TEpPOVo1U01XK05FUkVORFFhbUdJc2M3a3RKanY5M0VpWWdoSCtrbE43dTkwZERvc1F0SmlvclBrb2FvZi9aY2JZOEZod2lpaFRYbGxtNko4cURTY1k2bElxWFV4WVhEMm11UkVBZzZGeWE5elZPamJnSjFubTc3dzF1cTBOTHFmRlhzNXBnRkkyLzBsSlpBbkYxQ2VuTVVaMGxNTmt5NDQyUjVQRmJEQ1ZlN1dGMm5NOFBoWDJKcE5TaW9ob3RvRGxsVkE2QkFCUWwzZ2ZBVENJZ2lnS2dtQVFCVzdXMzBYaUVwMFo0blJ6b0c1WFI3bm1xUzFta1RhdVZMY3hUU290cDBjblFqTkVSSE1iMDZnY1A4amdzU3FnS0FoQ1Q1ZTd2YkdNQVpiZGFxQjF2UTJxamxIeUt4Z2p3UjltMlB5bkNyQVhRSlVldk5MNnZGVHFJWEY0SjV0TEZBWFJJRkphNjNPVi9UaDh4bGZoMzdvNGZkMmVkcnRGQ0ZsTVFyVFUzM0h6YWpjWkRlcjY3NUh4NEl5U25PWXRvVGI5eVFzaFNxVDRDMDc3dXQzdExwc3dhekJRcWh6Zm82MXJQV1FRMVozam9ibjEvOEVZYTA3SlpOTDYzMEl0UGRSU2pzTUlBTlFsbWI5cjdBS2lLQWlpUURJUDVZQVZ2T1lCdExmWUc2MFdvN2tjMHdDbExQK1RaRElHb3F5bDJQZE9wV1U2Y1k2L1pNdnV6b1pXazFFVXl6WEtvcmI2MzR3dkZnaEhrekVpb3Rrd3F2OVZDd0lBcUV1TWNkT25Ma29VQlpHSVNDRGlKbHp4QnBJMFBLRjVkZUlGQkVFUWVycGM3YVZXclJORmdiYXU4YWc2Um1hTVhWS1MwNktzcGRUa05CNlhBeG9Ob3FHcm82R2wyVmw2SG9EUklOQ1cxVzVWeHd4bGIvNkQ5ZjlWZ3dBQTZsSU45UCtYczlCNUdnRWc0bmNVb0svTDNkNWdFM3lsckp4WTM5ZEFEcXRCMVRFVFU1SFpoSktjRnBaTFhwdCtaQ0RBWmJKbFg3ZTczZU1RcGtXQlNpcWlzV21saXl4bWRWMkxVbDQ1a21EdVJKcHNwYncvRkE0QkFOUWx0VXU4dENETG1UQkZFUGdaQVNEaTh3NlZpS2lyczZIRlpCREZ4aEt5MWRVT1RSTmR5ZjVuakFSZnBQVGt0RWdzVFFQRC9DVmI5blM1MmcyaUlIc2N3a3dwcjZOMmY0VlFPQm1kOWNlQ1JCaityellFQUZDWFJKVUpTRnE0SEFCbzNaQWN3eE5SOGdhNEtVOXdtZEVnR3JvNkcxcEttUVlvWnZuZjRGeHhtbUNNTmFVbFVyZDM4Q0o0SEdXeFdvem1qbFpIWXlublZ4Q0l0cTlUT2Z3L2VtWDQzNHNBb0tvUUFFQmRxb0grbitTNXJITEdYd3pBWlFkRlJOVFg1ZTd3T0lTWllvYXArenJ0MU9ReXF6ckc2NHNGdzVITHlXbGxLMDNMNDNKQW9reFJvRWFIT0NrVWwxeE9xN3FkNUhLb2k1R1U0Zjk0aXRtakNhWnVmU2FVQkFFQTFLV2FHQUdZeTFSa2pMOEE0RENuSFZSUGw2dXQyR0hxSXJmK3pkcjhwM3pKYWQ1QWtpNU44cGRzMmRmbGJqY1pLTmxnRTRyNkFxaGRZWkZJU3FtSjZjZ3NFWkVQZC85Vmh3QUE2cExaeFBkWE95M0prbEpXbG5GWTh2VE1jSmdpY2Y0MlZNb2FwbGE5SExESTZuOUtjcG9ya1NwdmNocVBveXdOVHJPOXlXTnRLSGE1NVE2Vk9SYkRvNEZKTmhjSUYxTmVHVXJEM1lVSG9Cek1ScjYvMnNta2RMa0VzTXpoQ0lBc016ckdZZGxhb3N2RDFGTnFocWxiR3kzVTNhYXUvdzVGa2pIdmxlUzBzdTlNZDVqREFJQ0lxSy9iMDFGTUhzQ3lWaHQxTkZ0VkhhTU0vNmNsTWdXanJFbnRlMEpwK0w1S0FoVEp4SHNBa01vc0s1TVpHWWpESEFBaVB1OVFpWW9icGk1eTY5OHJ3LzhWR0o0ZTRqVFpzcmZiM1c0MUNWRzdSUWlwT1U3dDNiOGt5ZkxJUkdpYWlNZ1hZZTA4NXNMVU83NnZrZ0JGVXJzT3VkcVNLVGxOUkpTV3lLaDFXeFp6L0Z5QXl6MFZpaG1tTG1iK1g4bE9UNlNZTFZLaDVEUWVsMXkyTk5yY1RydlpwbllhUUcyUU5Ub1Jua21uWlltSXlJdmlQNXJBWGdCVmV2Qk02M05UaVlkTlpiR1hhb3ZGVXdraUlrbG0zTlk4ajZka09uVlIxVTFnMWZSbTlyQ2ZMT1QzY05xTnRIcTVROVhySjVKU2FtSXFrNXhXU3UzL3F6ME9jcHBzMmR0ZCtQbGxST1J1TU5HS0xuWG5lSEEwTThJaU14TDlVZGFxOWZlOWxoOXFLY2Z4ZlpzRVVDU2JoZThBSUJwTEo0aUkwaksvSXdCRUhFOERkTHM3Q2gybTNyN1dRNkxLeWxERG80Rkp1UXJKYVFORGZDWmI5blc3TzV3V0lXQXhVcXlRNSs5YzUxRTFmczhZc2VHNUVSWi9sTFZJTXZIOUQ3Wk9JUUNBdXNSL0FKQ0tFeEdsMG1UUnVpMUxPWHpHejJWWjVaWW11OXRoTjFtYkM5aThwcWpOZjBhemt0TmlsVXRPazJSR1J6bE10dXhvY3pSWnpBWlRVNEY3QSt4UU9jVXlOUlB4eCtMcEpGRmxFaXloTUFnQW9DNDEyTG0rc2FiSVhBQ1FsQmpYQVVBd2txTHpvL3lWclNXNlBBMnc1RHkxMlNUU3BsWHFwdThsU1paSHhqUEphYk1SMWw3cE9nMDhqcktJZ2lEMExITzNOUmVRQjJDekdHaERYNE9xMTFlRy80bEl3T1kvMmtFQUFIVkhvTXk4TDg5QzRVU1VpQ2laSm5YcnBqVEFZd2RGTkRkTWJSVUNaaVBGRjN2T2xsVnUxVXRDczVQVHF0RTVuVGpQWjdKbFg3ZTd3MlVUWm8wR1NpMzF2SzFyM0dRMHFJdVJsUG9Ld1JqenBDUlNWNTRSeWdZQkFOUWR1OVZBQnM0ckFRWkNpUWdSQW9CU2RMWTVtODBtZzNHcExXeUxyUDAvTHptdCtCWVdKcDdrTTlteXU3T2gxV2dVaFNhSE1MWFU4OVJPc2ZpRDhiRHkvY2Z3djdZUUFFRGQ4VFR3ZlVPUmxtUXBFczFNQWNSVHpLNTFlNjVtd2h1bjhabEZiN0kxSTRxQzBMUE0xYmJZTklBb0NMUjlyVnZWYTJxVm5NWmprR1UwaW9hdURtZHJrMU5jZEJyQWFCQm82MnAxNTNoK2VXVlUvOU1TQWdDb08wMXV2Z09BWUNoNXVRaDhMTW5VclozU3lDRU8xNnNUWmFvQ3VtMkMxeUJTT3ZmdjF2WTZ5V2xUTnhXa1ZYSWFyOG1XZmQyZWRvOWRtQllYMmJKNlExK0Q2b1JiWmZnL2xtVE9Xdm4rMXlzRUFGQjNtbHhsMmJHMVlyeithSkFvVXdXd0ZxWUFpUGpkdlc1NXA2dlZZQkR5RGxNWGxmMC9vazF5V2pDU292TWovQ1ZiOW5hNTJvMEdrajEyWVRyZjM2c3RzQlNOcFJKVDNxaWZLRk5mb2ZRV1Fpa1FBRURkYVhaem5WaFAzdGxZZ0lnb251Ui8rRjl4WVNSQ2dmQ1N1V0NhTUpsRVkxZDdRM08rWWVxZEtrdlRFbDJwL3FkRmNocVBveXhXaTlIYzN1Sm96TGMzZ0VEcXkvOE9qUVl2djA0bHlpdURPZ2dBb082ME5mRWRBTXo0TWh2TWhCTlVNM3VmTStLemJDMlJzam1RTUMxa0RWTXZiN2RUaTBmZDk4QVgwRFk1amNjOEFDS2xLcUE0U1RsRjUxWjJPY2pUb0c2MFRkbGZJWmttU3lqT1BHVnJKQlJGTExtV0lCNlZxOWRZTFZxZmx6SS8yaHY1RFFBWUkrYjFaVVlBSW5IbTF2cGNxWGx3MjBGMXVkb05JcVU5TnNHcnRIVlhNWnYvak9acy9sUGw4enN4dzJleVpWKzN1OE5rb0tUTEt2aXkyNnYyN2orVmt0T2preUV2MGR6eVNnNiswM1h6VUd2dU9Pd0ZVTVVIcjdRK0wrVit0RFh4TzYwKzY0K0ZrcW5NVnNEaEJITnBmYTdVUEU1ZURGSTh5ZDk2ZGJ2TlpHbHJ0bnVhbk1LRTB0WWk1LzhuaVlpaVNlYU1KcGxEaTNOOGtNTWd5K1cwMkJ2ZDFvYmN2UUhVenY5ZkdnOU95ektUaVNxN3Y0SWVIMm9weDJFS0FPcEtvOHRNRGh1L1pZREhwOExldWY4VXduSG0xclF4S3FYVGpJNmZDMmpkakx5eWhxbXAyVzJtbmc1MTZSWFJXQ28rUFplY05odlNMam1OMTJUTHZtNTNlM1BEbGVXVzdjMVdXdGFxTHRCV2h2OGxtWXorS0dzdWN4T2hDQWdBb0s1MHQvRjc5MDlFTkQ0Vm5pVWlDaWRZZzhUNVJrRDU4SGlIU3BRWnBqWWJLZEZnRmZ6RjNQMHJ5WDlFUkY0Tms5TXVqRWJJSCtJdjJUSjM4NlZyVko1aldXWnNlRHc0VFVUa2k3Qld4dEQzOEFBZkF0U1Y3alorRSt0bG1iR3h5ZkFNRVZHd1J1K0FqZzc0U1pLTEdYU3NMSS9MNm5RM1dCek5UbUZ5bDhxaGFhSXJ3Ly9KTkZtMVRFNWpqTTlreTh1Ykw4MnRCbEFiWkkxUGhiM0pwSlFpSXZLR1pTei80d1FDQUtncks3djREUUFtcGlPenl2eC9JRnE1SGVZcUtScVg2TXdnZjJWcmlUTFRBSjNOeHBtMXZVNVZ4eVZUVW5wc01ud2xPVTFqUEM0SEpNcU1BalE3aFFtMzAwU3J1dFdkWTZXK0FtTWsrTUtWTDY4TWhVRUFBSFZseFRKK0M0c05qd1dtaURJWHdVQ1V0V2pkbm1MeDNFR3Q3L000MU80RE1USWVtc3BLVHRNOEFEaDFJVWp4aEtSMU14Ym83WGEzTzYxQzROb05ucFNnY3F1Tm9kSE1kejhRWTgxcG1maXUxS1VqQ0FDZ2JyZ2NSbXJsZUFuZzBFaHdnb2dvR0dOTjZScWMvMWZ3dWh5d3JkbmhXYis2dVVmdGNjcndQeS9KYVdtSjBiRnpRYTJic1VCbm03UFpiRGFZcnR2a1dWQjJlU2t6czlGQUpKcUtFUkY1TlV5d2hJVVFBRURkV05lcmJrL3lhcHJ5UnYzQnVTMkFaOE9zVGV2MmxNSWJTTkxRZVBUcVQ2d3lRU0NobzlXaGFtcEZsaG03TkJhY0lpTHlSVmdiTDhscFBLNEdFQVZCV05YVHVHejFjcGVxS0h0KzlUKzVwci83OVlhTEx6dEFPYXp2NHpjQU9EZm9HMVgrdXg1cW9QTTZEYURXK0ZUWXErUmxlRG1ZLzFjY1BSc2dTZUl2MmZLYXJSMXJEUVpCVmIraGpMQ0U0OHlkU0pPdE1pMkRZaUFBZ0xxeGFTV2ZsWFZseHRpRllkOFlFVkVvemp5MXNBWHcxZkE2RGFCV1RuSWFOM2VuMGJoRS9VUDhKVnRhTFVaVit5T0V3c25vckQ5VCtwcUgvQXFZRHdFQTFJWFdSZ3QxdHZCWkEyRHdVbUJDMldKMk9zaTZ0RzVQT1F4UFJHbkduOUM2R1NWVHRxWU5SRmt6YjNrWjlSQmtaZGRYd09ZLy9FRUFBSFZoKzFwK2krcWRPanN6UkpTNXk1d095c3UwYmsrNTFIb0hOVDBiRFVSaXFUZ1JuOU15dFg1K2lhNE0vOGRUekI1Sk1ENkg2SFFNQVFEVWhXczNxaS8rVWcyK1FEeWtsUC8xaGxsSHRiZVlyYVJhendOUVN0TVM4VFgvcjVnTkptbHdqTDlreTBMRkUrbmt4SFJrbGdoMy83d3lzcUsyRWlBcTlqamdDNXY3WHkzek5KaG9iUStmQ1lCSFQwMmRWLzU3ekMvMTF2cTV6dFkvRktKSUxFME9HMWNqNXdXYm41ekd1SncvT25qR1IzM0xhak5sWkhnc09NVVlZMFJFTTJHNXZaNisrN1ZPK1N3d0FnQTFiL2ZtSmxKYm1LUWFRdUZrOU54UUp2a3ZtbUFOQVE3V21KZVRMRE02TXNEbjVrQlhFd3dub3I1QVBFUkVOTU54YVZvZWx3TVdTc212U0Vsa0R0Wm81Y3Q2aHdBQWF0N05PL2lzTEhyazFPUTU1UTdvMHF5OFN1djJWTUxCR3UyZ2xLSk1SSHdQVDErYWpOR1VyL2FTTFNWSmxrZkdROU5FbWJYL2pJakRFQjBRQUVCTlc3M2NTVjF0L0MwdERnUVRrWUVMc3lORW1RU29la3IreTNiOGZJQlNhVm5yWnFnMk9PTFBUazdqYy81b1RpMG1BNDVPaEtmVGtpd1JZZmtmenhBQVFFMjdZemVmMTVZWGo0eWRscFc3ZjYrOHVsN3ZnQkpKbVU1ZTRLOXM3VkxpaVhSeWNpYmlJK0l6K3o5WExZNnlLQUdXekVqMFJXVStoK2dBQVFEVXJoYVBoYTdad0YvMi85aGsyS3VzZjQ0bG1XTXlLSGRyM2FaS3FyVTcxT0hSNENTYnk0THlodmpML3M5MTlsS1lRbEZWNWZjMXhSaXg0YkZNK1Y5L1JHNlZaVEpvM1NiSUR3RUExS3pYdmF5VFJKVTd2MVdhTERONTM4R1JFOHFmTDA3TEd4aXJ6N3QveGFFemZtSTFsT0E5bUpXY0ZvZ3gvaUxJSEpsa1M3L1d6U2pZNUV6RXB4Uyttc0h3UDljUUFFQk5hbXV5MEUzYitkdFI5L0RKeVhPK1FEeE1ST1NQc21ZZTE1ZVhXekNTb25NallhMmJVWkMwSkV1akU2RVpJcUxaekdkVEU4RlpMWTJ5S05uL1JDVE02dUQ3WDhzUUFFQk5ldlB0eTBudHZ1K1Y1Z3ZFUTBkT1RaNG5JbUtNeFBPVDBtYXQyMVF0dFRKUFBUSWVxc25rdE9QbkE1Uk0xVWF5NWVEYzlGY3d4aHJycWZCVlBVSUFBRFZuMDBvWDdlSnM3bCtTWlBueGZVTkhaSm5KUkVURFhtbDFOTW1jV3JlcldtcmxEbFhKelpCbE12Z2lNbjlEU0l0SXBtUTZVUVBKbHI1QVBCd01KU0pFZkZaWGhQa1FBRUJOc1poRmV1ZHIrN1J1eGdJdkhCNDdwZXg2Rmsyd2hucGQ5NytZQ1crY3hxWmpXamRqU1l3eE5qd2FuQ0lpOGtYbFZwblZWbkphTFJRRm1sOWV1WFpHV1BRS0FRRFVsRCsvZlRtMU5WbTBic1k4ZzVjQ0U4cUdQeklqc1g5YzJzNlkvdjV0OGI0M3dNUjBaRGFleUNTbjFXTG5kUGlNbjJTWjcyeExaZmcvbW1UT1dKSTV0RzRQTE0xWTdOZUo3NjhocUZFcm4rVU4yNXJwRmRkeXMyVTdFUkhOK21QQkoxNFlPcUw4K2NLVXRER3MwMTNQRHZUNzZMVTNkbXJkakVVcHlXbU1TUEJtcXRQVmxHQTBUV2N2aFdsZEw1OTFpNkt4Vkh6YUcvVVRFYzJFV0VldG5WODlVVDRiWTlGWGYzeTY5WUZSVFh5V3E3b2RkTStkSzdSdXhqenhSRHI1dTZjdkhraW5NMGxsTXlHNVk4d245MnJkTHExY0dJbVFQNVFpVDROSjY2YmtkVGs1TGNxYVV1bmFURTQ3Mk8vbk5nQlE4aXVJNXVvcjFNQjFSYmZtUGh2ZERWTkM3V2wwbWVuRGIxNURSaU0vV2YrcHRKeis3Vk1YOW9janlSZ1JVU1RCWEdmR3BlMGFOMHRUalBFN0RURHJqNGRDNFdTVUtMTXpuZGJ0S1JiUHF5MlUrZ3JKTkxPRzRzeWpjWE9nQUFnQWdHdU5Mak45NGkvV2t0dkp6MTJsSkRQNTBhY3ZIbFNHTzFNU21VK09TTmRJcUhqR2JhTGE0SWovU25KYXFQYm0veFZUc3drYW1lSXYyVEtWa3ROamsyRXZVVzNtVitnVkFnRGdWa2V6bFQ1ejl3YnFhdVZuc3g5Wlp2SWZuaHM4TkRxWktTWWp5V1E4Y1NsOWJUekYrR21raGs1ZURGSThJV25kakFXR1JqT2xhU01KMWhCUE1idlc3U2tGajZNQWw4YUQwOG9TMkprYUtLOE1HUWdBZ0V1OUhYYTY3KzcxMU9MaFo2bzJMY25TNzUrK2VFQkpKcE1aaVNkSDA3c3czSGxGT3MzbzJMbUExczJZSnhKTnhXWm1vd0VpSW0rSS84MS9ydWJnYWIvV1RWaGdjRzc1bnlTVDBSOWx6VnEzQndxREFBQzQ4L0pyV3VtK3V6ZVF5OEhQc0g4cUphZC8rK1NGL1pmR2c5TkVtVXAvcDBlbG5mNElxNWxpTXRWeWtMT2lRSU5YU3RQVzlQeS80dUpZaEdhRFNhMmJjWmtzTTNacExGTmZZVFlpdCtweENXeXRNbXJkQUFDRnkyR2llMTdmUnp2V2ViUnV5anlSYUNyMjI2Y3VIRkFLL2NpTURLZEcwcnRtSXd6Ym5PWnhaTUJQa3NUSVlPQWphVlBKVGsra21DMGNaMjZ0MjFNT2gvcjlkTnQxZkN5SkhaOEtlNU1wS1UxVUh5TXNlb0pJRFRRbkNFUTNibStoTDcxdkUzZWQvL1JzMVArcjN3MDhwM1QreXB3L092L0ZSZU1TOVErRnRHNEdFUkVsazFKcWZLcitrdE40eWdOUWh2OFpJMkUyTFBNUmxVQkJNQUlBbWhFRW9tczNOTkliYnUyaVpSd2wraW42ejNzdjdUczRla0tTWkprb2N3ZDVZa1M2SnFMVFFqOXFIT3ozMGFhVjJwK200VXh5R2lPcXI5cjBwd2RERkkxTFpMZHF2L0JFR1dIeFIxbHpXa2FmVWt2d1lVSFZXYzBpWGJ1eGlWNjF1NTE2Ty9sTHlFNmw1ZlN6K3krZE9EZm9HMVYrRm9veno4bVI5RFhKTlBGVmg1aFRoL3I5OUJldjFyNG1rbEtiUGkyUnFaNlMweVNKMGRHekFkcXpwVW5UZHN6TVJnT1JhQ3BPUk9RTnl4aityekVJQUtBcUJJRm80d29YM2JTOWhhN1owRWdXTTUrelR4UFRrZG1uWGh3K3B1eG9Sa1EwNFplWG41dVVOc3RJYmlxWU41Q2t3ZkVvOVdrWTRFa3lrNVdremJua05ENlNFc3JrVUw5UDh3QmdNSHZ6bnhxdXI2QlgyQXNBS3ZKWkdrU0IranJ0dEs2M2dkYjNOZERhSGljNWJmekdtMmxKbGc0Y0hUOXpZbUI2a0xITUtaRmtNZzVNU0p1bmduS1gxdTJyUlFmN2Zab0dBR09USVc4cUphZUo2ck0yL2VHekFVcExqSXdhSmxzcXcvK2hPSFBIMDh5cVdVTkFsU3Q3QVFDb1lEUUlaREVieUdJU3lXd1N5V29XeVdrelVsdVRoVm9iTGRRMjkxaldZdVAyTGovWDRFaGc0b1ZEbzZkQ2MyVjlpWWdDTWRaMFpsemFpaDNOaW5md3RKL2U4SEx0WWlmbDdsUm1KTTVHNUxwTDJvd25KRHAxTVVoYlYydXpzQ0VVVGtabi9mRVFFWkUzaE9IL1dvUUE0Q3ErOWZIdFhKV2hMWmVWUFo1bEszdTJMOU82SFZyeUJlTGhGdzZObmhxWkNFMHJQNU1aR1M1T1MrdEdadVUrb3ZvYU1xNjI0Y2tvVGZzUzFOcW9UZHJFOEZ6MVAzK1VOVXQxbXB4MnNOK3ZXUUF3T0pwZFh3SEQvN1dvTHY5UkFDd2xGRTVHRDUyWU9IdDIwRGZLR0xzOE1qd1RranZPVDhrYlVkYTNmQTcyKyttT1BkWHZHNlptSXY1b0xKVWd5bnl1Vlc5QWxSenM5OUU3WHROTGdnYWhxcEpnR1U4eGV5VEIrTnlpRUphRUFBQjBJeEJLUkk3MVQxMFl1REI3U1ZrYVJrUVVUVERudVNscG93OXIrOHZ1WUw5UGt3QmdhRFI0SlRtdGpwYi81ZktIVW5SaExFS3J1cW83VXhWUHBKTVQweEVmRWRFTWt2OXFGZ0lBcUhzVDA1SFo0LzFURjRkR0E1TktnaDlSNXM1bGNFWmVNeFdRdXhpRyt5dml6SENZd3RFME9lM1Z2ZFFvNVgrRE1lYXA5NldiQjAvN3FoNEFESThHcDVUUnN4a3MvNnRaQ0FDZ0xpV1NVdXJjNE94by8zbnZzSktvcElnbG1lUFNyTHh5SWlBdnI3ZWxZYnlSWlVaSEJ2eDA0L2JxYlprUUNDVWkvbUE4VEtTUHRla0grLzMweHR1NnEvcWVTdlovU2lKek1Nb2FxL3JtVURZSUFLQnVTSklzWHhvUFRaMGY4bzBQalFZbmxBcCtpa0NNTlkzTXlpdm10aXRGeDE4bEIvcXJHd0JrcjAzWHcvRDA2SFNNSnJ4eDZtaXV6aXE4dENSTEkrT1p4Rmx2V0c3RDZGbnRRZ0FBTlMyUmxGS2pFNkdab1pIQXhOQllZRXBaOTYxSVMyU2FETXBkNDM2NUI0bEsyamgyTGtESmxFeG1VM1dXaFNyYk5jZVN6QkZOTW1kVjNsUmpCL3Y5OUpvYnFqUFlNVG9SbWtsTHNrUlVYL3NyNkJFQ0FLZ3Brc3prYVcvVVB6NFZuaDBaRDA1UHprUjkyWm44UkhQcnZzTnkyMVNJZFhwRGNnY3ErR2tybVpMcHhJVWc3YXpDUmsreGVEb3g1WTM0aVRMRmZ5citocHc0Mk8rcldnQ2c1RmZJakF6MVdGOUJUeEFBQU5kQzRXUjB4aGNOenN6Ry9KTXpFZC9VVE1RdnlVek9mVjVhSXBNdktyZk1oRmlITnl5MzFldTY3MXAxcU45ZmxRQWdPOUZ6cG82ei8zT2R2UlNtWUNSRkxrZGxhNVl3Umt5cHIrQ0x5QzJ5VE5ydlJnUkZ3MFVTTkNmTGpFV2lxWmlTdkJVSUpTSytRRHpzOWNlQ3lhU1V5bnNNSXpFVVp4NS9sRFg1d25Kck1NWWFNUmZKcjBObmZNUllYOFhYcXl2RC84azBXWUl4NXFuc3UvR0RNYUpEWi94MHk4N0szcEJQemtSODhVUTZTYVNQL0lwNmg3MEFvR1NNRVdPTU1aa3h4bVJpa2l6TGFVbVdVaWxaU3FmbGRESXRwWk5KS1JXTHA1UHhSRG9aVDBqSldEeVZpRVJUOFhBa0dZdkdVNG5zNVhuNXhGUE1Ib296VnlqT1BNRVlhd3pHbUFkRCs3VWpFRW5UMlV0aFd0dFR1U241VkZwT2owNkVab2d5YS8vMUZoQWVPRjM1QUVBSnNCaVJNSk01eDFDRHNCZEFnZjc2SzBlSWlHanZhdE5qWmlNbHRHMU5mV09NaEVTYTJhSkpja1NUekJsTlpKSzR3Z25tU2t0VWYvV1lkZWJ2SHp4TkpnTWw5NjR4UFNaVStCNUNUOFAvaXNNRGZuckwzKzJuZFIyR1k1MGU4VklsM3lzWVpZMHBpY3lWZkErb1BBUUFVRGFNU0dBczh5QWlRV1lrU2pJelNESVpKRVpHU1NKaldtYW1sRVRtVkpyTVNZbVpVMm15eE5QTW1raVJMWmxtRnIzZHRlbE5TaUp6TU1ZOGJwdmdxOVI3U0RJWmZSRld2WFdIbkprSnl4MlZEZ0QwR0dEVkl3UUFCZHAzTG5XYjFtMEFxQWVIaDlKN3RXNURQZk9HV2R1VC9hblhhTjBPNEoreDZJRTRUUDRBQUFEVW5ybitHMGxVQUFBQU9vUUFBQUFBUUljUUFBQUFBT2dRQWdBQUFBQWRRZ0FBQUFDZ1F3Z0FBQUFBZEFnQkFBQUFnQTVoTHdBQUFBQWRVZnB2akFBQUFBRG9FQUlBQUFBQUhVSUFBQUFBb0VNSUFBQUFBSFFJQVFBQUFJQU9JUUFBQUFEUUlRUUFBQUFBT29RQUFBQUFRSWNRQUFBQUFPZ1FBZ0FBQUFBZFFnQUFBQUNnUTlnTEFBQUFRRWV3RndBQUFJQ09JUUFBQUFEUUlRUUFBQUFBT29RQUFBQUFRSWNRQUFBQUFPZ1FBZ0FBQUFBZE1oYTluZy9yQUFFQUFHclBYUCtORVFBQUFBQWRRZ0FBQUFDZ1F3Z0FBQUFBZEFnQkFBQUFnQTRoQUFBQUFOQWhiQVlFQUFDZ0k5Z01DQUFBUU1jUUFBQUFBT2dRQWdBQUFBQWRRZ0FBQUFDZ1F3Z0FBQUFBZEFnQkFBQUFnQTRoQUFBQUFOQWhCQUFBQUFBNmhBQUFBQUJBaHhBQUFBQUE2QkFDQUFBQUFCM0NYZ0FBQUFBNmdyMEFBQUFBZEF3QkFBQUFnQTRoQUFBQUFOQWhCQUFBQUFBNmhBQUFBQUJBaHhBQUFBQUE2QkFDQUFBQUFCMUNBQUFBQUtCRHhxSXIrcUFTRUFBQVFPMlo2Nzh4QWdBQUFLQkRDQUFBQUFCMENIc0JBQUFBNkFqMkFnQUFBTkF4QkFBQUFBQTZoQUFBQUFCQWh4QUFBQUFBNkpCUjZ3WUFIOWIxTlFadjNMVnNjdXZhRm45dmx5dmMybWhMMkN6R3RDUXpJUnBMR1NkbW9yYkJzYUR6eU9ucHhxY1BqcmFQVG9idFdyY1pBUGlHNndyZmhONUdFeU1pK3ZubnIxVjE0QnZ2M1YrUkJ0V3F2N3hyMDdrUHZtMzdhYlhIcFNWWlRDUWtNUkJPbXFkbW85YkIwYUNqLzZMUGZmRGtaUFBBb045VmliWXFSRkZncjN2NXlwRzN2Vzc5K2RVOW5wQ2FZdytmbm03NndVTW5WeisxZjdSZDdmcysrUG5iOTEyenFjMjcyTi9MTWhQdXZ1K3h2WWRPVFRXcGZXMGlvbysrWStlcHYzajlodk9GUHY4ZG4vNzlEWWRQVDE5K3IySSt5MTgvUGRqMTZYOStibWUrdi92bEE2OTljbFdQdTZEeisrRXZQMzN0NHk5ZTZpaTJIY1g2L2k5UHJYN2dSNGMzS0g5Ky8xdTI5Yi9yVHplZkxmVDRXRHh0MlAzbW43MzZhcy9iLy9NMy85cHNFdVdsbm5Pa2Y3cnA3Wi82L1EyRnZuZTJIOS8vcW1lM3JHM3hGZnI4QjM1MFpNUDNmM2x5OWRXZXQyTkQ2K3dQdi9qSzU1US9QLzdpcFk0UGYvbnBnaTZhaFo3TE8vLzY0VnVIeDBPT2NuLy8xTFlqMjMvOHowRGZsNzZ6ZjR1YVk3UzZydWhac2YwM1JnQTBaalNJc3RFdXlnNjdLYjJzelJIZHZyNTFsb2d1RVJGTmVhUFdSNTY4dVB3L2YzZTJkM3c2WWl2bisyNWEzZXovKy9mdlBycW0xeE5VZm5adTJOL3cyUE9YT2w4NE90NDZQUnV6VHZ0aUZyUEpJTGQ0ckltdWRtZjBsdXU2SjI2OWZ2bEVzOGVhMkxHaGRYYkhobHRlZXVuNFJNdm4vdVhGclpjbXdvNXl0VTBVQlhiL1IyNDQrR2NmK2MzTi9tRENYSzdYQlNqVzNoM0xwckwvZlAzV2pobWpRWlRUa294cDFDdzhYMWRnSVl3QVZNaTZGWTNCbjMvdDFVOWwvK3pUWDkrMzQ5ZFBYZXhXL2l3S0FuTTFtRk9ORFpaa2s4ZWEyTDYrZFhiUHRzNlpiZXRiWjdQdmtsSnBXZnpsbytkNi9zKy9IMTBmRENkTnBiYnR6MTYxWnVpVDc3cm1oTkdRZVkvcDJaajFpOS9adjBXNTgxeUt5U2pLZDc5aDA3bDcvblR6V1pNeGMzdzRtako5OG12UDdYam1ZSEZSZSs3ZGxlS1pnMk50Zi9PRko2NW5KUmFkc0Z1TjZlZC8rcWIvSVNMYWQzaTg5YjJmZTN5M211TUwrU3dMWVRFYnBLOTg3S2FETjEvYk5VbEVORHdlY3Z6VlovK3dlMndxVXRDd1o3bmFvZGk2dHNYM28vdGY5U3pSd2hHQWJKMnRqdGl2dnZuYUo2d1dvNVQ5ODcvOTZyTzdmdmZzMExKaTNwdUk2TDEvdnZYTWU5NjBaWUNJNlAyZmYvSzZZcjgvaTdsMTkvS0pmLzdFeStaZHFMNzRuZjFiZnZZL0EzMXFYK3ZmdjNMSE01dFdOL3V6ZjNiM3ZZL3VQWEJ5cXJuWTEzcm00R2o3K3ovLzVIVlhlMzY1UDNmRk5admJ2US8rdzIzN3NuK1dQUUtsRm0vWEZUMHB0djlHOUtvaG1USEJIMHlZTDQ0R25RZFBUalUvK0Y4bjE5enptY2YyM1BIdWgyNzc5MStmV1pGTVplNHVURVpSZnRNZnJSMTg2QnV2ZmZMNnJSMHpwYnpuM1cvWWRQYmU5MXgzVFBsSGV1S3MxL1BIZi9QSUxZWCtvMCtsWmZGZmYzWjg3ZHMvOWZzYkl0R1VrWWpJYVRlbEh2alV6ZnZ2dUxGM3RKUzI1YnBwMTdJcE5VUDVQR3R3bUZQLzl0bFh2S0IwL3YwWGZPNjNmK3IzTnhUYStXdHBmRHBpZS9DL1RxN0ovZmxIMzdIenBNMDZQeWdvMUxJMlIvU2RmN0x4UEJIUjB3ZEcyeXR4a1gvcDJFU3pKREVoKzJkN3QzZE9xMzBkVDRNbHVXRlZVeUQzNTN0M0xDdnB0ZllkSG05VmV6eXZhdW02QWxjZ0FPQ1ExeCszM1ArOUE1dnYrc0FqdDF3Y0RUcVZuN2MwMnVMZi9zeXRMOXgxKytyaFlsNzNydHRYRDMvZ3JkdjdsVDlmSEEwNjMvY1BUMXdmanFaVWp5cWNQT2YxZk9DTFQxNm5CQ2tHZzhDKzhLRzlSNjdaM0w3bzNINHhQdkRXN2YxcTVuUjUxTkpvaTMvLzg3ZnYyN0doZFphSTZNQ0p5ZWEvdk8vUnZiT0J1RVhydGhYcWg3ODZ0V3A0UERSdk9MYTkyUjVYTzZlcytQaGY3anBwTVJ1a1pFb1cvL0hCQTV2SzA4cjV3dEdVNmZqWm1jYnNuMTI3cFgxRzZhUUt0WHRieDdRb0NBdkdvVzdJbVJZb3hQWGJPbWFVMTNyK1NIMEVBTFY0WFlFTUJBQWN1elFSZHZ6RkozOTM0OEdzWVVhRFFXQ2ZlZS8xUjE5ejg0b1JOYSsxWVdWVDROUHZ2dmE0OG1mR2lPNTlZTjhPZjZqNE9mWURKNmVhZi9EUWxRUXFvMEdVLytuak54MW9jbHNUeGI1bVBKRTJaUC9aYUJEbGYvem9qWWNhSE9aVXNhK3BwWjdPaHNqLzk2VlhQcmUyTHpNbit2Z0xsenJlKzduSGR5dDNPYlZpcnFQZW5Qdnp0NzF1dy9tZXpvYUltdGZhczcxeit0YnJsMDhRWlFLTFNzN3o1bmF5RHBzcHZXMjl1b0J5c1R2OWRTc2FBODBlZGQvMVBkc3lJeERqMHhGYmRuQmZxMnJsdWdMNWlZeUtxK3ZQOEZqeVVhN3pGZ2duVFIvODhsUFhUbnFqVnVVMUJJSG83OTUzL2RGMUt4c0RoYnlHYUJEWUZ6NjQ5N0F5dDBaRTlEL1BESFlkUCt2MWxQcDdmditoVTZ1bmZiSExiV3QwV1pLZnVPZWFFOFdlci85NjdIelArZUZBUS9ZNVc5Ym1pSDcyL2J1UGx1dnpxTlpudVc1RlkvQ0hYM3psYzEzdHppZ1IwUzhmTzkvemthODhjMDBpSll0cTIxRE83MVN4NStYcGcyTnRUeDJZUDFSdk5vbnkzOTVkK09kdE1JanlKKzY1NWdSUnBoUDgzbitkWEZQcWQzQ3B4M041aHRuM2JPK2NWdk1heXJUQk13ZkgyckpmUnhDSTl1eFlwdXExZG0vcm1DYktCQ1phZnU2THZhNmE0MnZodXFLWGgxcVhQOE1pam9VcUM0YVRwazkvZmQ5T21WMlp6N1NZRFBMbi8yYnZFVkZjT0RTWjY4OWV1V1lvZHhuYWd3VXNmU3BFTEo0Mi9QVFhaL3F5ZjNiSGpiMWptM01TcGdxVlNFaUdqMzMxbVYySnBEUnZKT0MyM2N2SC8veVAxZzRXM2RBcXUzWnp1L2Y3bjcvOU9lVU84Y0Zmbmx6OTJXKzlzRTJXNTg5SmErbll3RXpqMWovNXlaMWIvK1FuZDM1OWtRVEFYUGQvNzhEbVJFcWFkOTI0YWRleXFadXZ5ZVEyWE0xYjcxeC9jVVdYSzB4RTlKVWZITnFVTytKVGJpZk9lVDI1aWJON1ZPUUJyT24xQkZ1YmJIRWlvbi8vOVprVll6bXJjVzdZM2xud05NQ0tMbGU0czlVUkl5TGFWd2ZELzdWMFhZSDhFQURVaVAwbkpwc2ZmM0ZrWGtMTjJqNVA4SzdiVmkyWkR5Q0tBbnZIbjJ3OGwvMnpvYkdnNCt4UStXb00vSDdmOElKTThMZi9jZkhKZStlSEF3MzM1NWtYL3RnN2Q1MWN2Nkl4bU84WW5yeGk5L0tKYjMvbTFoZWNkbE9hTWFLdi9PRGdwZ2QrZEtTZ0RwWjNJNU5oK3c4Zk9yWGdJdiszZDE5ejhtcnIrMXNiYmZHL2V1UG1BU0tpRjQ1T3RENzIvSEJucGRxcGtHVW12SFI4b2lYN1p4dFhOUVU4RFpaa0ljZmZzQ01UTENSVHNuamc1R1R6Q3prZDk5N3RuWG56QS9KUkFnK1pNZUhGWXhNMUhRRFU0blVGRmtJQVVFUCs0emZ6STJJaW9uZjg4Y2J6d2hMM2xEZnVXRGExYk82dVEvSG84NWVLWHJxVnovQjR5SEZtMERmdkgvNHJkaStmS1BRaW04OHZmbit1Ti9jQ1lEWmw1Z0x0Vm1PNjJOZXR0THR1V3pYODFZL2ZkTUJzRW1WSllzSzkzOWkzNDBjUDk2L1V1bDNsOUwzL09yazY5MDU0ZVljejh2YlhiMXp5NHZ5UmQrdzg1YkNaMG1sSkZyLzAzZjBMOGdrcUpmZHVXeFFFdG50YllhdHA5bTdQelA4Zk9qWFZuRWhLaHR6WDhyZ3N5WTE1Vmdqa293UUFKODk2UFlFeUxPZlZVcTFlVjJBK0JBQTE1S1hqa3kyRE9ZbERQWjBOa2JuaVFYbmR0bWY1ZU83UGpnL01lTXJkdHVNRDNubloxa2FES04rNFUzMldkTGJQZnV1RnJibkw1SG82R3lLZmVlLzF4MHA1M1VxNSs2NU41ejc3dnQxSFJWRmdpYVJrK09DWG5ycjJrU2RMVzZ0ZFR2LzQwUnNQSG52b0xZOGNlK2d0ajdRMzIrUEZ2azRpS1JtKzh2MkRDenJ3ZC8zcHByTWRMZlpZdm1OMmJHaWRmYzNMK2thSmlINzh5SmtWMVV5QTIzZDR2QzMzWjRWTUExZ3RSbW5ueGt6RlNxWGpmK0hZUkd2MlZCd1IwUTBGZk0rTkJsRytkaTZUdlI2Ry8ydjV1Z0pYSUFDb01RZnpsTWQ5K1hXWmpPcDhyc3RUTitEOHBmbEpkdVZ3ZnRpLzREV3YyOUplVXMyQ2NEUmwrdHV2UHJzemR5MzNxMS9XTjNxMXFZOXFFZ1Npajc5ejEwbWxmR3N3bkRTOSsrLytzUHZwT2k1ZzhvY1hMblhrZG1SV2kxSDYyRHQzbmNwOXJpZ0s3RlB2eW1TS1QvdGkxbi83K2ZHMTFXb25FZEhZZE1RMk5CYWN0OUpnYndGejk5ZHNhdk1xMHhyS2FvSmdPR2s2ZFc3V1BlKzFkbHc5bU5pK3ZzV25qRnpWUXdCUXk5Y1Z1QUlCUUkwNWRtYit1bVlpb3AwYjg0OEFOTG9zeWR4aHVrUktFa2NteXIvaHhyazgvL2czcm1vdWFHaDBLY2NHWmhxLzlkT2o2M0ovL3NsN3JqbFJhSDM5U2pJWUJQYjVEK3c5L0xiWHJiOUFsT25nM25udm8zc1A5MDhYdFk5QkxmblNkdzlzU2FYbmw4Sjk1ZDZlc2R3TDlKKzlhczJRa3J2eHRSOGUyaGlKVlg4SjVMNGo4MGNCMnB2dDhWWExsLzcrS1BQL1huL2NNakIwWlNnNnR3UGZ0cmJGZDdWbHFzcUlRemlhTWg0YldQaHZ1SmJVdzNVRk1oQUExSmlUNTcyZTNKK3Q2OHVmR0pkdmZiYlhIN2ZrRG1HV3c0d3Z0cUNvemZJT3A2cjE0WXQ1OEpjbjE3eHdkR0xCM2VZL2ZmU21nN25sYWF2SllqWkkzL2pVTFMvZGVVdW1Kc1B3ZU1qeHRrLys3b1p5SmtMeGJHZ3M2TWlYMy9DcGU2NDlZVEJrRXVNOERaYmsrLy9YdG40aW9rT25wcHArL2ZSZ1Y3WGJTWlQvcnZ0cTB3QksvZi9uajQ2M1pwZWp6ZzBtUlBIcU9RWEtlNzEwZktJbGQwU3IxdFRMZFFXd0dWRE44UVVXRnRpd21BMVNzOGVhOFByblY1YnJhSEVzbUkrTnhkSVYrY3p6M2RYWnJFYko1VFNuU3QyL2dMRk03Zk5mZlAzVlQyVVhBMW5WNHc1OThwNXJUbnoyV3k5c0srWDFpK0Z5bWxQZi9mdFh2S0RrWDV5K01PdCs3K2VldUw3YTFmMisrS0c5aDcvNG9iMkhxL21lMmY3dFA0K3ZmZTNOZlNOdFdUa0ZxM3Jjb1RlL2V0M0ZIei9Tdi9JRGI5M2U3M2FhVTdMTWhDOStWOTJ1Y3VXMC8vaGtjeW90aTlscjFtL1kwVG45NDBmeUoyaDJ0anBpeW5MRjNKSzlSODlNTjRhakthUFRicnFjakhyRGptVlRqKzdMdjZyQjdUU25sRVRCY2czL2EvbTUxOHQxQlRBQ1VIT0M0V1RlQ2x1Tkx1dUN6RmlIYldHMmZEUmVtZUhYYUR6L0JjQmhNNVVsWTMvR0g3Tjgrb0Y5TzNJM0JycnJ0bFhEcjU1TExxdW1qN3g5NTZuczVNdEg5dzEzMWxKcDMzS0p4ZE9HZi9yaG9RVkxOdi82ejdjTzNMUnIyZFJkdDJkeU5YNzIyNEcrU205dnZaUm9QRzA4bWpOOXRtdmpsVG4rWERmc3lPUUlNSllaQWNqK08wbGl3b0VUa3kzNW5wL1A5VnV2bEJLdWgvSy85WFJkMFR1TUFOU1lSRW9TRXlsSnRKZ004eTVjdGp4TDQwdzV6eUVpaWlXa2loUmVXYXlnUy9ZZFY2bjJIUjV2L2IvL2ZYclZPM0xXQXQvM251dU9uVGpyOWVUV3FxK2szSTdqQTIvZDN1OFBKY3kvK1AyNTNtcTFnU2d6TXZML0N0d1Y3aDgvZXVQQk8yN3NIU3QzRzM3NzdOQ3lQMzNsbXFIc3VYK24zWlQ2NXFkdmVVa1VCT1lMSnN6LzU5K1BMY2pqcUxaOVI4WmJyOW5VZHJtbXZKTGxuenU5UkhTbC9PL0FrTStWTzdLbXZOWXQxM1ZmVHI1dGI3YkhWL1c0UTdsVkxJbXVWQkljbVF6YnkxWDJXTTNudnBocjgrd0dXSWg2dTY3b0dVWUFhcEJBQzZmYVdKNzV0MVJPeFRZaUlxdkZVSkU1ODhYbTRwTjUybENLYi96NHlQb1Q1K2JuUVRoc3B2US9mZXltZzFjclJGTk8rZVk3NzMzUGRjZGZxM0tQaG5yeHBlL3QzNXc3dDYxVXFYemdSNGMzaENMYUQ5Zm11L3ZPdHp1Z0tBcHM5MXlXKzJKMzdQbUc4bTljWkhPZzNYUHZrVzg1WWkycXgrdUtYb21NWllhNTFGS093MlB4UnlYT21jVnNsUEoxZExHNFpNaDliamk2Y1BqTWJzMVVweXYzdzJiSlg1d25IRTBicjNxZWNzN1ZVczlOcFdYeDQxOTVkbGM0WnpPZDlTc2JBeDk5eDY2VFYvc3NXSkdmUTY1Lytlbnh0ZU01eFhCRVFXQ2YvOENlSTdmdjZSbm44VHRWN0hHRlBNNE5CUnArOHVzekszTGJkL3lzMS9QTHg4NzNWT3A4cUhtY1BPZjErSUx6YzJqMmJPK2N6bjNlMXJVdFBxZmRsQ0xLN0NXUTc3V0d4a0tPMGNuNVdlODM3RmkyNExWNk9sMFJKV04rc2RlcTlPZGU3dGV0bGV1S25oNXFLY2NoaXFveExvY3A3M0lqcjM5aHRtejJCa0lLZTU3NXUzTElOeWNYamFlTmxianpHNWtNMi8vaDJ5OXR6ZjM1bTErOWRqQmZnWkpLR0owTTIrKys3N0U5dWVkWUZBVjIvMGR2T1BTeUFtdmoxNU4vL2RuQzlmM1BINW1mUWE4bHhqSWxpTE4vdHJhM01kalNhSnUzeTV5eS9DK2VTQnNPbmJxeUUyZXUzRkdBblJ2YnZMbDNySHZuY2dNa2FXRko0bHBWcjljVlBVSUFVR09hY3k1V1JKbEVyTnc3R3lLaW9iR0YxZGFhM2Raa29iWEwxY2k5aUJJUkRZK0h5cjR1V1BHYlp3YTdIbnJzZkUvdXp6LzMvdDFIbDdVNW9wVjYzMnlYSnNLT3Y3ejNzYjFUczdGNUYwU2pRWlMvOXJjM0hiZytUN0VVTFgzOG41N2R0ZVdQZjNMbmxqLyt5WjM1THVLbHFsUWlXRG5sZHRxQ1FMUm5ib2MraGJMODc4REpxV1psWC9wQ1hzdHNFdVZyTjdmTjI3ZGVtV0k0TmpEVG1EdHFWYXZxK2JxaU53Z0Fhc3lXTlF0M3crcS82SFBuZTY0dm1ERG5EbE5iekFhcHE3MzhIV1Mrb2lvbnpub3JXdkRraTk4OXNQbml5UHlMVVlQRG5Qckt4MjQ4WkRSVUp4OWdlRHprK010N0g5dWJ1MTdaWWpiSTMvejB6Uy90MkxCNG1XYW92bnh6OTltVi9OeE9jMnJUNnN5U3ZhdGw3TDl3ZEtJbGQzZkg3REsxbWZLL21ZQWczN2JFdGFyZXJ5dDZnZ0NneG14ZDIrTEwvZG5oMDR0WG5YdnArT1NDWWNmVlBaNnlWOUJibmFjcTM0dkhLanZrR1Ura0RSLy9wMmQzSlpMekU0SzJybTN4ZmZCdDIvc3IrZDdaaHNhQ2pydnYrOFBlM0d4eG05VW8vY3Q5TDM5eEU3WXc1Y2FVTjJvOWw1T3B2MmRiNTdTeW9kYWVyTjM5cnJabVB4eE5tWTZmblorUWVrTldJdURXZFMxK1pRaTdIcGIvWmF2bjY0cWVJQUNvSVlLUVdicVQrL00vdkhpcEk5L3ppWWp5YmJtNlpXMzVPNlF0T1lGSklpbUp6eHdjcTNqVzg1bEJuK3VyZWRhaHYvMzFHODdmdEt0Nm00WmNHQWs0Ny9uTVkzdHlwMktjZGxQNjN6NTc2d3RyZWozY2IyT3NGN2tkZTdQSG1sQ3FhU3JyK2ZNRkNubGZLK2ZPdm5kWlE2U3IzUmtsdXJMZlFEQ2NOSjA0dTdDQ1p5MnI5K3VLWGlBQXFDRTM3bHcybFR1L2ZXRWs0RHkrUkczeFp3Nk50ZVVPMTkyK3A2ZXNpWExkN2M2b1V1dGQ4WnVuQjd1clZmUDlwNzhaNkhzOEp3Z1NCS0l2ZkhEdjRiWVNkcjFUNjl4d29PSHUreFlHQWU2NXFvRjljNVhsUUZ1TExBZWNtdnYvekpLOUF1L1k4eThIbkh1dHVhbUZGNDVOdEZTaVRLNlc5SEJkMFFPUk1ndWppamlVNFhIVlIzblAyZjk2emJxTHVhLzRnNGRPcldaczhXTWtTUlorK0t0VHE3S1A2ZXR5aFRORGErWDVQVjk1UTgrODRqS3l6T2JlczVqelZGd2I3dnZtODlzblpxTHpMa2lOTGt2eUh6OXl3eUZSekg2VHluNldaNGQ4cm5kOTVyRTl1ZnU5TjN1c2llOTk3aFhQWitaSitmbE9sZitSajladG12L1lmMktpT1hjZCtkNGRuZE9yZTl3aEpXRE1kT3hYZjYxakE5T040V2hxM21kOXc4NWwweTZuS2JWSktmOTdlS3l0L09lMVVwOVhZY2ZWeG5WRlR3KzFNc2RoQktCRzNIeE4xMlR1UHRpbno4KzZIMzc4d2xXcmdmM3N0d045dVZ0MTN2MkdUZWZLMFM2cnhTaTlKU2N3K2RuL0RQUmRHQWxVYmI5M29zd3c2eWUrK3V6TzNLU3NYWnZhdkgvOTVtMEQxV3pMbWNGTUVKQmJxN3k5MlI1LzhITzNQVi9OVVFsWUtKR1VGaXp2MjdHaGRWWlpRcHBaTGxqWUNJQXNNK0hGWXhQelh1djZyUjB6Tis1WU5xVVVRcXFIN1gvejBjTjFwZDRoQUtnQnpSNXI0bk4vcytkbzlzL2lpYlRoZjM5ajMvWkNoaFlsaVFtZit2cHpPN0szYm4zTnkxYU1LQnVVbE9LZGY3THhmSGFITmpRV2NuejlSNGZYbC9xNnhUaDBlcXJwMno4N3RtQXQrdHZ1ekd6VlcwMm5MOHk2My8zWlArek92VHZzYW5kR0gvemNiYzluYjJxa3BkLzg2K3NmUC82cnR6N3lod2Z2ZWxUcnRsVFR3aVY4QnZudHI5OTRnU2p6MmVWYlZydkVhODJiazdaYmplbS9ldE9XQVNLaXdkR2dNM2VvdkY3bzVicFN6eEFBY0s3SmJVMTg2OTZYdjVUZFljaU1DZmQrNC9udGFyYWRQWDErMXYzRjc3eDBlVGMyUVNENjRvZHVPT3gyTHIyUCtWSjJibWlidmZ1dVRXZVZQNGVqS2RPSDczL3Ftc1UyOEtpRzcvejh4SnI5SnlZWExkNVNUU2ZQZVQzdi9ydkhkdWV1Lys3cmNvVy85N25iWGlqbDNFTnBjcFAzaURMN0YyVCtUbDJTMlhPSHh4YTgxc3B1ZDJZbndUcTkrMWZvNWJwU3J4QUFjR3hsdHp2OGszKzg0OW5zWldScFNSYnZmZUQ1N2I5N2JtaVoydGY3eGUvUDlYemp4MGN1UjlHcmxydEQvM0xmclM5bWIydGFxQTBybXdMLzU5NWJYcktZTXh1RFJPTnA0L3UvOE1TMWFvS1NTcEFaRXo3NXo4L3RWSE1IVjBuSHozbzk3L243eDNmbkppNnQ2ZlVFLysyenIzaWhtSE1QcFRzejZIUGwyMnVlU1AyYS9kSEpzUDNTUlA2TnFQSUZCL1ZHRDllVmVvVUFnRU50VGJiNGZlKzU3dGd2SDNqdGs5MXpTNHFJTWt1VDd2bk1ZN3NmZWZMcTgvNkwrZTR2VHF6NS9MKyt0Q1V0WllidHRxNXI4ZjNxbTNjKzhmS3NuYzJXWWpTSThsKzljY3ZBais5LzFiTU5qa3lVUCsyTFdlKys3OUU5QjA4dVhqYTFtcWE4VWV0OTM5aTNYZXQyS0k2ZW1XNTg3K2Nldno3M0RtYlQ2bWIvdjl4MzY0czJhLzROVDZDeWNyZjVKY3AwT0VmNnAxVVhtc2wzcDU5S3krTCtFd3ZYeTljalBWeFg2cEd4bVB4Qm91THlEdlZrcWZ4YWhTZ0l6T1UwcHp3dVM3TEZZMDNzMk5BMmU4T096dW50NjF0OTJaWHNVbWxaL1Budnp2Wis4eWRIMXVYT0tSZmpQMzQ3MEhmaXZOZnp1ZmZ0UHJxMnJ6SFkzbXlQZitQVHQrd2ZHUFM1SG4xK3VQUDVveE10MDdNeDY0dy9aalVaUmFtbDBaYm9hblBHWG41ZDk4UnR1NWVQWjVmbmZPejU0YzYvLy9aTFczM0JlTkYzM0N6bnY4dngzWHJ5d0dqN2p4L3BYL25XUFBQL2FsKy9rTS95YWc2ZG5tNzY2Mzk0L0xwdjUzVDRPemEwem43ajA3ZTg5TDdQUDNGOWJrR2pTclJEN2V1WDQzaGVyeFhQSFI1dnZmT1dsZk4yYjl4L1lySTVKUzFlL25jeCt3NlB0NzdwanJXRDJUODcwai9kR0kzbjM4NVdqVXA5N3VYK3ZIaTdyc0RpbE05WTZQWmtZb0QvK3NKMXFsN2dEZi83cFhLM3FhYmQ4NFpONXo3MHRoMm55L21hRXpOUjI4TlBYT2orK2U4R2VuT1h1SldES0FyczlTOWZPZkwyMTI4NHI2YUtGMk9adTZmdi9xSzQrZllmZnVIMmZkZHNXbGpRYURHNzN2alQxMXl0Yzh6SFpCVGxuOXgveDdQWlNVblBIUjVyL2F1L2YzejNVc2NWODFuK3Y2Y3VkbjN5bjUvYmViWG5YYmVsZmViYjk5MzZrc1c4OVBhcGU5N3k4enZlZE1lYW9YSi9weFl6NVkxYWI3MzdsN2VyT2VZVjF5K2ZlT0JUTis5WGM4eVpRWi9yRFIvNjljM3FXbGNaVFc1cjRxa2YvdW52aGF3MDJpOTlkLy9tZkxzYVhvM1Ria28vOTZNMy90Wmd1RklQLzRFZkgxbi8zVitjV0tQMnRTcjEvZnZBVzdiM3YvdlBOcDlkNmptNWZ2cWJNMzFmK003K0xWZC81aFZhWFZmMHJOaitHMGtWR3BNa0pzU1RhVU1nbkRSTmVhTzJ3YkdnNC9UNVdmZitrMVBOQTRPK2lzNTd5VElUSHZyRCtlVVAvZUg4OG5WOWpjR2JkaTJiMnJxMnhiZWl5eDF1YmJMRjdWYWpKRE1tUkdKcHcvaDB4SGIrVXFEaDhPbXBwaWRlR3Vtb3hHWXk1WlpLeStMSHYvck1ydi84Mm11ZXRsc3JzMXVaV2k4ZG4yeDUzK2VmdU81Yjk3Nzhxa0VBVk5ac0lHNDVNK2h6WlJlYmVhN0lwTDF3TkdVOE9qRGR1SE5EMitXOUg1NVRtVXhZTCtyOXVsSlBNQUlBZGU5MUwxODU4c1VQN2oxTVZOZ0lBQUJBTGNFSUFNQWlIbjdpUXZmRFR4U2ZPQWtBVUkrd0NnQUFBRUNIRUFBQUFBRG9FQUlBQUFBQUhVSUFBQUFBb0VNSUFBQUFBSFFJQVFBQUFJQU9JUUFBQUFEUUlld0ZBQUFBb0NOSy80MFJBQUFBQUIweUZuMHJqeUVBQUFDQTJqUFhmMk1FQUFBQVFJY1FBQUFBQU9nUUFnQUFBQUFkUWdBQUFBQ2dRd2dBQUFBQWRBZ0JBQUFBZ0E0aEFBQUFBTkFoQkFBQUFBQTZoQUFBQUFCQWg3QVhBQUFBZ0k1Z0x3QUFBQUFkUXdBQUFBQ2dRd2dBQUFBQWRBZ0JBQUFBZ0E0aEFBQUFBTkFoQkFBQUFBQTZoQUFBQUFCQWh4QUFBQUFBNkJBQ0FBQUFBQjFDQUFBQUFLQkRDQUFBQUFCMENIc0JBQUFBNkFqMkFnQUFBTkF4QkFBQUFBQTZoQUFBQUFCQWh4QUFBQUFBNkpDeDZHdytaQUVDQUFEVW5ybitHeU1BQUFBQU9vUUFBQUFBUUljUUFBQUFBT2dRQWdBQUFBQWRRZ0FBQUFDZ1F3Z0FBQUFBZEFoN0FRQUFBT2dJOWdJQUFBRFFNUVFBQUFBQU9vUUFBQUFBUUljUUFBQUFBT2dRQWdBQUFBQWRRZ0FBQUFDZ1EwVUhBUC85cGV2SzJRNEFBQUJRcVpTKytISUE4UHBQdlZTV3hnQUFBQUNmc3Z0NlRBRUFBQURva0VoRWd0YU5BQUFBZ0tvU01BSUFBQUNnUXdnQUFBQUFkS2pvellDSU10bUhyMFB5SUFBQVFOVTlYTVFLZ093K2Y5NElBRHB6QUFDQStwVGJ4Mk1LQUFBQVFJZVVBQUFyQVFBQUFQUkJJQ3JEQ0VBeGN4QUFBQUJRdkhMMHZRc0NBT1FCQUFBQTFKZDhmVHR5QUFBQUFIVEltTFVtUUtENUt3UUs5dkNYcnFQWGZSSWpCd0FBQUpYMjhKZUxHUDZmMzljVEVVWUFBQUFBZENsdkFGRE0zWHhSRVFrQUFBQVVySmkrZHJFK0hTTUFBQUFBT3BRYkFGeWVHOENjUGdBQVFHM0w2Y3ZuMWZ3cGFTK0FYQTkvK1RxNkU0RURBQUJBMlQxU3hQRC9VbjE4dmlrQVZBVUVBQUNvTHd2NjlpVnpBSXE1bXk4bVFnRUFBSURGRmRPM1hxMFBSeElnQUFDQURpMFdBRndlS3NBb0FBQUFnSGJLY1BlZmQycS9ZaU1BQ0FJQUFBQktVOG0rZEtrQW9LUlJBQUFBQUtpK1F1NytpU3FjQTRCUkFBQUFnT0pVdWcrOVdnQlE4aWdBZ2dBQUFBQjFpdTA3QzczN0o4SXFBQUFBQUYwcUpBREFLQUFBQUVDVlZPUHVuNmlLSXdBSUFnQUFBSlpXemI1U2FHMHdGdnJjeXlXRi8xOEpEWHd0VmhRQUFBQXNVTWErdGFDUy9rV05BS0FUQndBQTRFT3hmYkthQUtBc213U1ZFdUVBQUFEVW96TDJqUVgzMVdwSEFDNi9jQ21qQUFnQ0FBQUFNcW85OUs4b0tRa1FRUUFBQUVEeHRNeXBLeVlBbUJkaElBZ0FBQUJRcjh5ZHYrcHArbUpIQU1xU0QwQ0VJQUFBQVBTbnpIMWZVWDF5S1ZNQVpja0hJRUlRQUFBQStsRnFuMWZLdlArOEExWFVBY2lIWmYraEhCMDVsaGdDQUVBOXFsQWZXWFFBVUdvbHdMTGxBeWd3R2dBQUFQV0d0ODZmaUVob2RaWTBBcUNZUHhKd2Z4bCswVTlnSkFBQUFHcGZoZnJFa25QeHloVUFFRlVnQ0NCQ0lBQUFBTFdwZ3YxZ1dSTHhoWmJ5QlFCRU9VSEFyOHYweTc4R1FRQUFBTlNRQ3ZaL1pWdUZWKzRBZ0toQ1FRQVJBZ0VBQU9CYmhmdThzblgrUkpYWkRuaGVBOHZaYVpmenhBSUFBSlJUTFhYK1JKVVpBVkJVYkNTQUNLTUJBQURBaHlyMGIyWHYvSWtxR3dBUVZUZ0lJRUlnQUFBQTJxaFNuMWFSenArbzhnRUFVUldDQUFXQ0FRQUFxS1FxOTJFVjYveUpxaE1BRUZVeENDQkNJQUFBQU9XbFFiOVYwYzZmcUhvQkFGRk9FRUJVbmFRK0JBTUFBRkFNRGZ1b2luZitSTlVOQUlnMENnS3lJU0FBQUlCOE9PbVBxdEw1RTFVL0FGQlVkVXFnRUFnTUFBRDBnZE0rcDJvZC8rVTMxQ2dBSU9KZ05BQUFBS0NhdEw3cnoxYUpRa0NGV3ZBTDR5NGNBQURxRlUrZFB4R1IwS3pkQ0VDMkJhTUJ2OEZvQUFBQTFJRlhjOWJ4WDI0QUp3RUFVWjRnZ0FpQkFBQUExS1pGT240aURqcC9JcjRDQUFVQ0FRQUFxRm04ZC93S0hnTUFCUUlCQUFDb0diWFM4U3Q0RGdBVUNBUUFBSUJidGRieEsyb2hBRkRrRFFTSUVBd0FBRUIxTGRIcEUzSGU4U3RxS1FCUUlCQUFBQUJOMUVQSHI2akZBQ0Rib3NFQUVRSUNBQUFvelZVNmZLSWE2L1N6MVhvQW9GZ3lFRkFnSUFBQWdLVVUwT0VyYXJialY5UkxBSkNyb0lCQWdjQUFBRUJmVkhUMGlwcnY4SFBWYXdDUVMxVkFBQUFBdWxkM0hYNHVYZlQrdFBnSGljQUFBRURmNnI2alg4ei9EK1ZudGc3MUpVenVBQUFBQUVsRlRrU3VRbUNDIiwgInNpemVzIjogIjUxMng1MTIiLCAidHlwZSI6ICJpbWFnZS9wbmciLCAicHVycG9zZSI6ICJhbnkgbWFza2FibGUifQogIF0KfQ==';
+    document.head.appendChild(mlink);
+    var alink=document.createElement('link');
+    alink.rel='apple-touch-icon';
+    alink.href='data:image/png;base64,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';
+    document.head.appendChild(alink);
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
