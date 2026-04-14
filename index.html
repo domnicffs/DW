@@ -891,8 +891,6 @@ function joinRoom(){
     // Listen for game start + state updates
     const sRef=fbRoom.child('gameState');
     let _nhSeq=-1;
-    let _nhHolding=false;
-    let _nhHoldG=null;
 
     sRef.on('value',snap4=>{
       const d=snap4.val();
@@ -905,10 +903,9 @@ function joinRoom(){
 
       const newG=deserialiseG(d.state);
       const wasOver=G&&G.over;
-      const isFirst=!G;
 
       // First load
-      if(isFirst){
+      if(!G){
         G=newG; go('gs'); listenPause();
         render();
         if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
@@ -917,51 +914,22 @@ function joinRoom(){
 
       // Rematch
       if(d._rematch&&wasOver){
-        G=newG; _nhHolding=false; _roundResolving=false;
+        G=newG; _roundResolving=false;
         document.getElementById('eov').classList.remove('show');
         go('gs'); render(); return;
       }
 
-      // Detect round end: new G has empty played array but old G had cards
-      const wasRoundActive=G.played&&G.played.length>0;
-      const roundJustEnded=!newG.played||newG.played.length===0;
-      const roundChanged=newG.round!==G.round;
+      // Play sound for meaningful events
+      try{
+        const evtType=d._evt?JSON.parse(d._evt).t:null;
+        if(evtType==='CARD') sfxCard();
+        else if(evtType==='DONK'){ sfxDonk(); animDonk(); }
+        else if(evtType==='JJ') sfxJJ();
+        else if(evtType==='HH') sfxHH();
+        else if(evtType==='SS'||evtType==='BB') sfxSpecial();
+      }catch(e){}
 
-      if((roundJustEnded||roundChanged)&&wasRoundActive&&!_nhHolding){
-        // Show current cards for 3s then transition to new state
-        _nhHolding=true;
-        _roundResolving=true;
-        _nhHoldG=newG;
-        render(); // hides turnBar
-        setTimeout(()=>{
-          discardCards(500).then(()=>{
-            _nhHolding=false;
-            _roundResolving=false;
-            G=_nhHoldG||newG;
-            _nhHoldG=null;
-            render();
-            if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
-          });
-        },3000);
-        return;
-      }
-
-      // During hold — update stored G but don't render
-      if(_nhHolding){
-        _nhHoldG=newG;
-        return;
-      }
-
-      // Normal update — just render, no animations
-      // Play sound only for meaningful changes
-      const evtType=d._evt?JSON.parse(d._evt).t:null;
-      if(evtType==='CARD') sfxCard();
-      else if(evtType==='DONK'){ sfxDonk(); animDonk(); }
-      else if(evtType==='PICKUP') sfxCard();
-      else if(evtType==='JJ') sfxJJ();
-      else if(evtType==='HH') sfxHH();
-      else if(evtType==='SS'||evtType==='BB') sfxSpecial();
-
+      // Just render the new state — host handles all timing/holds
       G=newG;
       render();
       if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
