@@ -650,48 +650,32 @@ function fbDelete(path){
   return fetch(`${DB_URL}/${path}.json`,{method:'DELETE'}).catch(()=>{});
 }
 function fbOn(path,cb){
-  const poll=async()=>{
-    const val=await fbGet(path);
-    if(!_polls[path]) return;
-    const newSeq=val?._seq ?? val?._ts ?? JSON.stringify(val);
-    if(newSeq!==_polls[path].lastVal){
-      console.log('[DW] poll fire: path='+path+' newSeq='+newSeq+' cbs='+_polls[path].cbs.length);
-      _polls[path].lastVal=newSeq;
-      _polls[path].cbs.forEach(fn=>fn({val:()=>val}));
-    }
-  };
+  // Determine poll interval — gameState is large, poll less often
+  const interval=path.includes('gameState')?800:600;
+
   if(_polls[path]){
     _polls[path].cbs.push(cb);
-    // Don't fire immediately — next poll interval will fire if data changed
     return;
   }
-  // New poll — fire immediately once, then poll every 500ms
+
+  let _fired=false;
   _polls[path]={timer:null,lastVal:'__init__',cbs:[cb]};
-  // Use a flag so the immediate fire and first poll don't both fire
-  let _initialFired=false;
-  fbGet(path).then(val=>{
-    if(!_polls[path]) return;
-    const newSeq=val?._seq ?? val?._ts ?? JSON.stringify(val);
-    _polls[path].lastVal=newSeq;
-    _initialFired=true;
-    cb({val:()=>val});
-  });
+
   const pollFn=async()=>{
     const val=await fbGet(path);
     if(!_polls[path]) return;
     const newSeq=val?._seq ?? val?._ts ?? JSON.stringify(val);
-    if(!_initialFired){
-      // Initial fetch hasn't returned yet — fire now and let initial fetch dedup
-      _initialFired=true;
+    if(newSeq!==_polls[path].lastVal){
       _polls[path].lastVal=newSeq;
-      _polls[path].cbs.forEach(fn=>fn({val:()=>val}));
-    } else if(newSeq!==_polls[path].lastVal){
-      console.log('[DW] poll fire: path='+path+' newSeq='+newSeq);
-      _polls[path].lastVal=newSeq;
-      _polls[path].cbs.forEach(fn=>fn({val:()=>val}));
+      _fired=true;
+      const snapshot={val:()=>val};
+      _polls[path].cbs.forEach(fn=>fn(snapshot));
     }
   };
-  _polls[path].timer=setInterval(pollFn,500);
+
+  // Initial fire after a short delay (avoids race with interval)
+  setTimeout(()=>pollFn(), 100);
+  _polls[path].timer=setInterval(pollFn, interval);
 }
 function fbOff(path){
   if(_polls[path]){
@@ -924,7 +908,6 @@ function joinRoom(){
       if(d.slots&&d.slots[myName]!==undefined) myI=d.slots[myName];
 
       const seq=d._seq||0;
-      console.log('[DW] Firebase fire: seq='+seq+' evt='+(d._evt?JSON.parse(d._evt).t:'none')+' lastSeq='+_lastSeq);
       const newG=deserialiseG(d.state);
       const wasOver=G&&G.over;
 
@@ -961,15 +944,28 @@ function joinRoom(){
             });
           }, evt.hold||3000);
         } else {
-          // Normal event: update state, delay render by flight time for CARD
-          G=newG;
-          if(!wasOver) {}
-          handleRemoteEvt(evt, G);
-          const delay=evt&&evt.t==='CARD'?440:50;
-          setTimeout(()=>{
-            render();
-            if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
-          }, delay);
+          // Normal event: play animation, then update G and render after animation
+          if(evt&&evt.t==='CARD'){
+            // Play animation on OLD G state (card not yet in slots)
+            handleRemoteEvt(evt, newG);
+            // Hide the destination slot so ghost is the only visual
+            const destSlot=document.getElementById('pslot-'+evt.slot);
+            if(destSlot) destSlot.style.visibility='hidden';
+            // After animation lands, show real card
+            setTimeout(()=>{
+              if(destSlot) destSlot.style.visibility='';
+              G=newG;
+              render();
+              if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
+            }, 450);
+          } else {
+            G=newG;
+            handleRemoteEvt(evt, G);
+            setTimeout(()=>{
+              render();
+              if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
+            }, 50);
+          }
         }
       } else if(seq>_lastSeq){
         // State update, no event (e.g. new round after hold)
@@ -1676,11 +1672,7 @@ function handleRemoteEvt(evt, g){
   switch(evt.t){
     case 'CARD':
       sfxCard();
-      // Hide the destination slot so real card doesn't appear until ghost lands
-      const destSlot=document.getElementById('pslot-'+evt.slot);
-      if(destSlot) destSlot.style.visibility='hidden';
       flyCardToCentre(evt.pi, evt.card, evt.slot);
-      setTimeout(()=>{ if(destSlot) destSlot.style.visibility=''; }, 420);
       break;
     case 'DONK':
       sfxDonk(); animDonk();
