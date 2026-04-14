@@ -890,17 +890,8 @@ function joinRoom(){
 
     // Listen for game start + state updates
     const sRef=fbRoom.child('gameState');
-    const _seenEvts=new Set();
     let _lastSeq=-1;
-    let _queuedState=null; // state to apply after _roundResolving hold ends
-
-    // Apply queued state after hold
-    function applyQueued(){
-      if(!_queuedState) return;
-      G=_queuedState; _queuedState=null;
-      render();
-      if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
-    }
+    let _holdingRound=false; // true during 3s round-end hold
 
     sRef.on('value',snap4=>{
       const d=snap4.val();
@@ -908,82 +899,135 @@ function joinRoom(){
       if(d.slots&&d.slots[myName]!==undefined) myI=d.slots[myName];
 
       const seq=d._seq||0;
-      const newG=deserialiseG(d.state);
-      const wasOver=G&&G.over;
+      if(seq===_lastSeq) return; // no change
+      const prevSeq=_lastSeq;
+      _lastSeq=seq;
 
-      // First ever load
-      if(_lastSeq===-1){
-        _lastSeq=seq;
-        G=newG;
-        go('gs'); listenPause();
+      const prevG=G;
+      const newG=deserialiseG(d.state);
+      const wasOver=prevG&&prevG.over;
+
+      // First load
+      if(!prevG){
+        G=newG; go('gs'); listenPause();
         render();
         if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
         return;
       }
 
-      // Check for new event
-      const evtKey=seq+'|'+(d._evt||'');
-      const isNewEvt=d._evt && seq>_lastSeq && !_seenEvts.has(evtKey);
-
-      if(isNewEvt){
-        _seenEvts.add(evtKey); _lastSeq=seq;
-        let evt=null;
-        try{ evt=JSON.parse(d._evt); }catch(e){}
-
-        if(evt&&evt.t==='ROUND_END'){
-          // During hold: keep showing current cards, queue new state for after
-          _roundResolving=true;
-          _queuedState=newG;
-          render(); // hides turnBar
-          handleRemoteEvt(evt, newG);
-          // After hold+discard, apply queued state
-          setTimeout(()=>{
-            discardCards(500).then(()=>{
-              _roundResolving=false;
-              applyQueued();
-            });
-          }, evt.hold||3000);
-        } else {
-          // Normal event: play animation, then update G and render after animation
-          if(evt&&evt.t==='CARD'){
-            // Play animation on OLD G state (card not yet in slots)
-            handleRemoteEvt(evt, newG);
-            // Hide the destination slot so ghost is the only visual
-            const destSlot=document.getElementById('pslot-'+evt.slot);
-            if(destSlot) destSlot.style.visibility='hidden';
-            // After animation lands, show real card
-            setTimeout(()=>{
-              if(destSlot) destSlot.style.visibility='';
-              G=newG;
-              render();
-              if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
-            }, 450);
-          } else {
-            G=newG;
-            handleRemoteEvt(evt, G);
-            setTimeout(()=>{
-              render();
-              if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
-            }, 50);
-          }
-        }
-      } else if(seq>_lastSeq){
-        // State update, no event (e.g. new round after hold)
-        _lastSeq=seq;
-        if(_roundResolving){
-          _queuedState=newG;
-        } else {
-          G=newG;
-          render();
-          if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
-        }
-      }
-
+      // Rematch
       if(d._rematch&&wasOver){
-        G=newG; _roundResolving=false; _queuedState=null;
+        G=newG; _holdingRound=false; _roundResolving=false;
         document.getElementById('eov').classList.remove('show');
-        go('gs'); render();
+        go('gs'); render(); return;
       }
+
+      // During hold — queue state, don't render yet
+      if(_holdingRound){
+        G=newG; // update G but don't render — hold display stays
+        return;
+      }
+
+      // Detect what changed by comparing prev and new G
+      const evt=d._evt?JSON.parse(d._evt):null;
+      const evtType=evt?evt.t:null;
+
+      if(evtType==='ROUND_END'){
+        // Keep current DOM for 3s, then discard and apply new state
+        _holdingRound=true;
+        _roundResolving=true;
+        render(); // hides turnBar immediately
+        // Play drama if someone finished
+        const exitNames=(newG.exitOrder||[]).filter(pi=>!(prevG.exitOrder||[]).includes(pi));
+        if(exitNames.length>0){
+          setTimeout(()=>showDrama('🎉',pname2(exitNames[0],newG)+' is OUT!','Well played!','#70F090',1600),200);
+        }
+        setTimeout(()=>{
+          discardCards(500).then(()=>{
+            _holdingRound=false;
+            _roundResolving=false;
+            G=newG;
+            render();
+            if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
+          });
+        }, 3000);
+        return;
+      }
+
+      if(evtType==='CARD'&&evt){
+        sfxCard();
+        // Fly card animation, hide slot until landed
+        const destSlot=document.getElementById('pslot-'+evt.slot);
+        if(destSlot) destSlot.style.visibility='hidden';
+        flyCardToCentre(evt.pi, evt.card, evt.slot);
+        setTimeout(()=>{
+          if(destSlot) destSlot.style.visibility='';
+          G=newG; render();
+          if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
+        }, 450);
+        return;
+      }
+
+      if(evtType==='DONK'&&evt){
+        sfxDonk(); animDonk();
+        showDrama('💥','DONK!',`${pname2(evt.pi,newG)} → ${pname2(evt.tpi,newG)}`,'#FFB3B3',1400);
+        G=newG; render();
+        if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
+        return;
+      }
+
+      if(evtType==='PICKUP'&&evt){
+        showDrama('📥',`${pname2(evt.tpi,newG)} picks up!`,evt.count+' cards!','#FFB3B3',1600);
+        // Fly cards to player
+        const toEl=getPlayerEl(evt.tpi);
+        const to=getElCenter(toEl);
+        for(let s=0;s<4;s++){
+          const slot=document.getElementById('pslot-'+s);
+          const card=slot?slot.querySelector('.card'):null;
+          if(!card) continue;
+          const r=card.getBoundingClientRect();
+          const clone=card.cloneNode(true);
+          clone.style.cssText=`position:fixed;z-index:800;pointer-events:none;width:${r.width}px;height:${r.height}px;left:${r.left}px;top:${r.top}px;border-radius:8px;transition:none;`;
+          document.body.appendChild(clone);
+          setTimeout(()=>{
+            clone.style.transition='left 450ms ease,top 450ms ease,transform 450ms,opacity 450ms';
+            clone.style.left=(to.x-r.width/2)+'px';
+            clone.style.top=(to.y-r.height/2)+'px';
+            clone.style.transform='scale(.3)';
+            clone.style.opacity='0';
+            setTimeout(()=>clone.remove(),520);
+          },s*60);
+        }
+        G=newG; render();
+        if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
+        return;
+      }
+
+      if(evtType==='JJ'&&evt){
+        sfxJJ();
+        showDrama('🔮','JACKASS JINX!',`${pname2(evt.pi,newG)} reverses the DONK!`,'#B07FE8',1600);
+        G=newG; render(); return;
+      }
+      if(evtType==='HH'&&evt){
+        sfxHH();
+        showDrama('🛑','HOOF HALT!',`${pname2(evt.pi,newG)} cancels the DONK!`,'#FFB3B3',1600);
+        G=newG; render(); return;
+      }
+      if(evtType==='SS'&&evt){
+        sfxSpecial();
+        showDrama('🔄','SADDLE SWITCH!',`${pname2(evt.pi,newG)} makes ${pname2(evt.targetPi,newG)} start!`,'#F0C060',1400);
+        G=newG; render(); return;
+      }
+      if(evtType==='BB'&&evt){
+        sfxSpecial();
+        showDrama('⏭️','BRAY BREAK!',`${pname2(evt.pi,newG)} skips!`,'#70F090',1200);
+        G=newG; render(); return;
+      }
+
+      // Default: just update state and render
+      G=newG;
+      render();
+      if(G.pl[G.turn]&&G.pl[G.turn].bot) schedBot();
     });
     fbListeners.push(sRef);
 
@@ -1613,6 +1657,9 @@ let _roundResolving=false;
 // Return perspective-aware name: "you" for myI, player name for others
 function pname(pi){
   return pi===myI?'You':G.pl[pi].name;
+}
+function pname2(pi,g){
+  return pi===myI?'You':g.pl[pi].name;
 }
 // Perspective-aware log — called on each client with their own myI
 function plog(pi, action, rest=''){
