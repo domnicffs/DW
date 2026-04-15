@@ -207,7 +207,7 @@ input.ni{letter-spacing:2px;font-size:.95rem;}
 .abar{display:flex;gap:8px;padding:5px 8px 0;justify-content:center;flex-shrink:0;}
 
 /* ── CARDS ── */
-.card{flex-shrink:0;width:62px;height:89px;border-radius:7px;background:var(--cbg);border:2px solid;position:relative;cursor:pointer;transition:transform .12s,box-shadow .12s;display:flex;flex-direction:column;overflow:hidden;user-select:none;}
+.card{flex-shrink:0;width:62px;height:89px;border-radius:7px;border:2px solid;position:relative;cursor:pointer;transition:transform .12s,box-shadow .12s;overflow:hidden;user-select:none;padding:0;background:var(--cbg);}
 .card.sel{transform:translateY(-14px)!important;box-shadow:0 0 20px rgba(201,149,58,.8)!important;border-color:var(--gold)!important;}
 .card.dim{opacity:.35;cursor:default;}
 .sp-coin.dim{opacity:.35;cursor:default;}
@@ -225,7 +225,6 @@ input.ni{letter-spacing:2px;font-size:.95rem;}
 .cc.tl{top:3px;left:4px;}.cc.br{bottom:3px;right:4px;transform:rotate(180deg);}
 .cn{font-family:'Cinzel',serif;font-weight:700;font-size:12px;}
 .cs{font-family:'Cinzel',serif;font-size:5px;font-weight:600;letter-spacing:.3px;}
-.sb .cn,.sb .cs{color:var(--blue);}.sr .cn,.sr .cs{color:var(--red);}.sg .cn,.sg .cs{color:var(--green);}.spu .cn,.spu .cs{color:var(--purple);}
 .cmid{flex:1;display:flex;align-items:center;justify-content:center;font-size:22px;}
 .card.smsz .cmid{font-size:14px;}.card.smsz .cn{font-size:9px;}.card.smsz .cs{font-size:4px;}
 .card.psz .cmid{font-size:32px;}.card.psz .cn{font-size:15px;}.card.psz .cs{font-size:6px;}
@@ -1019,6 +1018,7 @@ function initGame(players){
     pendingSS:null,         // {originalPi, targetPi} — waiting for SS counter
     spPlayedOrder:[],       // order specials were played this round (for draw order)
     roundStarter:si,        // pi who started current round
+    slotOrder:[],           // pi order for slot assignment this round
   };
   sel=null; selSp=null; hf='all';
   document.getElementById('htabs').innerHTML='';
@@ -1098,12 +1098,9 @@ function playCard(pi,id){
   const FLIGHT=420;
   // Before push: calculate which slot this player occupies
   // For first card, pi IS the starter so slot=0; otherwise use turn order
-  // targetSlot = pi's position in clockwise order from roundStarter
-  const targetSlot=(()=>{
-    const order=getClockwiseOrder(G.roundStarter,4);
-    const idx=order.indexOf(pi);
-    return idx>=0?idx:0;
-  })();
+  // targetSlot = position in slotOrder (order of action this round)
+  // slotOrder not yet updated for this card, so count current length
+  const targetSlot=G.slotOrder?G.slotOrder.length:0;
   flyCardToCentre(pi, card, Math.min(3,targetSlot));
   sfxCard();
 
@@ -1111,7 +1108,8 @@ function playCard(pi,id){
   p.hand.splice(ci,1);
   if(!G.col)G.col=card.suit;
   G.played.push({pi,card});
-  G.log=`${pname(pi)} played ${card.suit.toUpperCase()} ${card.num}`;
+  if(!G.slotOrder.includes(pi)) G.slotOrder.push(pi);
+  G.log=`${pv(pi,'played','played')} ${card.suit.toUpperCase()} ${card.num}`;
   _pendingEvt={t:'CARD',pi,card:JSON.parse(JSON.stringify(card)),slot:Math.min(3,targetSlot)};
 
   const activePisPlayed=new Set(G.played.filter(e=>!e.isDonk).map(e=>e.pi));
@@ -1124,15 +1122,17 @@ function playCard(pi,id){
 
   if(stillMustPlay.length===0){
     _roundResolving=true;
-    sel=null; // deselect card immediately so play button disables
+    sel=null;
+    // Hide turnBar immediately without full render
+    const tb=document.getElementById('turnBar');
+    if(tb) tb.classList.add('hidden');
     // Push CARD event immediately so non-host sees the card fly
     if(isHost&&fbRoom&&wplayers.length>1){
       _seq++;
       fbRoom.child('gameState').update({state:serialiseG(G),_ts:Date.now(),_seq,_evt:JSON.stringify(_pendingEvt)});
       _pendingEvt=null;
     }
-    render(); // hide turnBar immediately — _roundResolving blocks it
-    // After flight lands, show last card properly then resolve
+    // Wait for flight to land then render — same as slots 1-3
     setTimeout(()=>{
       render();
       setTimeout(()=>resolveRound(), 100);
@@ -1173,6 +1173,7 @@ function donkCard(pi,id){
 
   p.hand.splice(ci,1);
   G.played.push({pi,card,isDonk:true});
+  if(!G.slotOrder.includes(pi)) G.slotOrder.push(pi);
   G.missing[pi].add(G.col);
 
   const highEntry=currentHighEntry();
@@ -1182,9 +1183,9 @@ function donkCard(pi,id){
   // Set up pending DONK — DONKed player can respond with JJ or HH
   G.pendingDonk={donkerPi:pi, donkedPi:tpi, allCards:[...allCards]};
   G.pendingJJReversed=false;
-  G.log=`${pname(pi)} DONKed ${pname(tpi)}! ${G.pl[tpi].sp?`${pname(tpi)} can use JJ or HH…`:`${pname(tpi)} picks up ${allCards.length} cards!`}`;
+  G.log=`${pv(pi,'DONKed','DONKed')} ${pname(tpi)}! ${G.pl[tpi].sp?`${pname(tpi)} can use JJ or HH…`:`${tpi===myI?'You pick up':''+G.pl[tpi].name+' picks up'} ${allCards.length} cards!`}`;
   animDonk();
-  showDrama('💥','DONK!',`${pname(pi)} → ${pname(tpi)}`,'#FFB3B3',1400);
+  showDrama('💥','DONK!',`${pv(pi,'DONKed','DONKed')} ${pname(tpi)}`,'#FFB3B3',1400);
   _pendingEvt={t:'DONK',pi,tpi};
 
   // Delay so donk card animation lands before resolving
@@ -1227,7 +1228,7 @@ function resolveDonk(tpi){
 
   G.pl[tpi].out=false;
   G.pl[tpi].hand.push(...allCards);
-  G.log=`${pname(tpi)} picks up ${allCards.length} cards!`;
+  G.log=`${tpi===myI?'You pick up':G.pl[tpi].name+' picks up'} ${allCards.length} cards!`;
 
   sweepEmptyHands();
   const starter = G.pl[tpi].out ? nextActive(tpi) : tpi;
@@ -1248,7 +1249,7 @@ function resolveDonk(tpi){
 
   // Show drama then animate clones flying to the player's panel
   _pendingEvt={t:'PICKUP',tpi,count:allCards.length};
-  showDrama('📥',`${pname(tpi)} picks up!`,`${allCards.length} cards!`,'#FFB3B3',1600);
+  showDrama('📥',`${tpi===myI?'You pick up!':G.pl[tpi].name+' picks up!'}`,allCards.length+' cards!','#FFB3B3',1600);
   if(cardClones.length){
     const toEl=getPlayerEl(tpi);
     const to=getElCenter(toEl);
@@ -1269,8 +1270,8 @@ function resolveDonk(tpi){
   showDonkOverlay(tpi,allCards);
   drawSpecialsAfterRound();
 
-  G.played=[]; G.col=null; G.bbPis=[]; G.spPlayedOrder=[];
-  G.round++; G.turn=starter;
+  G.played=[]; G.col=null; G.bbPis=[]; G.spPlayedOrder=[]; G.slotOrder=[];
+  G.round++; G.turn=starter; G.roundStarter=starter;
   chkOver(); post();
 }
 
@@ -1285,12 +1286,12 @@ function playSpecialJJ(pi){
   sfxJJ();
   const JJ_DRAMA=1600;
   _pendingEvt={t:'JJ',pi};
-  showDrama('🔮','JACKASS JINX!',`${pname(pi)} reverses the DONK!`,'#B07FE8',JJ_DRAMA);
+  showDrama('🔮','JACKASS JINX!',`${pv(pi,'reversed','reversed')} the DONK!`,'#B07FE8',JJ_DRAMA);
 
   if(!G.pendingJJReversed){
     G.pendingDonk={donkerPi:donkedPi, donkedPi:donkerPi, allCards};
     G.pendingJJReversed=true;
-    G.log=`${pname(pi)} used Jackass Jinx — DONK reversed to ${pname(donkerPi)}!`;
+    G.log=`${pv(pi,'used','used')} Jackass Jinx — DONK reversed to ${pname(donkerPi)}!`;
     post(); // render the updated state
     if(!G.pl[donkerPi].sp){
       // Delay pickup until drama finishes
@@ -1300,7 +1301,7 @@ function playSpecialJJ(pi){
     }
   } else {
     const finalVictim=G.pendingDonk.donkerPi;
-    G.log=`${pname(pi)} countered with Jackass Jinx — ${pname(finalVictim)} picks up!`;
+    G.log=`${pv(pi,'countered','countered')} with Jackass Jinx — ${finalVictim===myI?'you pick up':G.pl[finalVictim].name+' picks up'}!`;
     post();
     setTimeout(()=>resolveDonk(finalVictim), JJ_DRAMA+100);
   }
@@ -1317,7 +1318,7 @@ function playSpecialHH(pi){
   sfxHH();
   const HH_DRAMA=1600;
   _pendingEvt={t:'HH',pi};
-  showDrama('🛑','HOOF HALT!',`${pname(pi)} cancels the DONK!`,'#FFB3B3',HH_DRAMA);
+  showDrama('🛑','HOOF HALT!',`${pv(pi,'cancelled','cancelled')} the DONK!`,'#FFB3B3',HH_DRAMA);
   post(); // render immediately so state is visible
 
   // Snapshot
@@ -1335,7 +1336,7 @@ function playSpecialHH(pi){
   G.pendingDonk=null;
   G.pendingJJReversed=false;
 
-  G.log=`${pname(pi)} used Hoof Halt — all ${allCards.length} cards discarded!`;
+  G.log=`${pv(pi,'used','used')} Hoof Halt — all ${allCards.length} cards discarded!`;
 
   G.pl.forEach((_,idx)=>{if(!G.pl[idx].out&&G.pl[idx].hand.length===0)exitPlayer(idx);});
 
@@ -1348,7 +1349,7 @@ function playSpecialHH(pi){
   // Wait for drama to finish, THEN animate discard and clear state
   setTimeout(()=>{
     discardCards(450).then(()=>{
-      G.played=[]; G.col=null; G.bbPis=[]; G.spPlayedOrder=[];
+      G.played=[]; G.col=null; G.bbPis=[]; G.spPlayedOrder=[]; G.slotOrder=[];
       G.round++; G.turn=nextStarter; G.roundStarter=nextStarter;
       chkOver(); post();
     });
@@ -1368,17 +1369,17 @@ function playSpecialSS(pi,targetPi){
   consumeSpecial(pi);
   sfxSpecial();
   _pendingEvt={t:'SS',pi,targetPi};
-  showDrama('🔄','SADDLE SWITCH!',`${pname(pi)} makes ${pname(targetPi)} start!`,'#F0C060',1400);
+  showDrama('🔄','SADDLE SWITCH!',`${pv(pi,'made','made')} ${pname(targetPi)} start!`,'#F0C060',1400);
 
   G.pendingSS={originalPi:G.pendingSS?G.pendingSS.originalPi:pi, targetPi, depth:(G.pendingSS?.depth||0)+1};
-  G.log=`${pname(pi)} makes ${pname(targetPi)} start!`;
+  G.log=`${pv(pi,'made','made')} ${pname(targetPi)} start!`;
   G.turn=targetPi;
 
   if(!G.pl[targetPi].sp||G.pl[targetPi].sp.sid!=='SS'||G.pendingSS.depth>=1){
     // Chain ends — targetPi starts the round
     G.pendingSS=null;
     G.roundStarter=targetPi;
-    G.log=`${pname(targetPi)} starts the round!`;
+    G.log=`${targetPi===myI?'You start':''+G.pl[targetPi].name+' starts'} the round!`;
     post();
     if(G.pl[targetPi].bot) schedBot();
   } else {
@@ -1400,10 +1401,11 @@ function playSpecialBB(pi){
 
   consumeSpecial(pi);
   G.bbPis.push(pi);
-  G.log=`${pname(pi)} used Bray Break — turn skipped!`;
+  if(!G.slotOrder.includes(pi)) G.slotOrder.push(pi);
+  G.log=`${pv(pi,'used','used')} Bray Break — turn skipped!`;
   sfxSpecial();
   _pendingEvt={t:'BB',pi};
-  showDrama('⏭️','BRAY BREAK!',`${pname(pi)} skips!`,'#70F090',1200);
+  showDrama('⏭️','BRAY BREAK!',`${pv(pi,'skip','skips')}!`,'#70F090',1200);
 
   // Advance to next player who hasn't BB'd, isn't out, and has cards
   G.turn=nextActive(pi);
@@ -1514,8 +1516,8 @@ function resolveRound(){
 
   const exitNames=exitingThisRound.map(pi=>G.pl[pi].name).join(', ');
   G.log=exitNames
-    ? `Round done. ${exitNames} finished! ${pname(nextStarter)} starts next.`
-    : `Round done — cards discarded. ${pname(nextStarter)} starts next.`;
+    ? `Round done. ${exitNames} finished! ${nextStarter===myI?'You start':''+G.pl[nextStarter].name+' starts'} next.`
+    : `Round done — cards discarded. ${nextStarter===myI?'You start':''+G.pl[nextStarter].name+' starts'} next.`;
 
   // Snapshot the played row DOM BEFORE clearing G.played
   // We delay post() so cards stay on screen for 3 full seconds
@@ -1536,7 +1538,7 @@ function resolveRound(){
     discardCards(500).then(()=>{
       _roundResolving=false;
       drawSpecialsAfterRound();
-      G.played=[];G.col=null;G.bbPis=[];G.spPlayedOrder=[];G.round++;G.turn=nextStarter;G.roundStarter=nextStarter;
+      G.played=[];G.col=null;G.bbPis=[];G.spPlayedOrder=[];G.slotOrder=[];G.round++;G.turn=nextStarter;G.roundStarter=nextStarter;
       chkOver();post();
     });
   }, HOLD);
@@ -1551,7 +1553,7 @@ function chkOver(){
   if(active.length===1){
     G.over=true;
     G.donkey=G.pl.indexOf(active[0]);
-    G.log=`🫏 ${G.pl[G.donkey].name} IS THE DONKEY!`;
+    G.log=`🫏 ${G.donkey===myI?'You are':''+G.pl[G.donkey].name+' is'} THE DONKEY!`;
   }
 }
 
@@ -1565,13 +1567,29 @@ function pname(pi){
 function pname2(pi,g){
   return pi===myI?'You':g.pl[pi].name;
 }
+// verb-aware name: returns "You [verb]" or "[Name] [verb]s"
+function pv(pi,verb,verbS){
+  return pi===myI?'You '+verb:G.pl[pi].name+' '+(verbS||verb+'s');
+}
 // Perspective-aware log — called on each client with their own myI
 function plog(pi, action, rest=''){
   return `${pname(pi)} ${action}${rest?(' '+rest):''}`;
 }
 
 function getClockwiseOrder(startPi, maxSlots){
-  // Walk clockwise by player index from startPi, skipping out players
+  // Use slotOrder if available (populated as actions happen)
+  // Fill remaining slots clockwise for players who haven't acted yet
+  if(G.slotOrder&&G.slotOrder.length>0){
+    const order=[...G.slotOrder];
+    // Add remaining active players clockwise who haven't acted
+    const n=G.pl.length;
+    for(let i=0;i<n&&order.length<maxSlots;i++){
+      const idx=(startPi+i)%n;
+      if(!G.pl[idx].out&&!order.includes(idx)) order.push(idx);
+    }
+    return order.slice(0,maxSlots);
+  }
+  // Fallback: pure clockwise
   const n=G.pl.length;
   const order=[];
   for(let i=0;i<n&&order.length<maxSlots;i++){
@@ -1627,7 +1645,7 @@ function handleRemoteEvt(evt, g){
       break;
     case 'DONK':
       sfxDonk(); animDonk();
-      showDrama('💥','DONK!',`${pname(evt.pi)} → ${pname(evt.tpi)}`,'#FFB3B3',1400);
+      showDrama('💥','DONK!',`${pname2(evt.pi,G)} DONKed ${pname2(evt.tpi,G)}`,'#FFB3B3',1400);
       break;
     case 'PICKUP':
       showDrama('📥',`${pname(evt.tpi)} picks up!`,`${evt.count} cards!`,'#FFB3B3',1600);
@@ -1822,7 +1840,7 @@ function flyCardToCentre(pi, card, slotIdx=0){
     let cardEl=null;
     if(mh){
       mh.querySelectorAll('.card').forEach(el=>{
-        if(!cardEl && el.querySelector('.cn')?.textContent==String(card.num) && el.className.includes(SCLS[card.suit]))
+        if(!cardEl && el.dataset.suit===card.suit && el.dataset.num===String(card.num))
           cardEl=el;
       });
     }
@@ -2491,7 +2509,7 @@ function render(){
       cb.textContent='PLAY ANY CARD TO START';
     } else {
       const starter=G.pl[G.turn];
-      cb.textContent=starter?(pname(G.turn).toUpperCase()+' IS STARTING…'):'WAITING…';
+      cb.textContent=starter?(G.turn===myI?'WAITING FOR YOU…':G.pl[G.turn].name.toUpperCase()+' IS STARTING…'):'WAITING…';
     }
   }
 
@@ -2793,12 +2811,29 @@ function renderHand(){
   document.getElementById('bdk').disabled=!(sc&&mt&&iDonk);
 }
 
+const CARD_BASE='';
+const SUIT_CAP={blue:'Blue',red:'Red',green:'Green',purple:'Purple'};
+
+function getCardImgUrl(card){
+  return SUIT_CAP[card.suit]+'%20'+card.num+'.png';
+}
+
 function mkCard(card){
   const el=document.createElement('div');
   el.className=`card ${SCLS[card.suit]}`;
-  const em=EM[card.suit]?.[card.num-1]||'🐴';
-  const sn=card.suit.slice(0,3).toUpperCase();
-  el.innerHTML=`<div class="cc tl"><div class="cn">${card.num}</div><div class="cs">${sn}</div></div><div class="cmid">${em}</div><div class="cc br"><div class="cn">${card.num}</div><div class="cs">${sn}</div></div>`;
+  el.dataset.suit=card.suit;
+  el.dataset.num=String(card.num);
+  const imgUrl=getCardImgUrl(card);
+  const img=document.createElement('img');
+  img.src=imgUrl;
+  img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:5px;display:block;';
+  img.draggable=false;
+  img.onerror=function(){
+    this.parentElement.style.cssText+=';display:flex;align-items:center;justify-content:center;font-family:Cinzel,serif;font-size:1rem;font-weight:700;';
+    this.remove();
+    this.parentElement.textContent=card.num;
+  };
+  el.appendChild(img);
   return el;
 }
 
