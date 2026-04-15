@@ -529,7 +529,7 @@ input.ni{letter-spacing:2px;font-size:.95rem;}
       <!-- Special pile + active special cards below in a horizontal row -->
       <div class="sp-piles-row">
         <div class="sp-pile-block">
-          <div class="sp-card-back" id="spPileBack">
+          <div class="sp-card-back" id="spPileBack" style="background-image:url(https://domnicffs.github.io/DW/Special%20Back.png);background-size:cover;background-position:center;">
             <div class="sp-back-dw">DW</div>
             <div class="sp-back-sub">SPECIALS</div>
           </div>
@@ -2744,28 +2744,38 @@ function closeSpModal(){
 }
 
 // size: 'full'=coin 72x72 (hand), 'psz'=80x114 (played area), 'smsz'=40x57 (last round), 'pile'=coin 72x72
+const SP_IMG_MAP={'JJ':'https://domnicffs.github.io/DW/JJ%20-%201.PNG','HH':'https://domnicffs.github.io/DW/HH%20-%204.PNG','SS':'https://domnicffs.github.io/DW/SS%20-%201.PNG','BB':'https://domnicffs.github.io/DW/BB%20-%201.PNG'};
+const SP_BACK_URL='https://domnicffs.github.io/DW/Special%20Back.png';
+const PLAY_BACK_URL='https://domnicffs.github.io/DW/Playing%20Back.png';
+
 function mkSpCard(sp, size='full'){
   const el=document.createElement('div');
   const sizes={
-    full:{w:'72px',h:'72px',em:'20px',fn:'16px',coin:true},
-    psz: {w:'80px',h:'114px',em:'32px',fn:'8px',sn:'4.5px'},
-    smsz:{w:'40px',h:'57px',em:'13px',fn:'5px',sn:'3px'},
-    pile:{w:'72px',h:'72px',em:'20px',fn:'16px',coin:true},
+    full:{w:'72px',h:'72px',coin:true},
+    psz: {w:'80px',h:'114px',coin:false},
+    smsz:{w:'40px',h:'57px',coin:false},
+    pile:{w:'72px',h:'72px',coin:true},
   };
   const s=sizes[size]||sizes.full;
 
   if(s.coin){
+    // Coin style for hand/pile — use image inside circle
     el.className='sp-coin';
-    el.style.cssText=`width:${s.w};height:${s.h};border-radius:50%;background:radial-gradient(circle at 35% 35%,#2A1A4A,#0E0818);border:3px solid #8B6FD4;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 0 5px rgba(107,79,200,.18),0 4px 14px rgba(107,79,200,.35);position:relative;flex-shrink:0;cursor:pointer;`;
-    // Just the abbreviation — bold and centred
-    el.innerHTML=`<div style="font-family:'Cinzel',serif;font-weight:700;font-size:${s.fn};color:#C8A8F8;letter-spacing:1px;position:relative;z-index:1">${sp.abbr}</div>`;
-    const ring=document.createElement('div');
-    ring.style.cssText='position:absolute;inset:6px;border-radius:50%;border:1.5px dashed rgba(139,111,212,.4);pointer-events:none;';
-    el.appendChild(ring);
+    el.style.cssText=`width:${s.w};height:${s.h};border-radius:50%;overflow:hidden;border:3px solid #8B6FD4;box-shadow:0 0 0 5px rgba(107,79,200,.18),0 4px 14px rgba(107,79,200,.35);position:relative;flex-shrink:0;cursor:pointer;background:#0E0818;`;
+    const img=document.createElement('img');
+    img.src=SP_IMG_MAP[sp.id]||SP_BACK_URL;
+    img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;';
+    img.onerror=function(){this.style.display='none';el.innerHTML+=`<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-family:Cinzel,serif;font-weight:700;font-size:16px;color:#C8A8F8;">${sp.abbr}</div>`;};
+    el.appendChild(img);
   } else {
+    // Card style for played area / last round — use image
     el.className='card s-sp';
     el.style.width=s.w; el.style.height=s.h;
-    el.innerHTML=`<div class="cc tl"><div class="cn" style="font-size:${s.fn}">${sp.abbr}</div></div><div class="cmid" style="font-size:${s.em}">${sp.emoji}</div><div class="sn" style="font-size:${s.sn}">${sp.name}</div>`;
+    const img=document.createElement('img');
+    img.src=SP_IMG_MAP[sp.id]||SP_BACK_URL;
+    img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:5px;display:block;';
+    img.onerror=function(){this.style.display='none';el.textContent=sp.abbr;};
+    el.appendChild(img);
   }
   return el;
 }
@@ -2811,11 +2821,11 @@ function renderHand(){
   document.getElementById('bdk').disabled=!(sc&&mt&&iDonk);
 }
 
-const CARD_BASE='';
+const CARD_BASE='https://domnicffs.github.io/DW/';
 const SUIT_CAP={blue:'Blue',red:'Red',green:'Green',purple:'Purple'};
 
 function getCardImgUrl(card){
-  return SUIT_CAP[card.suit]+'%20'+card.num+'.png';
+  return CARD_BASE+SUIT_CAP[card.suit]+'%20'+card.num+'.png';
 }
 
 function mkCard(card){
