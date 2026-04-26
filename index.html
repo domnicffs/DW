@@ -206,9 +206,11 @@ input.ni{letter-spacing:2px;font-size:.95rem;}
 .card{flex-shrink:0;width:62px;height:89px;border-radius:7px;border:2px solid;position:relative;cursor:pointer;transition:transform .12s,box-shadow .12s;overflow:hidden;user-select:none;padding:0;background:var(--cbg);}
 .card.sel{transform:translateY(-14px)!important;box-shadow:0 0 20px rgba(201,149,58,.8)!important;border-color:var(--gold)!important;}
 .card img{image-rendering:auto;-webkit-font-smoothing:antialiased;}
-.card.s-sp.dim{opacity:.35;cursor:default;}
+.card.dim{opacity:.22;cursor:default;filter:grayscale(50%);}
+.card.playable{box-shadow:0 0 0 2.5px #fff,0 0 16px 4px rgba(255,255,255,.45);transform:translateY(-5px);transition:transform .15s,box-shadow .15s;}
+.card.s-sp.dim{opacity:.22;cursor:default;filter:grayscale(50%);}
 .card.s-sp.sel{transform:translateY(-14px)!important;box-shadow:0 0 20px rgba(201,149,58,.8)!important;border-color:var(--gold)!important;}
-.card.dg{box-shadow:0 0 12px rgba(224,91,91,.7);}
+.card.dg{box-shadow:0 0 0 2.5px #E05B5B,0 0 14px 4px rgba(224,91,91,.55);transform:translateY(-5px);}
 .card.sb{border-color:var(--blue);}.card.sr{border-color:var(--red);}.card.sg{border-color:var(--green);}.card.spu{border-color:var(--purple);}
 .card.psz{width:80px;height:114px;cursor:default;pointer-events:none;}
 .card.smsz{width:40px;height:57px;cursor:default;pointer-events:none;}
@@ -2796,13 +2798,12 @@ function renderHand(){
     const donkable=mt&&iDonk;           // forced to DONK — any card usable
     const el=mkCard(card);
     if(!mt){
-      // Not my turn — dim everything
       el.classList.add('dim');
     } else if(iDonk){
-      // Must DONK — all cards available but show donk style
       el.classList.add('dg');
-    } else if(!playable){
-      // My turn, wrong colour, not donking — dim it
+    } else if(playable){
+      el.classList.add('playable');
+    } else {
       el.classList.add('dim');
     }
     if(sel===card.id) el.classList.add('sel');
