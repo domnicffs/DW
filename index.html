@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -10,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Donkey Who">
 <meta name="theme-color" content="#130C04">
 <meta name="description" content="The card game where the last one holding cards is the Donkey!">
+
 
 <title>Donkey Who</title>
 <style>
@@ -54,36 +54,36 @@ input.ni{letter-spacing:2px;font-size:.95rem;}
 #gs{display:none;flex-direction:column;min-height:100vh;padding:0;max-width:100vw;overflow-x:hidden;}
 #gs.active{display:flex;}
 .gh{display:flex;justify-content:center;align-items:center;padding:8px 12px;background:rgba(0,0,0,.4);border-bottom:1px solid rgba(201,149,58,.18);flex-shrink:0;}
-.gt{font-family:‘Cinzel Decorative’,cursive;font-size:.9rem;color:var(–gold);text-align:center;}
-.grnd{font-family:‘Cinzel’,serif;font-size:.6rem;letter-spacing:2px;opacity:.65;text-align:center;}
+.gt{font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);text-align:center;}
+.grnd{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:2px;opacity:.65;text-align:center;}
 .gtable{flex:1;display:flex;flex-direction:column;padding:8px;gap:5px;overflow:hidden;min-height:0;width:100%;box-sizing:border-box;}
 
 /* Opponents — 3 equal columns that always fit screen width */
 .oprow{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;width:100%;}
 .op{background:rgba(0,0,0,.32);border:1px solid rgba(201,149,58,.15);border-radius:7px;padding:6px 4px;text-align:center;transition:all .3s;position:relative;overflow:hidden;min-width:0;}
-.op.at{border-color:var(–gold);background:rgba(201,149,58,.1);box-shadow:0 0 10px rgba(201,149,58,.2);}
+.op.at{border-color:var(--gold);background:rgba(201,149,58,.1);box-shadow:0 0 10px rgba(201,149,58,.2);}
 .op.out{opacity:.3;border-style:dashed;}
-.op.th::after{content:‘🤔’;position:absolute;top:-9px;right:-2px;font-size:13px;animation:bob .65s ease-in-out infinite;}
+.op.th::after{content:'🤔';position:absolute;top:-9px;right:-2px;font-size:13px;animation:bob .65s ease-in-out infinite;}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-.opn{font-family:‘Cinzel’,serif;font-size:.56rem;letter-spacing:.3px;color:var(–gl);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.opn{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.3px;color:var(--gl);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
 .opc{font-size:.5rem;opacity:.5;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.optd{width:5px;height:5px;border-radius:50%;background:var(–gold);margin:2px auto 0;display:none;}
+.optd{width:5px;height:5px;border-radius:50%;background:var(--gold);margin:2px auto 0;display:none;}
 .op.at .optd{display:block;animation:pulse 1s ease-in-out infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
 
 .ctr{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:0;}
-.cbadge{font-family:‘Cinzel’,serif;font-size:.65rem;letter-spacing:3px;padding:5px 16px;border-radius:20px;border:1px solid rgba(201,149,58,.3);background:rgba(0,0,0,.4);transition:all .3s;}
-.cbadge.cb{border-color:var(–blue);color:#6BB0F0;background:rgba(27,94,160,.18);}
-.cbadge.cr{border-color:var(–red);color:#F07070;background:rgba(139,26,26,.18);}
-.cbadge.cg{border-color:var(–green);color:#70F090;background:rgba(26,107,53,.18);}
-.cbadge.cp{border-color:var(–purple);color:#B07FE8;background:rgba(91,45,142,.18);}
+.cbadge{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:3px;padding:5px 16px;border-radius:20px;border:1px solid rgba(201,149,58,.3);background:rgba(0,0,0,.4);transition:all .3s;}
+.cbadge.cb{border-color:var(--blue);color:#6BB0F0;background:rgba(27,94,160,.18);}
+.cbadge.cr{border-color:var(--red);color:#F07070;background:rgba(139,26,26,.18);}
+.cbadge.cg{border-color:var(--green);color:#70F090;background:rgba(26,107,53,.18);}
+.cbadge.cp{border-color:var(--purple);color:#B07FE8;background:rgba(91,45,142,.18);}
 .prow{display:flex;gap:10px;justify-content:center;align-items:flex-end;height:130px;position:relative;}
 .pslot{width:80px;height:114px;border-radius:8px;border:1.5px dashed rgba(201,149,58,.18);background:rgba(0,0,0,.15);flex-shrink:0;transition:all .35s cubic-bezier(.4,0,.2,1);position:relative;display:flex;align-items:flex-end;justify-content:center;}
 .pslot.filled{border-color:transparent;background:transparent;}
 .pslot .pw{position:absolute;bottom:0;display:flex;flex-direction:column;align-items:center;gap:2px;}
 .pw{display:flex;flex-direction:column;align-items:center;gap:3px;}
-.plbl{font-family:‘Cinzel’,serif;font-size:.5rem;letter-spacing:1px;opacity:.55;}
-.high-marker{font-size:.48rem;color:#FFB3B3;font-family:‘Cinzel’,serif;letter-spacing:.5px;}
+.plbl{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:1px;opacity:.55;}
+.high-marker{font-size:.48rem;color:#FFB3B3;font-family:'Cinzel',serif;letter-spacing:.5px;}
 .dk-flash{animation:dkf .45s ease-in-out 3;}
 @keyframes dkf{0%,100%{box-shadow:none}50%{box-shadow:0 0 22px #E05B5B,0 0 8px #E05B5B}}
 
@@ -91,55 +91,55 @@ input.ni{letter-spacing:2px;font-size:.95rem;}
 
 /* ── PENDING DONK RESPONSE BANNER ── */
 .donk-response{
-background:linear-gradient(135deg,rgba(80,10,10,.95),rgba(50,5,5,.95));
-border:1px solid #E05B5B;border-radius:8px;
-padding:8px 12px;margin:4px 0;flex-shrink:0;
-display:none;
+  background:linear-gradient(135deg,rgba(80,10,10,.95),rgba(50,5,5,.95));
+  border:1px solid #E05B5B;border-radius:8px;
+  padding:8px 12px;margin:4px 0;flex-shrink:0;
+  display:none;
 }
 .donk-response.show{display:block;}
-.dr-title{font-family:‘Cinzel’,serif;font-size:.68rem;font-weight:700;color:#FFB3B3;letter-spacing:1px;margin-bottom:6px;}
+.dr-title{font-family:'Cinzel',serif;font-size:.68rem;font-weight:700;color:#FFB3B3;letter-spacing:1px;margin-bottom:6px;}
 .dr-btns{display:flex;gap:6px;flex-wrap:wrap;}
-.dr-btn{padding:8px 14px;font-family:‘Cinzel’,serif;font-size:.65rem;font-weight:700;letter-spacing:1px;border:none;border-radius:4px;cursor:pointer;transition:all .2s;}
+.dr-btn{padding:8px 14px;font-family:'Cinzel',serif;font-size:.65rem;font-weight:700;letter-spacing:1px;border:none;border-radius:4px;cursor:pointer;transition:all .2s;}
 .dr-btn.jj{background:linear-gradient(135deg,#5B2D8E,#3A1A5E);color:#B07FE8;border:1px solid #8B6FD4;}
 .dr-btn.hh{background:linear-gradient(135deg,#8B1A1A,#5A0A0A);color:#FFB3B3;border:1px solid #E05B5B;}
-.dr-btn.accept{background:rgba(255,255,255,.08);color:var(–gl);border:1px solid rgba(255,255,255,.2);}
+.dr-btn.accept{background:rgba(255,255,255,.08);color:var(--gl);border:1px solid rgba(255,255,255,.2);}
 
 /* ── SPECIAL MODAL ── */
 .sp-modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.82);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:400;padding:20px;}
 .sp-modal-ov.show{display:flex;}
-.sp-modal{background:#0E0804;border:1px solid var(–gold);border-radius:10px;padding:22px;max-width:320px;width:100%;text-align:center;}
-.sp-modal-title{font-family:‘Cinzel’,serif;font-size:.95rem;letter-spacing:2px;color:var(–gold);margin-bottom:6px;}
+.sp-modal{background:#0E0804;border:1px solid var(--gold);border-radius:10px;padding:22px;max-width:320px;width:100%;text-align:center;}
+.sp-modal-title{font-family:'Cinzel',serif;font-size:.95rem;letter-spacing:2px;color:var(--gold);margin-bottom:6px;}
 .sp-modal-desc{font-size:.8rem;opacity:.65;margin-bottom:16px;line-height:1.5;}
 .sp-target-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
-.sp-target-btn{padding:10px;font-family:‘Cinzel’,serif;font-size:.78rem;letter-spacing:1px;background:rgba(201,149,58,.08);border:1px solid rgba(201,149,58,.28);border-radius:4px;color:var(–gl);cursor:pointer;transition:all .2s;}
-.sp-target-btn:hover,.sp-target-btn.chosen{background:rgba(201,149,58,.18);border-color:var(–gold);}
+.sp-target-btn{padding:10px;font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:1px;background:rgba(201,149,58,.08);border:1px solid rgba(201,149,58,.28);border-radius:4px;color:var(--gl);cursor:pointer;transition:all .2s;}
+.sp-target-btn:hover,.sp-target-btn.chosen{background:rgba(201,149,58,.18);border-color:var(--gold);}
 .sp-modal-btns{display:flex;gap:10px;justify-content:center;}
 .last-round{
-background:rgba(0,0,0,.35);
-border:1px solid rgba(201,149,58,.18);
-border-radius:8px;
-padding:7px 10px;
-flex-shrink:0;
-transition:opacity .4s;
-align-self:center;        /* centre the box horizontally */
-max-width:100%;
+  background:rgba(0,0,0,.35);
+  border:1px solid rgba(201,149,58,.18);
+  border-radius:8px;
+  padding:7px 10px;
+  flex-shrink:0;
+  transition:opacity .4s;
+  align-self:center;        /* centre the box horizontally */
+  max-width:100%;
 }
 .last-round.hidden{opacity:0;pointer-events:none;}
-.lr-title{font-family:‘Cinzel’,serif;font-size:.55rem;letter-spacing:3px;color:var(–gold);opacity:.6;margin-bottom:5px;text-align:center;}
+.lr-title{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:3px;color:var(--gold);opacity:.6;margin-bottom:5px;text-align:center;}
 .lr-cards{
-display:flex;gap:5px;
-overflow-x:auto;
-scrollbar-width:none;
-padding-bottom:2px;
-justify-content:center;
-flex-wrap:nowrap;
-align-items:flex-start;  /* cards top-aligned so smsz cards all sit level */
+  display:flex;gap:5px;
+  overflow-x:auto;
+  scrollbar-width:none;
+  padding-bottom:2px;
+  justify-content:center;
+  flex-wrap:nowrap;
+  align-items:flex-start;  /* cards top-aligned so smsz cards all sit level */
 }
 .lr-cards::-webkit-scrollbar{display:none;}
 .lr-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;}
-.lr-name{font-family:‘Cinzel’,serif;font-size:.44rem;letter-spacing:.5px;opacity:.5;white-space:nowrap;}
-.lr-donk-badge{font-size:.44rem;font-family:‘Cinzel’,serif;letter-spacing:.5px;color:#FFB3B3;}
-.lr-outcome{font-family:‘Cinzel’,serif;font-size:.55rem;letter-spacing:.5px;margin-top:5px;opacity:.7;text-align:center;}
+.lr-name{font-family:'Cinzel',serif;font-size:.44rem;letter-spacing:.5px;opacity:.5;white-space:nowrap;}
+.lr-donk-badge{font-size:.44rem;font-family:'Cinzel',serif;letter-spacing:.5px;color:#FFB3B3;}
+.lr-outcome{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.5px;margin-top:5px;opacity:.7;text-align:center;}
 .lr-outcome.donk{color:#FFB3B3;}
 .lr-outcome.clean{color:#70F090;}
 .lr-divider{width:1px;background:rgba(201,149,58,.25);margin:0 3px;align-self:stretch;flex-shrink:0;}
@@ -148,106 +148,106 @@ align-items:flex-start;  /* cards top-aligned so smsz cards all sit level */
 .sp-piles-row{display:flex;gap:12px;justify-content:center;align-items:flex-start;margin-top:4px;}
 .sp-pile-block{display:flex;flex-direction:column;align-items:center;gap:3px;}
 .active-sp-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;}
-.sp-pile-lbl{font-family:‘Cinzel’,serif;font-size:.5rem;letter-spacing:3px;opacity:.5;color:var(–gold);}
-.sp-pile-count{font-family:‘Cinzel’,serif;font-size:.55rem;letter-spacing:1px;color:var(–gold);opacity:.75;margin-top:4px;}
+.sp-pile-lbl{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:3px;opacity:.5;color:var(--gold);}
+.sp-pile-count{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:1px;color:var(--gold);opacity:.75;margin-top:4px;}
 /* ── SPECIAL PILE COIN ── */
 .sp-card-back{
-width:72px;height:103px;border-radius:7px;
-background:#0E0A1A;
-border:2px solid #8B6FD4;
-display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-box-shadow:0 4px 14px rgba(107,79,200,.35);
-position:relative;overflow:hidden;
+  width:72px;height:103px;border-radius:7px;
+  background:#0E0A1A;
+  border:2px solid #8B6FD4;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  box-shadow:0 4px 14px rgba(107,79,200,.35);
+  position:relative;overflow:hidden;
 }
 .sp-card-back::before{display:none;}
-.sp-back-dw{font-family:‘Cinzel Decorative’,cursive;font-size:13px;color:#C8A8F8;letter-spacing:1px;position:relative;z-index:1;}
+.sp-back-dw{font-family:'Cinzel Decorative',cursive;font-size:13px;color:#C8A8F8;letter-spacing:1px;position:relative;z-index:1;}
 .sp-back-sub{display:none;}
 .sp-card-back.empty{opacity:.2;}
 
 /* Active special cards in pile area glow */
 #activeSpCards .card.s-sp{animation:spGlow .8s ease-in-out infinite alternate;}
 .active-sp-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;}
-.active-sp-plbl{font-family:‘Cinzel’,serif;font-size:.55rem;letter-spacing:1px;color:var(–gold);opacity:.75;margin-top:4px;white-space:nowrap;}
+.active-sp-plbl{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:1px;color:var(--gold);opacity:.75;margin-top:4px;white-space:nowrap;}
 @keyframes spGlow{from{box-shadow:0 0 0 5px rgba(107,79,200,.18),0 0 8px rgba(176,127,232,.3)}to{box-shadow:0 0 0 5px rgba(176,127,232,.4),0 0 18px rgba(176,127,232,.7)}}
 
 /* ── DONK BADGE (under player name) ── */
 .donk-badge{
-font-family:‘Cinzel’,serif;font-size:.5rem;font-weight:700;letter-spacing:1px;
-color:#FFB3B3;background:rgba(139,26,26,.7);border:1px solid #E05B5B;
-border-radius:3px;padding:1px 5px;margin-top:2px;display:none;
-animation:donkPulse .6s ease-in-out infinite;
+  font-family:'Cinzel',serif;font-size:.5rem;font-weight:700;letter-spacing:1px;
+  color:#FFB3B3;background:rgba(139,26,26,.7);border:1px solid #E05B5B;
+  border-radius:3px;padding:1px 5px;margin-top:2px;display:none;
+  animation:donkPulse .6s ease-in-out infinite;
 }
 .donk-badge.show{display:inline-block;}
 @keyframes donkPulse{0%,100%{opacity:1}50%{opacity:.5}}
 
-.glog{background:rgba(0,0,0,.32);border-top:1px solid rgba(201,149,58,.1);padding:5px 10px;font-size:.65rem;font-family:‘Cinzel’,serif;letter-spacing:.3px;min-height:22px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
-.my-turn-bar{background:rgba(201,149,58,.12);border-top:1px solid rgba(201,149,58,.3);padding:4px;text-align:center;font-family:‘Cinzel’,serif;font-size:.6rem;letter-spacing:2px;color:var(–gold);flex-shrink:0;transition:opacity .3s;}
+.glog{background:rgba(0,0,0,.32);border-top:1px solid rgba(201,149,58,.1);padding:5px 10px;font-size:.65rem;font-family:'Cinzel',serif;letter-spacing:.3px;min-height:22px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
+.my-turn-bar{background:rgba(201,149,58,.12);border-top:1px solid rgba(201,149,58,.3);padding:4px;text-align:center;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:2px;color:var(--gold);flex-shrink:0;transition:opacity .3s;}
 .my-turn-bar.hidden{opacity:0;pointer-events:none;}
 .ha{background:rgba(0,0,0,.42);border-top:1px solid rgba(201,149,58,.22);padding:6px 8px 12px;flex-shrink:0;width:100%;box-sizing:border-box;overflow:visible;}
 .htop{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
-.hlbl{font-family:‘Cinzel’,serif;font-size:.58rem;letter-spacing:2px;opacity:.5;}
-.hcnt{font-family:‘Cinzel’,serif;font-size:.62rem;color:var(–gold);}
+.hlbl{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:2px;opacity:.5;}
+.hcnt{font-family:'Cinzel',serif;font-size:.62rem;color:var(--gold);}
 .htabs{display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap;}
-.ht{padding:3px 8px;border-radius:3px;font-family:‘Cinzel’,serif;font-size:.52rem;letter-spacing:.5px;cursor:pointer;border:1px solid rgba(201,149,58,.2);background:transparent;color:var(–gl);transition:all .2s;}
-.ht.on{background:rgba(201,149,58,.15);border-color:var(–gold);}
+.ht{padding:3px 8px;border-radius:3px;font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.5px;cursor:pointer;border:1px solid rgba(201,149,58,.2);background:transparent;color:var(--gl);transition:all .2s;}
+.ht.on{background:rgba(201,149,58,.15);border-color:var(--gold);}
 .hand-row{display:flex;align-items:flex-end;width:100%;overflow:visible;}
 .crow{flex:1;display:flex;gap:5px;overflow-x:auto;overflow-y:visible;padding-bottom:4px;padding-top:16px;-webkit-overflow-scrolling:touch;scrollbar-width:none;min-width:0;}
 .crow::-webkit-scrollbar{display:none;}
 .sp-slot{display:flex;flex-direction:column;align-items:center;gap:3px;padding:0 0 4px 8px;flex-shrink:0;border-left:1px solid rgba(201,149,58,.2);margin-left:4px;}
-.sp-slot-lbl{font-family:‘Cinzel’,serif;font-size:.42rem;letter-spacing:1px;opacity:.5;}
-.bplay{background:linear-gradient(135deg,#C9953A,#7A4E12);color:#130C04;font-family:‘Cinzel’,serif;font-weight:700;font-size:.75rem;letter-spacing:1px;border:none;border-radius:5px;padding:10px 20px;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(201,149,58,.3);}
+.sp-slot-lbl{font-family:'Cinzel',serif;font-size:.42rem;letter-spacing:1px;opacity:.5;}
+.bplay{background:linear-gradient(135deg,#C9953A,#7A4E12);color:#130C04;font-family:'Cinzel',serif;font-weight:700;font-size:.75rem;letter-spacing:1px;border:none;border-radius:5px;padding:10px 20px;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(201,149,58,.3);}
 .bplay:disabled{opacity:.3;cursor:not-allowed;}
 .bplay:not(:disabled):active{transform:scale(.97);}
-.bdonk{background:linear-gradient(135deg,#8B1A1A,#4A0808);color:#FFB3B3;font-family:‘Cinzel’,serif;font-weight:700;font-size:.75rem;letter-spacing:1px;border:1px solid rgba(255,100,100,.3);border-radius:5px;padding:10px 20px;cursor:pointer;transition:all .2s;}
+.bdonk{background:linear-gradient(135deg,#8B1A1A,#4A0808);color:#FFB3B3;font-family:'Cinzel',serif;font-weight:700;font-size:.75rem;letter-spacing:1px;border:1px solid rgba(255,100,100,.3);border-radius:5px;padding:10px 20px;cursor:pointer;transition:all .2s;}
 .bdonk:disabled{opacity:.3;cursor:not-allowed;}
 .abar{display:flex;gap:8px;padding:5px 8px 0;justify-content:center;flex-shrink:0;}
 
 /* ── CARDS ── */
-.card{flex-shrink:0;width:62px;height:89px;border-radius:7px;border:2px solid;position:relative;cursor:pointer;transition:transform .12s,box-shadow .12s;overflow:hidden;user-select:none;padding:0;background:var(–cbg);}
-.card.sel{transform:translateY(-14px)!important;box-shadow:0 0 20px rgba(201,149,58,.8)!important;border-color:var(–gold)!important;}
+.card{flex-shrink:0;width:62px;height:89px;border-radius:7px;border:2px solid;position:relative;cursor:pointer;transition:transform .12s,box-shadow .12s;overflow:hidden;user-select:none;padding:0;background:var(--cbg);}
+.card.sel{transform:translateY(-14px)!important;box-shadow:0 0 20px rgba(201,149,58,.8)!important;border-color:var(--gold)!important;}
 .card.dim{opacity:.35;cursor:default;}
 .card.s-sp.dim{opacity:.35;cursor:default;}
-.card.s-sp.sel{transform:translateY(-14px)!important;box-shadow:0 0 20px rgba(201,149,58,.8)!important;border-color:var(–gold)!important;}
+.card.s-sp.sel{transform:translateY(-14px)!important;box-shadow:0 0 20px rgba(201,149,58,.8)!important;border-color:var(--gold)!important;}
 .card.dg{box-shadow:0 0 12px rgba(224,91,91,.7);}
-.card.sb{border-color:var(–blue);}.card.sr{border-color:var(–red);}.card.sg{border-color:var(–green);}.card.spu{border-color:var(–purple);}
+.card.sb{border-color:var(--blue);}.card.sr{border-color:var(--red);}.card.sg{border-color:var(--green);}.card.spu{border-color:var(--purple);}
 .card.psz{width:80px;height:114px;cursor:default;pointer-events:none;}
 .card.smsz{width:40px;height:57px;cursor:default;pointer-events:none;}
 .card.is-high{border-color:#E05B5B!important;box-shadow:0 0 8px rgba(224,91,91,.35);}
 .card.s-sp{border-color:#8B6FD4;background:#0E0A1A;}
 .card.s-sp .cn{color:#B07FE8;font-size:7px;}
 .card.s-sp .cmid{font-size:16px;}
-.card.s-sp .sn{font-family:‘Cinzel’,serif;font-size:3.5px;font-weight:700;color:#B07FE8;text-align:center;padding:0 2px 2px;line-height:1.3;}
+.card.s-sp .sn{font-family:'Cinzel',serif;font-size:3.5px;font-weight:700;color:#B07FE8;text-align:center;padding:0 2px 2px;line-height:1.3;}
 .cc{position:absolute;display:flex;flex-direction:column;align-items:center;line-height:1;gap:1px;}
 .cc.tl{top:3px;left:4px;}.cc.br{bottom:3px;right:4px;transform:rotate(180deg);}
-.cn{font-family:‘Cinzel’,serif;font-weight:700;font-size:12px;}
-.cs{font-family:‘Cinzel’,serif;font-size:5px;font-weight:600;letter-spacing:.3px;}
+.cn{font-family:'Cinzel',serif;font-weight:700;font-size:12px;}
+.cs{font-family:'Cinzel',serif;font-size:5px;font-weight:600;letter-spacing:.3px;}
 .cmid{flex:1;display:flex;align-items:center;justify-content:center;font-size:22px;}
 .card.smsz .cmid{font-size:14px;}.card.smsz .cn{font-size:9px;}.card.smsz .cs{font-size:4px;}
 .card.psz .cmid{font-size:32px;}.card.psz .cn{font-size:15px;}.card.psz .cs{font-size:6px;}
 
 /* Special card slot */
 .sp-slot{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0 4px 8px;flex-shrink:0;border-left:1px solid rgba(201,149,58,.2);margin-left:4px;}
-.sp-slot-lbl{font-family:‘Cinzel’,serif;font-size:.42rem;letter-spacing:1px;opacity:.5;}
+.sp-slot-lbl{font-family:'Cinzel',serif;font-size:.42rem;letter-spacing:1px;opacity:.5;}
 
-.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-90px);background:rgba(5,3,1,.92);border:1px solid var(–gold);border-radius:6px;padding:11px 24px;font-family:‘Cinzel’,serif;font-size:.75rem;letter-spacing:1px;color:var(–gl);z-index:1000;transition:transform .3s cubic-bezier(.34,1.56,.64,1);text-align:center;max-width:88vw;}
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-90px);background:rgba(5,3,1,.92);border:1px solid var(--gold);border-radius:6px;padding:11px 24px;font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:1px;color:var(--gl);z-index:1000;transition:transform .3s cubic-bezier(.34,1.56,.64,1);text-align:center;max-width:88vw;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 .toast.td{border-color:#E05B5B;color:#FFB3B3;}
 .toast.tg{border-color:#70F090;color:#70F090;}
 
 /* ── HOW TO PLAY ── */
 .htp{width:100%;max-width:340px;}
-.htp-title{font-family:‘Cinzel Decorative’,cursive;font-size:1.3rem;color:var(–gold);text-align:center;margin-bottom:4px;}
-.htp-sub{font-family:‘Cinzel’,serif;font-size:.62rem;letter-spacing:3px;opacity:.5;text-align:center;margin-bottom:20px;}
+.htp-title{font-family:'Cinzel Decorative',cursive;font-size:1.3rem;color:var(--gold);text-align:center;margin-bottom:4px;}
+.htp-sub{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:3px;opacity:.5;text-align:center;margin-bottom:20px;}
 .htp-section{margin-bottom:18px;}
-.htp-h{font-family:‘Cinzel’,serif;font-size:.72rem;font-weight:700;letter-spacing:2px;color:var(–gold);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
-.htp-h::after{content:’’;flex:1;height:1px;background:rgba(201,149,58,.2);}
+.htp-h{font-family:'Cinzel',serif;font-size:.72rem;font-weight:700;letter-spacing:2px;color:var(--gold);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.htp-h::after{content:'';flex:1;height:1px;background:rgba(201,149,58,.2);}
 .htp-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;}
 .htp-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
 .htp-text{font-size:.82rem;line-height:1.55;opacity:.85;}
-.htp-text strong{color:var(–gl);font-style:normal;}
+.htp-text strong{color:var(--gl);font-style:normal;}
 .htp-card-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
 .htp-card{background:rgba(0,0,0,.4);border:1px solid;border-radius:6px;padding:7px 10px;flex:1;min-width:120px;}
-.htp-card-name{font-family:‘Cinzel’,serif;font-size:.58rem;font-weight:700;letter-spacing:1px;margin-bottom:3px;}
+.htp-card-name{font-family:'Cinzel',serif;font-size:.58rem;font-weight:700;letter-spacing:1px;margin-bottom:3px;}
 .htp-card-desc{font-size:.7rem;opacity:.75;line-height:1.4;}
 .htp-tip{background:rgba(201,149,58,.07);border:1px solid rgba(201,149,58,.2);border-radius:6px;padding:10px 12px;font-size:.78rem;line-height:1.5;opacity:.85;}
 
@@ -257,22 +257,22 @@ animation:donkPulse .6s ease-in-out infinite;
 @keyframes floatUp{0%{transform:translateY(0) translateX(-50%);opacity:1}100%{transform:translateY(-80px) translateX(-50%);opacity:0}}
 @keyframes dramaticIn{0%{opacity:0;transform:scale(.5)}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1);opacity:1}}
 @keyframes dramaticOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.15)}}
-@keyframes cardFly{0%{opacity:1}100%{opacity:0;transform:var(–fly-to);}}
-@keyframes cardArrive{0%{opacity:0;transform:var(–fly-from) scale(.7)}100%{opacity:1;transform:none}}
+@keyframes cardFly{0%{opacity:1}100%{opacity:0;transform:var(--fly-to);}}
+@keyframes cardArrive{0%{opacity:0;transform:var(--fly-from) scale(.7)}100%{opacity:1;transform:none}}
 @keyframes scatterOut{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-40px) scale(.8)}}
 @keyframes pickupPulse{0%,100%{box-shadow:0 0 0 0 rgba(224,91,91,.4)}50%{box-shadow:0 0 0 16px rgba(224,91,91,0)}}
 .donk-screen-flash{animation:donkFlash .6s ease-out;}
 .donk-shake{animation:donkShake .5s ease-out!important;}
-.float-label{position:fixed;pointer-events:none;font-family:‘Cinzel’,serif;font-weight:700;letter-spacing:2px;z-index:1200;animation:floatUp 1s ease-out forwards;left:50%;}
+.float-label{position:fixed;pointer-events:none;font-family:'Cinzel',serif;font-weight:700;letter-spacing:2px;z-index:1200;animation:floatUp 1s ease-out forwards;left:50%;}
 
 /* ── DRAMATIC EVENT OVERLAY ── */
 .drama-ov{position:fixed;top:28%;left:50%;transform:translate(-50%,-50%);display:none;z-index:900;pointer-events:none;text-align:center;}
 .drama-ov.show{display:block;}
 .drama-bg{display:none;} /* no black background */
-.drama-card{background:rgba(10,6,2,.88);border:2px solid var(–gold);border-radius:16px;padding:20px 36px;box-shadow:0 0 60px rgba(201,149,58,.4),0 8px 32px rgba(0,0,0,.8);backdrop-filter:blur(2px);}
+.drama-card{background:rgba(10,6,2,.88);border:2px solid var(--gold);border-radius:16px;padding:20px 36px;box-shadow:0 0 60px rgba(201,149,58,.4),0 8px 32px rgba(0,0,0,.8);backdrop-filter:blur(2px);}
 .drama-emoji{font-size:3.2rem;line-height:1;animation:dramaticIn .3s cubic-bezier(.34,1.56,.64,1) both;}
-.drama-title{font-family:‘Cinzel Decorative’,cursive;font-size:clamp(1.4rem,6vw,2.2rem);font-weight:900;margin-top:6px;letter-spacing:2px;animation:dramaticIn .3s .04s cubic-bezier(.34,1.56,.64,1) both;}
-.drama-sub{font-family:‘Cinzel’,serif;font-size:clamp(.65rem,2.5vw,.85rem);letter-spacing:3px;opacity:.75;margin-top:5px;animation:dramaticIn .3s .08s cubic-bezier(.34,1.56,.64,1) both;}
+.drama-title{font-family:'Cinzel Decorative',cursive;font-size:clamp(1.4rem,6vw,2.2rem);font-weight:900;margin-top:6px;letter-spacing:2px;animation:dramaticIn .3s .04s cubic-bezier(.34,1.56,.64,1) both;}
+.drama-sub{font-family:'Cinzel',serif;font-size:clamp(.65rem,2.5vw,.85rem);letter-spacing:3px;opacity:.75;margin-top:5px;animation:dramaticIn .3s .08s cubic-bezier(.34,1.56,.64,1) both;}
 .drama-exit{animation:dramaticOut .25s ease-in forwards;}
 
 @keyframes cardArrive{0%{opacity:0;transform:translateY(-20px) scale(.75)}100%{opacity:1;transform:none}}
@@ -282,30 +282,28 @@ animation:donkPulse .6s ease-in-out infinite;
 /* ── PAUSE OVERLAY ── */
 .pause-ov{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:600;gap:20px;}
 .pause-ov.show{display:flex;}
-.pause-title{font-family:‘Cinzel Decorative’,cursive;font-size:2rem;color:var(–gold);text-shadow:0 0 30px rgba(201,149,58,.5);}
+.pause-title{font-family:'Cinzel Decorative',cursive;font-size:2rem;color:var(--gold);text-shadow:0 0 30px rgba(201,149,58,.5);}
 
 /* ── LEAVE CONFIRM OVERLAY ── */
 .leave-ov{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:700;gap:16px;padding:24px;}
 .leave-ov.show{display:flex;}
-.leave-title{font-family:‘Cinzel’,serif;font-size:1rem;letter-spacing:3px;color:var(–gl);text-align:center;}
+.leave-title{font-family:'Cinzel',serif;font-size:1rem;letter-spacing:3px;color:var(--gl);text-align:center;}
 .eov{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:500;padding:24px;}
 .eov.show{display:flex;}
-.donkey-title{font-family:‘Cinzel Decorative’,cursive;font-size:clamp(1.4rem,6vw,2.2rem);color:#E05B5B;text-shadow:0 0 30px rgba(224,91,91,.5);text-align:center;margin-bottom:6px;}
-.donkey-name{font-family:‘Cinzel’,serif;font-size:clamp(1.8rem,8vw,3rem);color:#FFB3B3;text-align:center;margin-bottom:24px;}
-.winners-title{font-family:‘Cinzel’,serif;font-size:.7rem;letter-spacing:4px;color:var(–gold);opacity:.7;text-align:center;margin-bottom:12px;}
+.donkey-title{font-family:'Cinzel Decorative',cursive;font-size:clamp(1.4rem,6vw,2.2rem);color:#E05B5B;text-shadow:0 0 30px rgba(224,91,91,.5);text-align:center;margin-bottom:6px;}
+.donkey-name{font-family:'Cinzel',serif;font-size:clamp(1.8rem,8vw,3rem);color:#FFB3B3;text-align:center;margin-bottom:24px;}
+.winners-title{font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:4px;color:var(--gold);opacity:.7;text-align:center;margin-bottom:12px;}
 .winners-list{display:flex;flex-direction:column;gap:8px;width:100%;max-width:280px;margin-bottom:32px;}
 .winner-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border:1px solid rgba(201,149,58,.35);border-radius:6px;background:rgba(201,149,58,.07);}
 .winner-trophy{font-size:1.1rem;}
-.winner-rname{font-family:‘Cinzel’,serif;font-size:.85rem;letter-spacing:1px;color:var(–gl);}
-.winner-pos{font-family:‘Cinzel’,serif;font-size:.6rem;letter-spacing:2px;color:var(–gold);opacity:.7;margin-left:auto;}
+.winner-rname{font-family:'Cinzel',serif;font-size:.85rem;letter-spacing:1px;color:var(--gl);}
+.winner-pos{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:2px;color:var(--gold);opacity:.7;margin-left:auto;}
 </style>
-
 </head>
 <body>
 <div class="toast" id="toast"></div>
 
 <!-- SPECIAL MODAL (for SS target selection) -->
-
 <div class="sp-modal-ov" id="spModalOv">
   <div class="sp-modal">
     <div class="sp-modal-title" id="spModalTitle"></div>
@@ -328,7 +326,6 @@ animation:donkPulse .6s ease-in-out infinite;
 </div>
 
 <!-- MODE SELECT -->
-
 <div class="screen" id="sMode">
   <div class="logo" style="font-size:2.2rem">Donkey Who</div>
   <div class="logo-sub" style="margin-bottom:28px">HOW MANY PLAYERS?</div>
@@ -342,7 +339,6 @@ animation:donkPulse .6s ease-in-out infinite;
 </div>
 
 <!-- NAME ENTRY -->
-
 <div class="screen" id="sName">
   <div class="logo" style="font-size:2.2rem">Donkey Who</div>
   <div class="logo-sub" id="sNameSub" style="margin-bottom:28px"></div>
@@ -357,7 +353,6 @@ animation:donkPulse .6s ease-in-out infinite;
 </div>
 
 <!-- JOIN -->
-
 <div class="screen" id="sJoin">
   <div class="logo" style="font-size:2.2rem">Donkey Who</div>
   <div class="logo-sub" style="margin-bottom:36px">JOIN GAME</div>
@@ -376,7 +371,6 @@ animation:donkPulse .6s ease-in-out infinite;
 </div>
 
 <!-- WAIT -->
-
 <div class="screen" id="sWait">
   <div class="rtitle">ROOM CODE</div>
   <div class="rcode" id="rcd">----</div>
@@ -389,131 +383,126 @@ animation:donkPulse .6s ease-in-out infinite;
 </div>
 
 <!-- HOW TO PLAY -->
-
 <div class="screen" id="sHowTo" style="justify-content:flex-start;padding:24px 20px 48px;overflow-y:auto;">
   <div class="htp">
     <div class="htp-title">How to Play</div>
     <div class="htp-sub">DONKEY WHO — FULL RULES</div>
 
-```
-<!-- GOAL -->
-<div class="htp-section">
-  <div class="htp-h">🫏 THE GOAL</div>
-  <div class="htp-tip" style="margin-bottom:0">
-    Be one of the first to empty your hand. The <strong>last player</strong> still holding cards when everyone else has finished is <strong>THE DONKEY</strong> and loses. Everyone else wins — 1st out wins the most!
-  </div>
-</div>
+    <!-- GOAL -->
+    <div class="htp-section">
+      <div class="htp-h">🫏 THE GOAL</div>
+      <div class="htp-tip" style="margin-bottom:0">
+        Be one of the first to empty your hand. The <strong>last player</strong> still holding cards when everyone else has finished is <strong>THE DONKEY</strong> and loses. Everyone else wins — 1st out wins the most!
+      </div>
+    </div>
 
-<!-- SETUP -->
-<div class="htp-section">
-  <div class="htp-h">🎴 SETUP</div>
-  <div class="htp-item"><div class="htp-icon">👥</div><div class="htp-text">4 players. Each player gets <strong>13 playing cards</strong> and <strong>1 special card</strong>. The remaining 12 special cards go in a pile in the middle.</div></div>
-  <div class="htp-item"><div class="htp-icon">🃏</div><div class="htp-text">Playing cards come in <strong>4 colours</strong> — Blue, Red, Green, Purple — numbered <strong>1 to 13</strong>.</div></div>
-  <div class="htp-item"><div class="htp-icon">💙</div><div class="htp-text">The player holding <strong>Blue 13</strong> always goes first.</div></div>
-</div>
+    <!-- SETUP -->
+    <div class="htp-section">
+      <div class="htp-h">🎴 SETUP</div>
+      <div class="htp-item"><div class="htp-icon">👥</div><div class="htp-text">4 players. Each player gets <strong>13 playing cards</strong> and <strong>1 special card</strong>. The remaining 12 special cards go in a pile in the middle.</div></div>
+      <div class="htp-item"><div class="htp-icon">🃏</div><div class="htp-text">Playing cards come in <strong>4 colours</strong> — Blue, Red, Green, Purple — numbered <strong>1 to 13</strong>.</div></div>
+      <div class="htp-item"><div class="htp-icon">💙</div><div class="htp-text">The player holding <strong>Blue 13</strong> always goes first.</div></div>
+    </div>
 
-<!-- ROUND -->
-<div class="htp-section">
-  <div class="htp-h">🔄 HOW A ROUND WORKS</div>
-  <div class="htp-item"><div class="htp-icon">1️⃣</div><div class="htp-text">The starting player plays <strong>any card</strong> face up. That card's colour becomes the <strong>round colour</strong> — for example Blue.</div></div>
-  <div class="htp-item"><div class="htp-icon">2️⃣</div><div class="htp-text">Going clockwise, every other player <strong>must</strong> play a card of the <strong>same colour</strong>. You can play any number — high or low, your choice.</div></div>
-  <div class="htp-item"><div class="htp-icon">3️⃣</div><div class="htp-text">Once every player has put a card down, <strong>all cards are discarded</strong> — nobody picks them up. The player who played the <strong>highest number</strong> that round must start the next round.</div></div>
-  <div class="htp-tip">
-    ⚠️ <strong>Starting a round is a disadvantage!</strong> You go first blind — you don't know what anyone else will play. Try to avoid ending up with the highest card.
-  </div>
-</div>
+    <!-- ROUND -->
+    <div class="htp-section">
+      <div class="htp-h">🔄 HOW A ROUND WORKS</div>
+      <div class="htp-item"><div class="htp-icon">1️⃣</div><div class="htp-text">The starting player plays <strong>any card</strong> face up. That card's colour becomes the <strong>round colour</strong> — for example Blue.</div></div>
+      <div class="htp-item"><div class="htp-icon">2️⃣</div><div class="htp-text">Going clockwise, every other player <strong>must</strong> play a card of the <strong>same colour</strong>. You can play any number — high or low, your choice.</div></div>
+      <div class="htp-item"><div class="htp-icon">3️⃣</div><div class="htp-text">Once every player has put a card down, <strong>all cards are discarded</strong> — nobody picks them up. The player who played the <strong>highest number</strong> that round must start the next round.</div></div>
+      <div class="htp-tip">
+        ⚠️ <strong>Starting a round is a disadvantage!</strong> You go first blind — you don't know what anyone else will play. Try to avoid ending up with the highest card.
+      </div>
+    </div>
 
-<!-- DONK -->
-<div class="htp-section">
-  <div class="htp-h">💥 THE DONK</div>
-  <div class="htp-item"><div class="htp-icon">😱</div><div class="htp-text"><strong>If you have NO cards in the round colour</strong>, you cannot play normally. Instead you must <strong>DONK</strong> — play any card from your hand on top of the pile.</div></div>
-  <div class="htp-item"><div class="htp-icon">🎯</div><div class="htp-text">When a DONK happens, whoever played the <strong>highest card in that round picks up ALL cards</strong> on the table — including the DONK card. Their hand gets much bigger!</div></div>
-  <div class="htp-item"><div class="htp-icon">🛑</div><div class="htp-text"><strong>Only ONE DONK per round.</strong> The round ends the moment someone DONKs. The player who got DONKed starts the next round.</div></div>
-  <div class="htp-item"><div class="htp-icon">🧠</div><div class="htp-text"><strong>Remember who DONKs!</strong> If someone DONKs on Blue, it means they have zero Blue cards. Every time you play Blue in future, they'll have to DONK again. Use this to plan your attacks!</div></div>
-  <div class="htp-tip">
-    💡 <strong>Smart play:</strong> Try to get rid of colours you have only 1 or 2 of early. Once those are gone, you can freely DONK when that colour comes up — sending the problem to someone else!
-  </div>
-</div>
+    <!-- DONK -->
+    <div class="htp-section">
+      <div class="htp-h">💥 THE DONK</div>
+      <div class="htp-item"><div class="htp-icon">😱</div><div class="htp-text"><strong>If you have NO cards in the round colour</strong>, you cannot play normally. Instead you must <strong>DONK</strong> — play any card from your hand on top of the pile.</div></div>
+      <div class="htp-item"><div class="htp-icon">🎯</div><div class="htp-text">When a DONK happens, whoever played the <strong>highest card in that round picks up ALL cards</strong> on the table — including the DONK card. Their hand gets much bigger!</div></div>
+      <div class="htp-item"><div class="htp-icon">🛑</div><div class="htp-text"><strong>Only ONE DONK per round.</strong> The round ends the moment someone DONKs. The player who got DONKed starts the next round.</div></div>
+      <div class="htp-item"><div class="htp-icon">🧠</div><div class="htp-text"><strong>Remember who DONKs!</strong> If someone DONKs on Blue, it means they have zero Blue cards. Every time you play Blue in future, they'll have to DONK again. Use this to plan your attacks!</div></div>
+      <div class="htp-tip">
+        💡 <strong>Smart play:</strong> Try to get rid of colours you have only 1 or 2 of early. Once those are gone, you can freely DONK when that colour comes up — sending the problem to someone else!
+      </div>
+    </div>
 
-<!-- LEAVING -->
-<div class="htp-section">
-  <div class="htp-h">🚪 FINISHING & LEAVING</div>
-  <div class="htp-item"><div class="htp-icon">🎉</div><div class="htp-text">If you play your <strong>last card</strong> in a round and the round ends without you getting DONKed — you leave the game! You're a winner 🏆. The game continues without you.</div></div>
-  <div class="htp-item"><div class="htp-icon">😬</div><div class="htp-text"><strong>BUT</strong> — if you play your last card and someone DONKs you in that same round, you must pick up all those cards and <strong>keep playing</strong>. You can't escape a DONK!</div></div>
-  <div class="htp-item"><div class="htp-icon">🏁</div><div class="htp-text">When a player finishes, the remaining players carry on clockwise. The last person left is <strong>The Donkey</strong> 🫏.</div></div>
-</div>
+    <!-- LEAVING -->
+    <div class="htp-section">
+      <div class="htp-h">🚪 FINISHING & LEAVING</div>
+      <div class="htp-item"><div class="htp-icon">🎉</div><div class="htp-text">If you play your <strong>last card</strong> in a round and the round ends without you getting DONKed — you leave the game! You're a winner 🏆. The game continues without you.</div></div>
+      <div class="htp-item"><div class="htp-icon">😬</div><div class="htp-text"><strong>BUT</strong> — if you play your last card and someone DONKs you in that same round, you must pick up all those cards and <strong>keep playing</strong>. You can't escape a DONK!</div></div>
+      <div class="htp-item"><div class="htp-icon">🏁</div><div class="htp-text">When a player finishes, the remaining players carry on clockwise. The last person left is <strong>The Donkey</strong> 🫏.</div></div>
+    </div>
 
-<!-- SPECIAL CARDS OVERVIEW -->
-<div class="htp-section">
-  <div class="htp-h">✨ SPECIAL CARDS — OVERVIEW</div>
-  <div class="htp-item"><div class="htp-icon">✨</div><div class="htp-text">Every player holds <strong>1 special card</strong> at a time, separate from their playing cards. After you use yours, you draw a replacement from the pile at the end of the round — in the order players used them that round. <strong>Once the pile runs out, no more replacements.</strong> There are only 16 special cards total so use them wisely!</div></div>
-  <div class="htp-item"><div class="htp-icon">👁️</div><div class="htp-text">You can see whether your opponents <strong>have or don't have</strong> a special card, but you <strong>cannot</strong> see which one they're holding — that's secret until played!</div></div>
-</div>
+    <!-- SPECIAL CARDS OVERVIEW -->
+    <div class="htp-section">
+      <div class="htp-h">✨ SPECIAL CARDS — OVERVIEW</div>
+      <div class="htp-item"><div class="htp-icon">✨</div><div class="htp-text">Every player holds <strong>1 special card</strong> at a time, separate from their playing cards. After you use yours, you draw a replacement from the pile at the end of the round — in the order players used them that round. <strong>Once the pile runs out, no more replacements.</strong> There are only 16 special cards total so use them wisely!</div></div>
+      <div class="htp-item"><div class="htp-icon">👁️</div><div class="htp-text">You can see whether your opponents <strong>have or don't have</strong> a special card, but you <strong>cannot</strong> see which one they're holding — that's secret until played!</div></div>
+    </div>
 
-<!-- JJ -->
-<div class="htp-section">
-  <div class="htp-h" style="color:#B07FE8">🔮 JACKASS JINX (JJ)</div>
-  <div class="htp-item"><div class="htp-icon">⏰</div><div class="htp-text"><strong>When:</strong> Only when you have just been DONKed.</div></div>
-  <div class="htp-item"><div class="htp-icon">⚡</div><div class="htp-text"><strong>What it does:</strong> Reverses the DONK back to the person who DONKed you. Now <strong>they</strong> have to pick up all the cards instead of you!</div></div>
-  <div class="htp-item"><div class="htp-icon">🔄</div><div class="htp-text"><strong>Can they counter?</strong> Yes — if the DONKer also has a Jackass Jinx, they can play it straight back at you. But that's it — the chain stops there. If it comes back to you a second time, <strong>you pick up the cards</strong>.</div></div>
-  <div class="htp-item"><div class="htp-icon">🛑</div><div class="htp-text"><strong>Rule:</strong> The JJ chain can only go back and forth <strong>once each</strong>. No more than two JJs in a row.</div></div>
-</div>
+    <!-- JJ -->
+    <div class="htp-section">
+      <div class="htp-h" style="color:#B07FE8">🔮 JACKASS JINX (JJ)</div>
+      <div class="htp-item"><div class="htp-icon">⏰</div><div class="htp-text"><strong>When:</strong> Only when you have just been DONKed.</div></div>
+      <div class="htp-item"><div class="htp-icon">⚡</div><div class="htp-text"><strong>What it does:</strong> Reverses the DONK back to the person who DONKed you. Now <strong>they</strong> have to pick up all the cards instead of you!</div></div>
+      <div class="htp-item"><div class="htp-icon">🔄</div><div class="htp-text"><strong>Can they counter?</strong> Yes — if the DONKer also has a Jackass Jinx, they can play it straight back at you. But that's it — the chain stops there. If it comes back to you a second time, <strong>you pick up the cards</strong>.</div></div>
+      <div class="htp-item"><div class="htp-icon">🛑</div><div class="htp-text"><strong>Rule:</strong> The JJ chain can only go back and forth <strong>once each</strong>. No more than two JJs in a row.</div></div>
+    </div>
 
-<!-- HH -->
-<div class="htp-section">
-  <div class="htp-h" style="color:#FFB3B3">🛑 HOOF HALT (HH)</div>
-  <div class="htp-item"><div class="htp-icon">⏰</div><div class="htp-text"><strong>When:</strong> Only when you have just been DONKed — including after a Jackass Jinx has bounced the DONK to you.</div></div>
-  <div class="htp-item"><div class="htp-icon">⚡</div><div class="htp-text"><strong>What it does:</strong> Completely cancels the DONK. All cards on the table go to the discard pile — <strong>nobody picks them up.</strong></div></div>
-  <div class="htp-item"><div class="htp-icon">⚠️</div><div class="htp-text"><strong>The trade-off:</strong> The player who used Hoof Halt <strong>must start</strong> the next round. That's the price for cancelling the DONK.</div></div>
-  <div class="htp-item"><div class="htp-icon">💡</div><div class="htp-text"><strong>Special case:</strong> If the Hoof Halt player has no cards left after cancelling, they're finished and the next active player clockwise from them starts the round instead.</div></div>
-</div>
+    <!-- HH -->
+    <div class="htp-section">
+      <div class="htp-h" style="color:#FFB3B3">🛑 HOOF HALT (HH)</div>
+      <div class="htp-item"><div class="htp-icon">⏰</div><div class="htp-text"><strong>When:</strong> Only when you have just been DONKed — including after a Jackass Jinx has bounced the DONK to you.</div></div>
+      <div class="htp-item"><div class="htp-icon">⚡</div><div class="htp-text"><strong>What it does:</strong> Completely cancels the DONK. All cards on the table go to the discard pile — <strong>nobody picks them up.</strong></div></div>
+      <div class="htp-item"><div class="htp-icon">⚠️</div><div class="htp-text"><strong>The trade-off:</strong> The player who used Hoof Halt <strong>must start</strong> the next round. That's the price for cancelling the DONK.</div></div>
+      <div class="htp-item"><div class="htp-icon">💡</div><div class="htp-text"><strong>Special case:</strong> If the Hoof Halt player has no cards left after cancelling, they're finished and the next active player clockwise from them starts the round instead.</div></div>
+    </div>
 
-<!-- SS -->
-<div class="htp-section">
-  <div class="htp-h" style="color:var(--gold)">🔄 SADDLE SWITCH (SS)</div>
-  <div class="htp-item"><div class="htp-icon">⏰</div><div class="htp-text"><strong>When:</strong> Only at the <strong>very start of a round</strong>, before any playing cards have been put down.</div></div>
-  <div class="htp-item"><div class="htp-icon">⚡</div><div class="htp-text"><strong>What it does:</strong> You choose another player to start the round instead of you. They must now go first.</div></div>
-  <div class="htp-item"><div class="htp-icon">🔄</div><div class="htp-text"><strong>Can they counter?</strong> Yes — if they also have a Saddle Switch, they can redirect it to anyone they choose, including back to you. But the chain stops after one exchange — if it comes back to you, you start the round.</div></div>
-  <div class="htp-item"><div class="htp-icon">🛑</div><div class="htp-text"><strong>Important rule:</strong> A Saddle Switch <strong>CANNOT</strong> be played after a Bray Break has been used to start the round. Once someone has played a Bray Break, it's too late for a Saddle Switch.</div></div>
-</div>
+    <!-- SS -->
+    <div class="htp-section">
+      <div class="htp-h" style="color:var(--gold)">🔄 SADDLE SWITCH (SS)</div>
+      <div class="htp-item"><div class="htp-icon">⏰</div><div class="htp-text"><strong>When:</strong> Only at the <strong>very start of a round</strong>, before any playing cards have been put down.</div></div>
+      <div class="htp-item"><div class="htp-icon">⚡</div><div class="htp-text"><strong>What it does:</strong> You choose another player to start the round instead of you. They must now go first.</div></div>
+      <div class="htp-item"><div class="htp-icon">🔄</div><div class="htp-text"><strong>Can they counter?</strong> Yes — if they also have a Saddle Switch, they can redirect it to anyone they choose, including back to you. But the chain stops after one exchange — if it comes back to you, you start the round.</div></div>
+      <div class="htp-item"><div class="htp-icon">🛑</div><div class="htp-text"><strong>Important rule:</strong> A Saddle Switch <strong>CANNOT</strong> be played after a Bray Break has been used to start the round. Once someone has played a Bray Break, it's too late for a Saddle Switch.</div></div>
+    </div>
 
-<!-- BB -->
-<div class="htp-section">
-  <div class="htp-h" style="color:#70F090">⏭️ BRAY BREAK (BB)</div>
-  <div class="htp-item"><div class="htp-icon">⏰</div><div class="htp-text"><strong>When:</strong> At any point during a round — whether you're starting it, in the middle, or near the end.</div></div>
-  <div class="htp-item"><div class="htp-icon">⚡</div><div class="htp-text"><strong>What it does:</strong> You skip your turn completely. You don't have to play a card this round at all.</div></div>
-  <div class="htp-item"><div class="htp-icon">🔗</div><div class="htp-text"><strong>Can others chain it?</strong> Yes! Multiple players can play Bray Break in the same round. If Player 1, 2 and 3 all Bray Break, only Player 4 plays a card — and that card is safely discarded with no risk.</div></div>
-  <div class="htp-item"><div class="htp-icon">🛑</div><div class="htp-text"><strong>Rules:</strong>
-    <br/>• You <strong>cannot</strong> Bray Break if you would be the <strong>last person</strong> left to play — someone must play a card.
-    <br/>• A Saddle Switch <strong>cannot</strong> be played after a Bray Break has started the round.
-    <br/>• A Bray Break <strong>can</strong> be played after a Saddle Switch chain has finished.
-  </div></div>
-</div>
+    <!-- BB -->
+    <div class="htp-section">
+      <div class="htp-h" style="color:#70F090">⏭️ BRAY BREAK (BB)</div>
+      <div class="htp-item"><div class="htp-icon">⏰</div><div class="htp-text"><strong>When:</strong> At any point during a round — whether you're starting it, in the middle, or near the end.</div></div>
+      <div class="htp-item"><div class="htp-icon">⚡</div><div class="htp-text"><strong>What it does:</strong> You skip your turn completely. You don't have to play a card this round at all.</div></div>
+      <div class="htp-item"><div class="htp-icon">🔗</div><div class="htp-text"><strong>Can others chain it?</strong> Yes! Multiple players can play Bray Break in the same round. If Player 1, 2 and 3 all Bray Break, only Player 4 plays a card — and that card is safely discarded with no risk.</div></div>
+      <div class="htp-item"><div class="htp-icon">🛑</div><div class="htp-text"><strong>Rules:</strong>
+        <br/>• You <strong>cannot</strong> Bray Break if you would be the <strong>last person</strong> left to play — someone must play a card.
+        <br/>• A Saddle Switch <strong>cannot</strong> be played after a Bray Break has started the round.
+        <br/>• A Bray Break <strong>can</strong> be played after a Saddle Switch chain has finished.
+      </div></div>
+    </div>
 
-<!-- TIPS -->
-<div class="htp-section">
-  <div class="htp-h">🌟 QUICK STRATEGY GUIDE</div>
-  <div class="htp-item"><div class="htp-icon">🔥</div><div class="htp-text"><strong>Play high cards early.</strong> In the first few rounds, play your 10s, 11s, 12s and 13s. High cards force you to start rounds later when it's much riskier.</div></div>
-  <div class="htp-item"><div class="htp-icon">🎨</div><div class="htp-text"><strong>Clear out your weak colours.</strong> If you only have 1 or 2 cards of a colour, lead with that colour or play those cards when you can. Once they're gone, you can freely DONK on that colour.</div></div>
-  <div class="htp-item"><div class="htp-icon">👀</div><div class="htp-text"><strong>Track the DONKs.</strong> Every DONK tells you something. Write it in your head — Player 2 has no Red, Player 3 has no Green. Use that to target them!</div></div>
-  <div class="htp-item"><div class="htp-icon">🔮</div><div class="htp-text"><strong>Save JJ and HH.</strong> These are your lifesavers. Don't waste them — wait until someone DONKs you with a big pile of cards, then strike!</div></div>
-  <div class="htp-item"><div class="htp-icon">🔄</div><div class="htp-text"><strong>Use SS and BB to cycle.</strong> If you have a Saddle Switch or Bray Break, you can use them just to get a new special card from the pile — hoping to get a JJ or HH for later.</div></div>
-</div>
+    <!-- TIPS -->
+    <div class="htp-section">
+      <div class="htp-h">🌟 QUICK STRATEGY GUIDE</div>
+      <div class="htp-item"><div class="htp-icon">🔥</div><div class="htp-text"><strong>Play high cards early.</strong> In the first few rounds, play your 10s, 11s, 12s and 13s. High cards force you to start rounds later when it's much riskier.</div></div>
+      <div class="htp-item"><div class="htp-icon">🎨</div><div class="htp-text"><strong>Clear out your weak colours.</strong> If you only have 1 or 2 cards of a colour, lead with that colour or play those cards when you can. Once they're gone, you can freely DONK on that colour.</div></div>
+      <div class="htp-item"><div class="htp-icon">👀</div><div class="htp-text"><strong>Track the DONKs.</strong> Every DONK tells you something. Write it in your head — Player 2 has no Red, Player 3 has no Green. Use that to target them!</div></div>
+      <div class="htp-item"><div class="htp-icon">🔮</div><div class="htp-text"><strong>Save JJ and HH.</strong> These are your lifesavers. Don't waste them — wait until someone DONKs you with a big pile of cards, then strike!</div></div>
+      <div class="htp-item"><div class="htp-icon">🔄</div><div class="htp-text"><strong>Use SS and BB to cycle.</strong> If you have a Saddle Switch or Bray Break, you can use them just to get a new special card from the pile — hoping to get a JJ or HH for later.</div></div>
+    </div>
 
-<div class="htp-tip">
-  🫏 <strong>One last thing:</strong> When someone gets DONKed and picks up cards — those are the cards played that round, including the DONK card. It can be a lot! That's why avoiding a DONK is so important.
-</div>
+    <div class="htp-tip">
+      🫏 <strong>One last thing:</strong> When someone gets DONKed and picks up cards — those are the cards played that round, including the DONK card. It can be a lot! That's why avoiding a DONK is so important.
+    </div>
 
-<div style="margin-top:24px">
-  <button class="btn btn-p" onclick="go('sLobby')" style="width:100%">GOT IT — LET'S PLAY! 🎉</button>
-</div>
-```
-
+    <div style="margin-top:24px">
+      <button class="btn btn-p" onclick="go('sLobby')" style="width:100%">GOT IT — LET'S PLAY! 🎉</button>
+    </div>
   </div>
 </div>
 
 <!-- GAME -->
-
 <div class="screen" id="gs">
   <div class="gh" style="justify-content:space-between">
     <button onclick="confirmLeave()" style="background:none;border:none;color:var(--gl);opacity:.5;font-size:1.1rem;cursor:pointer;padding:4px 8px">✕</button>
@@ -537,8 +526,6 @@ animation:donkPulse .6s ease-in-out infinite;
       <div class="sp-piles-row">
         <div class="sp-pile-block">
           <div class="sp-card-back" id="spPileBack" style="background-image:url(https://domnicffs.github.io/DW/Special%20Back.png);background-size:cover;background-position:center;">
-            <div class="sp-back-dw">DW</div>
-            <div class="sp-back-sub">SPECIALS</div>
           </div>
           <div class="sp-pile-count"><span id="spPileNum">12</span> left</div>
           <div id="activeSpCards" style="display:flex;flex-direction:row;justify-content:center;align-items:flex-start;gap:6px;flex-wrap:wrap;margin-top:4px;"></div>
@@ -584,7 +571,6 @@ animation:donkPulse .6s ease-in-out infinite;
 </div>
 
 <!-- DRAMATIC EVENT OVERLAY -->
-
 <div class="drama-ov" id="dramaOv">
   <div class="drama-bg"></div>
   <div class="drama-card" id="dramaCard">
@@ -595,7 +581,6 @@ animation:donkPulse .6s ease-in-out infinite;
 </div>
 
 <!-- PAUSE OVERLAY -->
-
 <div class="pause-ov" id="pauseOv">
   <div class="pause-title">⏸ PAUSED</div>
   <div style="font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:2px;opacity:.5;margin-bottom:8px" id="pauseHostMsg"></div>
@@ -604,7 +589,6 @@ animation:donkPulse .6s ease-in-out infinite;
 </div>
 
 <!-- LEAVE CONFIRM OVERLAY -->
-
 <div class="leave-ov" id="leaveOv">
   <div class="leave-title">LEAVE THE GAME?</div>
   <div style="font-family:'Cinzel',serif;font-size:.65rem;opacity:.5;letter-spacing:1px;text-align:center">You'll be removed from the current game.</div>
@@ -615,7 +599,6 @@ animation:donkPulse .6s ease-in-out infinite;
 </div>
 
 <!-- END SCREEN -->
-
 <div class="eov" id="eov">
   <div class="donkey-title">🫏 THE DONKEY IS…</div>
   <div class="donkey-name" id="donkeyName"></div>
@@ -628,7 +611,6 @@ animation:donkPulse .6s ease-in-out infinite;
 </div>
 
 <!-- Firebase via REST API — no SDK needed -->
-
 <script>
 const DB_URL='https://dw-game-709d6-default-rtdb.europe-west1.firebasedatabase.app';
 let _polls={}; // url -> {timer, lastVal, cbs}
@@ -711,7 +693,6 @@ let db={
   }
 };
 </script>
-
 <script>
 // ══════════════════════════════════════
 // DATA
@@ -2775,7 +2756,7 @@ function mkSpCard(sp, size='full'){
   el.style.width=s.w; el.style.height=s.h;
   el.style.padding='0'; el.style.overflow='hidden';
   const img=document.createElement('img');
-  img.src=SP_IMG_MAP[sp.id]||SP_BACK_URL;
+  img.src=SP_IMG_MAP[sp.sid]||SP_BACK_URL;
   img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:5px;display:block;';
   img.onerror=function(){
     this.style.display='none';
@@ -2912,6 +2893,5 @@ function toast(m,c=''){
   }catch(e){}
 })();
 </script>
-
 </body>
 </html>
