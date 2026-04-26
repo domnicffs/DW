@@ -2792,16 +2792,23 @@ function renderHand(){
   const filtered=hf==='all'?sortHand(me.hand):sortHand(me.hand.filter(c=>c.suit===hf));
   const iDonk=canDonkNow(myI);
   filtered.forEach(card=>{
-    const playable=mt&&canPlay(card);
-    const donkable=mt&&iDonk;
-    const active=playable||donkable;
+    const playable=mt&&canPlay(card);   // right colour (or starting round)
+    const donkable=mt&&iDonk;           // forced to DONK — any card usable
     const el=mkCard(card);
-    if(!active)el.classList.add('dim');
-    if(iDonk&&mt)el.classList.add('dg');
-    if(sel===card.id)el.classList.add('sel');
+    if(!mt){
+      // Not my turn — dim everything
+      el.classList.add('dim');
+    } else if(iDonk){
+      // Must DONK — all cards available but show donk style
+      el.classList.add('dg');
+    } else if(!playable){
+      // My turn, wrong colour, not donking — dim it
+      el.classList.add('dim');
+    }
+    if(sel===card.id) el.classList.add('sel');
     el.onclick=()=>{
       if(!mt){toast("It's not your turn!");return;}
-      if(!active){if(G.col)toast(`Must play a ${G.col.toUpperCase()} card — or DONK if you have none!`);return;}
+      if(!playable&&!donkable){toast(`Must play a ${G.col.toUpperCase()} card!`);return;}
       sel=(sel===card.id)?null:card.id;renderHand();
     };
     mh.appendChild(el);
