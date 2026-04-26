@@ -1040,6 +1040,7 @@ function canPlay(card){return !G.col||card.suit===G.col;}
 function canDonkNow(pi){
   if(G.turn!==pi||G.pl[pi].out)return false;
   if(G.played.length===0||!G.col)return false;
+  if(G.played.some(e=>e.isDonk))return false; // already donked this round
   if(G.pl[pi].hand.some(c=>c.suit===G.col))return false;
   return true;
 }
